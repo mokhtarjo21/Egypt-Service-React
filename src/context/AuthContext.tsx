@@ -56,12 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const response = await instance.post('/api/users/register/', userData);
   return { success: true, message: 'تم التسجيل بنجاح' };
 } catch (error: any) {
-  toast.error(error.response.data)
-   console.log("Status:", error.response.data);
+  
+   
   console.error('Registration error:', error);
   return {
     success: false,
-    message: error.response?.data?.message || 'حدث خطأ أثناء التسجيل',
+    message: error.response.data.phoneNumber[0]? "رقم الهاتف مسجل بالفعل" : 'حدث خطأ أثناء التسجيل',
   };   }
   };
 

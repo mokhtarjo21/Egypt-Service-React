@@ -4,6 +4,7 @@ import { User, Phone, Briefcase, MapPin, FileText, Upload, Lock, Eye, EyeOff } f
 import { useAuth } from '../../context/AuthContext';
 import { governorates, serviceTypes } from '../../data/governorates';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { toast } from 'react-toastify';
 export function RegisterForm() {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -141,12 +142,13 @@ export function RegisterForm() {
 
       if (result.success) {
         setMessage({ type: 'success', text: result.message });
-        setTimeout(() => navigate('/verify-phone'), 2000);
+        setTimeout(() => navigate('/verify-phone',{state: { phoneNumber1: formData.phoneNumber.trim()}}), 2000);
       } else {
         setMessage({ type: 'error', text: result.message });
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'حدث خطأ أثناء التسجيل' });
+    } catch (error) {
+     
+      setMessage({ type: 'error', text: 'حدث خطأ أثناء التسجيل'});
     } finally {
       setLoading(false);
     }

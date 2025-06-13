@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Phone, Shield, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-
+import { useLocation } from 'react-router-dom';
 export function PhoneVerification() {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const location = useLocation();
+    const { phoneNumber1 } = location.state || {};
+  const [phoneNumber, setPhoneNumber] = phoneNumber1 || useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('otp');
+  const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [message, setMessage] = useState({ type: '', text: '' });
