@@ -24,7 +24,9 @@ export function Profile() {
     selectedGovernorates: currentUser?.governorates || [],
     selectedCenters: currentUser?.centers || [],
     bio: currentUser?.bio || '',
-    idPhoto: null as File | null
+    idPhotoUrl:currentUser?.idPhotoUrl || null,
+    idfPhotoUrl: currentUser?.idfPhotoUrl || '',
+    iduserPhotoUrl: currentUser?.iduserPhotoUrl || '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -96,28 +98,35 @@ export function Profile() {
 
   const handleSave = async () => {
     setLoading(true);
-    try {
-      const result = await updateProfile({
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        serviceType: formData.serviceType,
-        governorates: formData.selectedGovernorates,
-        centers: formData.selectedCenters,
-        bio: formData.bio,
-        idPhotoUrl: formData.idPhoto ? '/api/uploads/id-' + Date.now() + '.jpg' : currentUser.idPhotoUrl
-      });
-      
-      if (result.success) {
-        setIsEditing(false);
-        setMessage('تم تحديث الملف الشخصي بنجاح');
-      } else {
-        setMessage(result.message);
-      }
-    } catch (error) {
-      setMessage('حدث خطأ أثناء التحديث');
-    } finally {
-      setLoading(false);
+   try {
+    // جهز الداتا اللي هنبعتها كـ object
+    const dataToSend = {
+      fullName: formData.fullName,
+      phoneNumber: formData.phoneNumber,
+      serviceType: formData.serviceType,
+      governorates: formData.selectedGovernorates,
+      centers: formData.selectedCenters,
+      bio: formData.bio,
+    };
+
+    // فقط أضف الصورة لو كانت ملف جديد
+    if (formData.idPhoto instanceof File) {
+      dataToSend.idPhotoUrl = formData.idPhoto;
     }
+
+    const result = await updateProfile(dataToSend); // هنا لازم تستخدم axios.patch أو axios.put
+
+    if (result.success) {
+      setIsEditing(false);
+      setMessage('تم تحديث الملف الشخصي بنجاح');
+    } else {
+      setMessage(result.message);
+    }
+  } catch (error) {
+    setMessage('حدث خطأ أثناء التحديث');
+  } finally {
+    setLoading(false);
+  }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -200,6 +209,9 @@ export function Profile() {
     }
   };
 
+  if (!currentUser.fullName) {
+    return <div className="text-center text-red-600">لم يتم العثور على المستخدم</div>;
+  }
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -226,7 +238,7 @@ export function Profile() {
                     </span>
                     {!currentUser.isPhoneVerified && (
                       <button
-                        onClick={() => navigate('/verify-phone')}
+                        onClick={() => navigate('/verify-phone',{state: { phoneNumber1: currentUser.phoneNumber.trim()}})}
                         className="text-xs bg-red-600 hover:bg-red-700 px-2 py-1 rounded-full transition-colors"
                       >
                         تأكيد الهاتف
@@ -239,14 +251,14 @@ export function Profile() {
               <div className="flex space-x-reverse space-x-2">
                 <button
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-md transition-colors flex items-center text-sm"
+                  className=" bg-opacity-20 hover:bg-opacity-30 px-3 py-2 rounded-md transition-colors flex items-center text-sm"
                 >
                   <Lock className="w-4 h-4 ml-1" />
                   كلمة المرور
                 </button>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors flex items-center"
+                  className=" bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors flex items-center"
                 >
                   <Edit className="w-4 h-4 ml-1" />
                   {isEditing ? 'إلغاء' : 'تعديل'}
@@ -257,9 +269,9 @@ export function Profile() {
 
           {/* Password Change Form */}
           {showPasswordForm && (
-            <div className="border-b border-gray-200 p-6 bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">تغيير كلمة المرور</h3>
-              <form onSubmit={handlePasswordSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border-b  border-gray-200 p-6 bg-gray-50">
+              <h3 className="text-lg  font-semibold text-gray-900 mb-4">تغيير كلمة المرور</h3>
+              <form onSubmit={handlePasswordSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     كلمة المرور الحالية
@@ -464,6 +476,38 @@ export function Profile() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {currentUser.idPhotoUrl && (
+                        <p className="text-xs text-green-600 mt-1">✓ تم رفع البطاقة سابقاً</p>
+                      )}
+                    </div>
+                    {/* Save and Cancel Buttons */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Upload className="inline w-4 h-4 ml-1" />
+                        تحديث صورة الخلفية لبطاقة الرقم القومي
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e)=>setFormData(prev => ({ ...prev, idfPhotoUrl: e.target.files?.[0] }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {currentUser.idfPhotoUrl && (
+                        <p className="text-xs text-green-600 mt-1">✓ تم رفع البطاقة سابقاً</p>
+                      )}
+                    </div>
+                    {/* Save and Cancel Buttons */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Upload className="inline w-4 h-4 ml-1" />
+                        تحديث صورة المستخدم مع بطاقة الرقم القومي
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e)=>setFormData(prev => ({ ...prev, iduserPhotoUrl: e.target.files?.[0] }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {currentUser.iduserPhotoUrl && (
                         <p className="text-xs text-green-600 mt-1">✓ تم رفع البطاقة سابقاً</p>
                       )}
                     </div>

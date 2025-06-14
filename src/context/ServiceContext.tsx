@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Service } from '../types';
-import axios from 'axios';
 
+import  instance  from '../axiosInstance/instance';
 interface ServiceContextType {
   services: Service[];
   addService: (service: Omit<Service, 'id' | 'createdAt' | 'user'>) => Promise<void>;
@@ -18,23 +18,49 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch all services on mount
   useEffect(() => {
-    axios.get('/api/services')
-      .then(res => setServices(Array.isArray(res.data) ? res.data : []))
-      .catch(err => console.error('Failed to load services:', err));
+    const getservice = async () => {
+  try {
+    const res = await instance.get('/api/services/');
+    const services = Array.isArray(res.data) ? res.data : [];
+    setServices(services);
+    console.log('Fetched services:', services);
+  } catch (error: any) {
+    if (error.response) {
+      console.log('Failed to fetch service:', error.response.data);
+    } else if (error.request) {
+      console.log('No response received:', error.request);
+    } else {
+      console.log('Error setting up request:', error.message);
+    }
+    console.error('Full error object:', error);
+  }
+};
+
+getservice();
+
+     
   }, []);
 
   const addService = async (serviceData: Omit<Service, 'id' | 'createdAt' | 'user'>) => {
     try {
-      const res = await axios.post('/api/services', serviceData);
+      console.log('Adding service:', serviceData);
+       const access =localStorage.getItem('access')
+      const res = await instance.post('/api/services/', serviceData,
+        { headers: {
+    'Authorization': `Bearer ${access}`, 
+        'Content-Type': 'multipart/form-data',
+      }}
+      );
       setServices(prev => [...prev, res.data]);
     } catch (error) {
+      console.log('Failed to add service:', error.response.data);
       console.error('Failed to add service:', error);
     }
   };
 
   const updateServiceStatus = async (serviceId: string, status: 'approved' | 'rejected') => {
     try {
-      const res = await axios.patch(`/api/services/${serviceId}`, { status });
+      const res = await instance.patch(`/api/services/${serviceId}`, { status });
       setServices(prev =>
         prev.map(service => service.id === serviceId ? res.data : service)
       );
@@ -53,7 +79,7 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
 
   const deleteService = async (serviceId: string) => {
     try {
-      await axios.delete(`/api/services/${serviceId}`);
+      await instance.delete(`/api/services/${serviceId}`);
       setServices(prev => prev.filter(service => service.id !== serviceId));
     } catch (error) {
       console.error('Failed to delete service:', error);

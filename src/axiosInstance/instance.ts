@@ -10,11 +10,11 @@
 // // src/api/axiosInstance.ts
 import axios from 'axios';
 
+const access =localStorage.getItem('access')
+console.log(access, 'access token from localStorage');
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000', // غيّر الرابط حسب سيرفرك
-  headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+  baseURL: 'http://localhost:8000', 
+ 
   withCredentials: true,
 });
 

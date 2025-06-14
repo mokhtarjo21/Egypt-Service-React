@@ -67,24 +67,24 @@ export function AddService() {
 
     try {
       // Mock image URLs - in a real app, upload images to server
-      const imageUrls = formData.images.map((_, index) => 
-        `/api/uploads/service-${Date.now()}-${index}.jpg`
+      const imageUrls = formData.images.map((img) => 
+       img
       );
 
       addService({
-        userId: currentUser.id,
+      
         title: formData.title.trim(),
         description: formData.description.trim(),
         price: parseInt(formData.price),
         governorate: formData.governorate,
         center: formData.center,
         images: imageUrls,
-        status: 'pending'
+        
       });
 
-      navigate('/profile', { 
-        state: { message: 'تم إرسال الخدمة للمراجعة بنجاح. ستظهر بعد الموافقة عليها.' }
-      });
+      // navigate('/profile', { 
+      //   state: { message: 'تم إرسال الخدمة للمراجعة بنجاح. ستظهر بعد الموافقة عليها.' }
+      // });
     } catch (err) {
       setError('حدث خطأ أثناء إضافة الخدمة');
     } finally {

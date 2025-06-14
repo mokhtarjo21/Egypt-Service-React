@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import  instance  from '../axiosInstance/instance';
 import { User, AuthContextType } from '../types';
-import { toast } from 'react-toastify';
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const sendOTP = async (phoneNumber: string) => {
     try {
-      const response = await instance.post('/send-otp/', { phoneNumber });
+      const response = await instance.post('/api/users/send-otp/', { phoneNumber });
       return { success: true, message: response.data.message };
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || 'فشل إرسال OTP' };
@@ -26,27 +26,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyPhone = async (phoneNumber: string, otp: string) => {
     try {
-      const response = await instance.post('/verify-phone/', { phoneNumber, otp });
+      const response = await instance.post('/api/users/verify-phone/', { phoneNumber, otp });
       return { success: true, message: response.data.message };
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || 'فشل التحقق' };
     }
   };
 
-  const login = async (phoneNumber: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      const response = await instance.post('/login/', { phoneNumber, password });
+      const response = await instance.post('/api/users/login/', { username, password });
       const user = response.data;
-      setCurrentUser(user);
+      console.log('Login successful:', user.user);
+      localStorage.setItem('access', user.access);
+      localStorage.setItem('refresh', user.refresh);
+        
+      setCurrentUser(user.user);
       localStorage.setItem('currentUser', JSON.stringify(user));
       return { success: true, message: 'تم تسجيل الدخول بنجاح' };
     } catch (error: any) {
+      console.error('Login error:', error.response.data);
       return { success: false, message: error.response?.data?.message || 'فشل تسجيل الدخول' };
     }
   };
 
   const logout = () => {
     setCurrentUser(null);
+    const sublogout = async () => {
+    const refresh = localStorage.getItem("refresh");
+   const access =localStorage.getItem('access')
+      const responsee = await instance.post("/api/users/logout",
+        { refresh },
+       { headers: {
+    'Authorization': `Bearer ${access}`, 
+        'Content-Type': 'multipart/form-data',
+      }},
+        
+      );}
+      
+      sublogout();
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      
     localStorage.removeItem('currentUser');
   };
 
@@ -69,26 +90,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!currentUser) return { success: false, message: 'يجب تسجيل الدخول' };
 
     try {
-      const response = await instance.put('/update-profile/', userData);
+      console.log('Updating profile with data:', userData);
+      const access =localStorage.getItem('access')
+      const response = await instance.patch('/api/users/update-profile/', userData,
+          { headers: {
+    'Authorization': `Bearer ${access}`, 
+        'Content-Type': 'multipart/form-data',
+      }}
+       );
       const updatedUser = response.data;
+      console.log('Updated user:', updatedUser);
       setCurrentUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       return { success: true, message: 'تم التحديث بنجاح' };
     } catch (error: any) {
+      console.error('Update profile error:', error.response.data);
       return { success: false, message: error.response?.data?.message || 'خطأ أثناء التحديث' };
     }
   };
 
   const changePassword = async (currentPassword: string, newPassword: string) => {
     if (!currentUser) return { success: false, message: 'يجب تسجيل الدخول' };
-
+    const access =localStorage.getItem('access')
     try {
-      await instance.post('/change-password/', {
+      await instance.post('/api/users/change-password/', {
         currentPassword,
         newPassword
-      });
+      },{ headers: {
+    'Authorization': `Bearer ${access}`, 
+        'Content-Type': 'multipart/form-data',
+      }});
       return { success: true, message: 'تم تغيير كلمة المرور بنجاح' };
     } catch (error: any) {
+      console.error('Change password error:', error.response.data);
       return { success: false, message: error.response?.data?.message || 'فشل تغيير كلمة المرور' };
     }
   };
