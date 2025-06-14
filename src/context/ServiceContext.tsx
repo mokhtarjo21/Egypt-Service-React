@@ -85,7 +85,7 @@ useEffect(() => {
 
   const getApprovedServices = () => {
    
-    return services.filter(service => service.status === 'approved');
+    return services.filter(service => service.status === 'Approved');
   };
 
   const deleteService = async (serviceId: string) => {

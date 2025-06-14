@@ -34,7 +34,7 @@ export interface Service {
 
 export interface AuthContextType {
   currentUser: User | null;
-   refresh: () => void;
+   
   login: (phoneNumber: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
  

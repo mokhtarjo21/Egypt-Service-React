@@ -7,17 +7,14 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+   useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   
-  
-  
-  const refresh=()=>{
-    const user = localStorage.getItem('currentUser');
-      if (user) {
-        console.log('Current user found in localStorage:', JSON.parse(user));
-        setCurrentUser(JSON.parse(user));
-      } else {
-        setCurrentUser(null);
-  }}
   const sendOTP = async (phoneNumber: string) => {
     try {
       const response = await instance.post('/api/users/send-otp/', { phoneNumber });
@@ -40,12 +37,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await instance.post('/api/users/login/', { username, password });
       const user = response.data;
-      console.log('Login successful:', user.user);
+     
       localStorage.setItem('access', user.access);
       localStorage.setItem('refresh', user.refresh);
         
       setCurrentUser(user.user);
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem('currentUser', JSON.stringify(user.user));
+
       return { success: true, message: 'تم تسجيل الدخول بنجاح' };
     } catch (error: any) {
       console.error('Login error:', error.response.data);
@@ -140,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     verifyPhone,
     sendOTP,
-    refresh,
+   
     updateProfile,
     changePassword
   };

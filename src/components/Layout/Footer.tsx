@@ -24,8 +24,9 @@ export function Footer() {
           <div>
             <h4 className="text-md font-semibold mb-4">معلومات التواصل</h4>
             <div className="text-sm text-gray-300">
-              <p>البريد الإلكتروني: info@services-egypt.com</p>
-              <p>الهاتف: 01000000000</p>
+              <p>البريد الإلكتروني:bashertoop88888@gmail.com</p>
+              <p>الهاتف: 01122411136</p>
+              <p>تواصل واتساب : 01102585141</p>
             </div>
           </div>
         </div>

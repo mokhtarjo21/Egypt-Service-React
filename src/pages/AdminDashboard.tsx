@@ -31,6 +31,10 @@ export function AdminDashboard() {
       console.error('Error updating user verification status:', error);
     }
   }
+  const pendingServices = services.filter(s => s.status === 'pending');
+  const pendingUsers = users.filter(u => u.verificationStatus === 'pending');
+  const totalUsers = users.length;
+  const verifiedUsers = users.filter(u => u.isVerified).length;
   useEffect(() => {
     const fetchAllUsers = async () => {
     try {
@@ -60,10 +64,6 @@ export function AdminDashboard() {
       </div>
     );
   }
-  const pendingServices = services.filter(s => s.status === 'pending');
-  const pendingUsers = users.filter(u => u.verificationStatus === 'pending');
-  const totalUsers = users.length;
-  const verifiedUsers = users.filter(u => u.isVerified).length;
 
   const handleServiceAction = (serviceId: string, action: 'approved' | 'rejected') => {
     updateServiceStatus(serviceId, action);

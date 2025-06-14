@@ -35,11 +35,12 @@ export function Profile() {
     confirmPassword: ''
   });
 
-  if (!currentUser) {
-    navigate('/login');
-    return null;
+ useEffect(() => {
+   
+}, [currentUser, navigate]);
+if (!currentUser) {
+    return <div>جاري التحميل...</div>; // أو توجيه للمستخدم لتسجيل الدخول
   }
- 
   const userServices = getUserServices(currentUser.id);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

@@ -11,9 +11,9 @@
 import axios from 'axios';
 
 const access =localStorage.getItem('access')
-console.log(access, 'access token from localStorage');
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000', 
+  baseURL: 'https://web-production-98b70.up.railway.app', 
  
   withCredentials: true,
 });
