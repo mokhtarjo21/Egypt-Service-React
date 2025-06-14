@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Filter, MapPin, DollarSign } from 'lucide-react';
 import { useServices } from '../context/ServiceContext';
 import { governorates, serviceTypes } from '../data/governorates';
@@ -17,7 +17,7 @@ export function Services() {
   const [showFilters, setShowFilters] = useState(false);
   
   const approvedServices = getApprovedServices();
-  
+  console.log('Approved Services:', approvedServices);
   const filteredServices = approvedServices.filter(service => {
     const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          service.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -28,7 +28,9 @@ export function Services() {
     
     return matchesSearch && matchesGovernorate && matchesServiceType && matchesMinPrice && matchesMaxPrice;
   });
-
+useEffect(() => {
+  // Reset filters when services change
+}, [approvedServices]);
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedGovernorate('');

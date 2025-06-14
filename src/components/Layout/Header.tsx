@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, User, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export function Header() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser,logout,refresh} = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+  },[currentUser]);
+  refresh();
 
   const handleLogout = () => {
     logout();

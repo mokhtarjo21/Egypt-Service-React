@@ -8,12 +8,13 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onViewDetails }: ServiceCardProps) {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       {service.images.length > 0 && (
         <div className="h-48 bg-gray-200 relative">
           <img
-            src={service.images[0] || '/api/placeholder/400/300'}
+            src={`${baseUrl}/${service.images[0]}` || '/api/placeholder/400/300'}
             alt={service.title}
             className="w-full h-full object-cover"
             onError={(e) => {

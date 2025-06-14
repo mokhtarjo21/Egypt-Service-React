@@ -7,14 +7,17 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-    }
-  }, []);
-
+  
+  
+  
+  const refresh=()=>{
+    const user = localStorage.getItem('currentUser');
+      if (user) {
+        console.log('Current user found in localStorage:', JSON.parse(user));
+        setCurrentUser(JSON.parse(user));
+      } else {
+        setCurrentUser(null);
+  }}
   const sendOTP = async (phoneNumber: string) => {
     try {
       const response = await instance.post('/api/users/send-otp/', { phoneNumber });
@@ -63,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }},
         
       );}
-      
       sublogout();
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
@@ -74,12 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: Partial<User>) => {
     try {
       console.log('Registering user:', userData);
-  const response = await instance.post('/api/users/register/', userData);
+  const response = await instance.post('/api/users/register/', userData
+      ,{ headers: {
+    'Content-Type': 'multipart/form-data',
+      } }
+  );
   return { success: true, message: 'تم التسجيل بنجاح' };
 } catch (error: any) {
   
    
-  console.error('Registration error:', error);
+  console.log('Registration error:', error.response.data);
   return {
     success: false,
     message: error.response.data.phoneNumber[0]? "رقم الهاتف مسجل بالفعل" : 'حدث خطأ أثناء التسجيل',
@@ -134,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     verifyPhone,
     sendOTP,
+    refresh,
     updateProfile,
     changePassword
   };

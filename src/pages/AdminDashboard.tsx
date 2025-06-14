@@ -1,16 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Users, FileText, CheckCircle, XCircle, Eye, Shield, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useServices } from '../context/ServiceContext';
 import { Service, User } from '../types';
-
+import  instance  from '../axiosInstance/instance';
 export function AdminDashboard() {
   const { currentUser } = useAuth();
+  const [users, setAllUsers] = useState<User[]>([]);
+  if (!users) return <div>Loading...</div>; 
   const { services, updateServiceStatus } = useServices();
+  console.log('Services in AdminDashboard:', services);
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const handleUserAction = async (phoneNumber: string, verificationStatus: 'Approved' | 'Rejected') => {
+    try {
+      const access = localStorage.getItem('access');
+      const response = await instance.patch('/api/users/verify/', {
+        phoneNumber,
+        verificationStatus,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${access}`,
+        },
+      });
+      console.log('User action response:', response.data);
+      setAllUsers(response.data);
+    } catch (error) {
+      console.error('Error updating user verification status:', error);
+    }
+  }
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+    try {
+      const access = localStorage.getItem('access');
+      const response = await instance.get('/api/users/all/', {
+        headers: {
+          'Authorization': `Bearer ${access}`,
+        },
+      });
+      setAllUsers(response.data);
+      console.log('Fetched all users:', response.data);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+    }
+  };
+    fetchAllUsers();
+  }
+  , []);
   if (!currentUser?.isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -22,11 +60,10 @@ export function AdminDashboard() {
       </div>
     );
   }
-
   const pendingServices = services.filter(s => s.status === 'pending');
-  const pendingUsers = useAuth().users.filter(u => u.verificationStatus === 'pending');
-  const totalUsers = useAuth().users.length;
-  const verifiedUsers = useAuth().users.filter(u => u.isVerified).length;
+  const pendingUsers = users.filter(u => u.verificationStatus === 'pending');
+  const totalUsers = users.length;
+  const verifiedUsers = users.filter(u => u.isVerified).length;
 
   const handleServiceAction = (serviceId: string, action: 'approved' | 'rejected') => {
     updateServiceStatus(serviceId, action);
@@ -184,7 +221,7 @@ export function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {useAuth().users.filter(u => !u.isAdmin).map(user => (
+                      {users.filter(u => !u.isAdmin).map(user => (
                         <tr key={user.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
@@ -211,6 +248,7 @@ export function AdminDashboard() {
                             {new Date(user.createdAt).toLocaleDateString('ar-EG')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            
                             <button
                               onClick={() => setSelectedUser(user)}
                               className="text-blue-600 hover:text-blue-900 flex items-center"
@@ -247,14 +285,14 @@ export function AdminDashboard() {
                         </div>
                         <div className="flex space-x-reverse space-x-2">
                           <button
-                            onClick={() => handleServiceAction(service.id, 'approved')}
+                            onClick={() => handleServiceAction(service.id, 'Approved')}
                             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm flex items-center transition-colors"
                           >
                             <CheckCircle className="w-4 h-4 ml-1" />
                             موافقة
                           </button>
                           <button
-                            onClick={() => handleServiceAction(service.id, 'rejected')}
+                            onClick={() => handleServiceAction(service.id, 'Rejected')}
                             className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm flex items-center transition-colors"
                           >
                             <XCircle className="w-4 h-4 ml-1" />
@@ -349,7 +387,7 @@ export function AdminDashboard() {
                       <label className="text-sm font-medium text-gray-500">صورة البطاقة الشخصية</label>
                       <div className="mt-2">
                         <img
-                          src={selectedUser.idPhotoUrl || 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                          src={`${baseUrl}${selectedUser.idPhotoUrl}`  }
                           alt="البطاقة الشخصية"
                           className="w-full max-w-md h-48 object-cover rounded-md border"
                           onError={(e) => {
@@ -357,9 +395,64 @@ export function AdminDashboard() {
                           }}
                         />
                       </div>
+                      
+                    </div>
+                  )}
+                  {selectedUser.idfPhotoUrl && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">صورة الخلفية البطاقة الشخصية</label>
+                      <div className="mt-2">
+                        <img
+                          src={`${baseUrl}${selectedUser.idfPhotoUrl}`  || 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                          alt="البطاقة الشخصية"
+                          className="w-full max-w-md h-48 object-cover rounded-md border"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
+                          }}
+                        />
+                      </div>
+                      
+                    </div>
+                  )}
+                  {selectedUser.iduserPhotoUrl && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">صورة المستخدم مع البطاقة البطاقة الشخصية</label>
+                      <div className="mt-2">
+                        <img
+                          src={`${baseUrl}${selectedUser.iduserPhotoUrl}`  || 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                          alt="البطاقة الشخصية"
+                          className="w-full max-w-md h-48 object-cover rounded-md border"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
+                          }}
+                        />
+                      </div>
+                      
                     </div>
                   )}
                 </div>
+                <div className="flex space-x-reverse space-x-4 pt-4">
+                    <button
+                      onClick={() => {
+                        handleUserAction(selectedUser.phoneNumber, 'Approved');
+                        setSelectedUser(null);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center transition-colors"
+                    >
+                      <CheckCircle className="w-4 h-4 ml-1" />
+                      موافقة
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleUserAction(selectedUser.phoneNumber, 'Rejected');
+                        setSelectedUser(null);
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center transition-colors"
+                    >
+                      <XCircle className="w-4 h-4 ml-1" />
+                      رفض
+                    </button>
+                    </div>
               </div>
             </div>
           </div>
@@ -411,7 +504,7 @@ export function AdminDashboard() {
                         {selectedService.images.map((image, index) => (
                           <img
                             key={index}
-                            src={image || 'https://images.pexels.com/photos/4792509/pexels-photo-4792509.jpeg?auto=compress&cs=tinysrgb&w=400'}
+                            src={`${baseUrl}/${image}` || 'https://images.pexels.com/photos/4792509/pexels-photo-4792509.jpeg?auto=compress&cs=tinysrgb&w=400'}
                             alt={`صورة ${index + 1}`}
                             className="w-full h-32 object-cover rounded-md"
                             onError={(e) => {
@@ -426,7 +519,7 @@ export function AdminDashboard() {
                   <div className="flex space-x-reverse space-x-4 pt-4">
                     <button
                       onClick={() => {
-                        handleServiceAction(selectedService.id, 'approved');
+                        handleServiceAction(selectedService.id, 'Approved');
                         setSelectedService(null);
                       }}
                       className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center transition-colors"
@@ -436,7 +529,7 @@ export function AdminDashboard() {
                     </button>
                     <button
                       onClick={() => {
-                        handleServiceAction(selectedService.id, 'rejected');
+                        handleServiceAction(selectedService.id, 'Rejected');
                         setSelectedService(null);
                       }}
                       className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center transition-colors"

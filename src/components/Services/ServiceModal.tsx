@@ -10,7 +10,7 @@ interface ServiceModalProps {
 
 export function ServiceModal({ service, isOpen, onClose }: ServiceModalProps) {
   if (!isOpen || !service) return null;
-
+    const baseUrl = import.meta.env.VITE_BASE_URL;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -32,7 +32,7 @@ export function ServiceModal({ service, isOpen, onClose }: ServiceModalProps) {
                 {service.images.map((image, index) => (
                   <img
                     key={index}
-                    src={image || 'https://images.pexels.com/photos/4792509/pexels-photo-4792509.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                    src={`${baseUrl}/${image}` || 'https://images.pexels.com/photos/4792509/pexels-photo-4792509.jpeg?auto=compress&cs=tinysrgb&w=600'}
                     alt={`${service.title} ${index + 1}`}
                     className="w-full h-48 object-cover rounded-md"
                     onError={(e) => {

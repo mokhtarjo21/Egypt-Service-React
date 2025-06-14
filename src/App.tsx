@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ServiceProvider } from './context/ServiceContext';
@@ -14,6 +14,28 @@ import { RegisterForm } from './components/Auth/RegisterForm';
 import { PhoneVerification } from './components/Auth/PhoneVerification';
 
 function App() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  useEffect(() => {
+    function refreshAccessToken() {
+  const refresh = localStorage.getItem('refresh');
+
+  fetch(`${baseUrl}/api/users/token/refresh/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      localStorage.setItem('access', data.access);
+    })
+    .catch(err => {
+      console.error('Refresh token expired, need to log in again');
+     
+     
+    });
+}
+  refreshAccessToken();
+  }, []);
   return (
     <AuthProvider>
       <ServiceProvider>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Phone, Briefcase, MapPin, FileText, Upload, Edit, Trash2, Eye, Clock, CheckCircle, XCircle, Lock, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -39,7 +39,7 @@ export function Profile() {
     navigate('/login');
     return null;
   }
-
+ 
   const userServices = getUserServices(currentUser.id);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
