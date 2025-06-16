@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await instance.post('/api/users/send-otp/', { phoneNumber });
       return { success: true, message: response.data.message };
     } catch (error: any) {
+      console.log('Send OTP error:', error.response.data);
       return { success: false, message: error.response?.data?.message || 'فشل إرسال OTP' };
     }
   };
