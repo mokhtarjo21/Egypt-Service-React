@@ -13,7 +13,7 @@ export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = "https://web-production-98b70.up.railway.app"
   const handleUserAction = async (phoneNumber: string, verificationStatus: 'Approved' | 'Rejected') => {
     try {
       const access = localStorage.getItem('access');

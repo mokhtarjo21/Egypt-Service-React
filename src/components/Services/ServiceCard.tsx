@@ -8,7 +8,7 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onViewDetails }: ServiceCardProps) {
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = "https://web-production-98b70.up.railway.app"
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       {service.images.length > 0 && (
