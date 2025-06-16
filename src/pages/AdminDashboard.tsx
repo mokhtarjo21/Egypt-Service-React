@@ -406,9 +406,9 @@ export function AdminDashboard() {
                           src={`${baseUrl}${selectedUser.idfPhotoUrl}`  || 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400'}
                           alt="البطاقة الشخصية"
                           className="w-full max-w-md h-48 object-cover rounded-md border"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
-                          }}
+                          // onError={(e) => {
+                          //   e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
+                          // }}
                         />
                       </div>
                       
@@ -422,9 +422,9 @@ export function AdminDashboard() {
                           src={`${baseUrl}${selectedUser.iduserPhotoUrl}`  || 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400'}
                           alt="البطاقة الشخصية"
                           className="w-full max-w-md h-48 object-cover rounded-md border"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
-                          }}
+                          // onError={(e) => {
+                          //   e.currentTarget.src = 'https://images.pexels.com/photos/7887807/pexels-photo-7887807.jpeg?auto=compress&cs=tinysrgb&w=400';
+                          // }}
                         />
                       </div>
                       
