@@ -8,6 +8,22 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
    useEffect(() => {
+   
+  const refresh = localStorage.getItem('refresh');
+
+    const frefresh = async () => {
+    try {
+      const response = await instance.post('/api/users/token/refresh/',{ refresh });
+      const user = response.data;
+     
+      localStorage.setItem('access', user.access);
+      
+      
+    } catch (error: any) {
+      logout();
+    }
+  };
+  frefresh();
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
@@ -24,10 +40,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: error.response?.data?.message || 'فشل إرسال OTP' };
     }
   };
+  const sendOTPforpass = async (phoneNumber: string) => {
+    try {
+      const response = await instance.post('/api/users/send-otp-reset-pass/', { phoneNumber });
+      return { success: true, message: response.data.message };
+    } catch (error: any) {
+      console.log('Send OTP error:', error.response.data);
+      return { success: false, message: error.response?.data?.message || 'فشل إرسال OTP' };
+    }
+  };
 
   const verifyPhone = async (phoneNumber: string, otp: string) => {
     try {
       const response = await instance.post('/api/users/verify-phone/', { phoneNumber, otp });
+      return { success: true, message: response.data.message };
+    } catch (error: any) {
+      return { success: false, message: error.response?.data?.message || 'فشل التحقق' };
+    }
+  };
+
+   const resetpasswort = async (phoneNumber: string, otp: string,newPassword:string) => {
+    try {
+      const response = await instance.post('/api/users/reset-password/', { phoneNumber, otp,newPassword });
       return { success: true, message: response.data.message };
     } catch (error: any) {
       return { success: false, message: error.response?.data?.message || 'فشل التحقق' };
@@ -138,8 +172,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     register,
     verifyPhone,
+    resetpasswort,
     sendOTP,
-   
+   sendOTPforpass,
     updateProfile,
     changePassword
   };

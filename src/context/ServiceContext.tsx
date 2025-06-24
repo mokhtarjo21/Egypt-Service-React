@@ -44,24 +44,33 @@ getservice();
 useEffect(() => {
  
 }, [services]);
-  const addService = async (serviceData: Omit<Service, 'id' | 'createdAt' | 'user'>) => {
-    try {
-      console.log('Adding service:', serviceData);
-       const access =localStorage.getItem('access')
-      const res = await instance.post('/api/services/', serviceData,
-        { headers: {
-    'Authorization': `Bearer ${access}`, 
-        'Content-Type': 'multipart/form-data',
-      }}
-      );
-     
+ const addService = async (serviceData) => {
+  try {
+    const access = localStorage.getItem('access');
 
-      setServices(res.data);
-    } catch (error) {
-    
-      console.error('Failed to add service:', error);
-    }
-  };
+    const formData = new FormData();
+    formData.append('title', serviceData.title);
+    formData.append('description', serviceData.description);
+    formData.append('price', serviceData.price.toString());
+    formData.append('governorate', serviceData.governorate);
+    formData.append('center', serviceData.center);
+
+    serviceData.images.forEach((file) => {
+      formData.append('images', file);
+    });
+
+    const res = await instance.post('/api/services/', formData, {
+      headers: {
+        Authorization: `Bearer ${access}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    setServices(res.data);
+  } catch (error) {
+    console.error('Failed to add service:', error.response?.data || error.message);
+  }
+};
 
   const updateServiceStatus = async (serviceId: string, status: 'Approved' | 'Rejected') => {
     try {

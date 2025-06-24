@@ -39,8 +39,10 @@ export interface AuthContextType {
   logout: () => void;
  
   register: (userData: Partial<User>) => Promise<{ success: boolean; message: string }>;
+  resetpasswort: (phoneNumber: string, otp: string, newPassword:string) => Promise<{ success: boolean; message: string }>;
   verifyPhone: (phoneNumber: string, otp: string) => Promise<{ success: boolean; message: string }>;
   sendOTP: (phoneNumber: string) => Promise<{ success: boolean; message: string }>;
+  sendOTPforpass: (phoneNumber: string) => Promise<{ success: boolean; message: string }>;
   updateProfile: (userData: Partial<User>) => Promise<{ success: boolean; message: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
 }

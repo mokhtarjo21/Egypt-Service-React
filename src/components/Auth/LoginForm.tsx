@@ -131,19 +131,12 @@ export function LoginForm() {
                 سجل الآن
               </Link>
             </p>
-            <Link to="/verify-phone" className="text-sm text-blue-600 hover:text-blue-500">
-              تأكيد رقم الهاتف
+            <Link to="/forgetPassword" className="text-sm text-blue-600 hover:text-blue-500">
+              هل نسيت كلمة السر ؟
             </Link>
           </div>
 
-          {/* Demo Accounts */}
-          <div className="bg-blue-50 p-4 rounded-md">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">حسابات تجريبية:</h3>
-            <div className="text-xs text-blue-700 space-y-1">
-              <p>• مدير النظام: 01234567890 / admin123</p>
-              <p>• مستخدم عادي: 01012345678 / user123</p>
-            </div>
-          </div>
+        
         </form>
       </div>
     </div>

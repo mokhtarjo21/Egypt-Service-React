@@ -82,9 +82,9 @@ export function AddService() {
         
       });
 
-      navigate('/profile', { 
-        state: { message: 'تم إرسال الخدمة للمراجعة بنجاح. ستظهر بعد الموافقة عليها.' }
-      });
+      // navigate('/profile', { 
+      //   state: { message: 'تم إرسال الخدمة للمراجعة بنجاح. ستظهر بعد الموافقة عليها.' }
+      // });
     } catch (err) {
       setError('حدث خطأ أثناء إضافة الخدمة');
     } finally {

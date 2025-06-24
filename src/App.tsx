@@ -12,7 +12,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
 import { PhoneVerification } from './components/Auth/PhoneVerification';
-
+import { ForgetPassword }  from './components/Auth/forgetPassword';
 function App() {
   const baseUrl = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
@@ -52,6 +52,7 @@ function App() {
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/register" element={<RegisterForm />} />
                 <Route path="/verify-phone" element={<PhoneVerification />} />
+                <Route path="/forgetPassword" element={<ForgetPassword />} />
               </Routes>
             </main>
             <Footer />
