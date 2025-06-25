@@ -81,10 +81,10 @@ useEffect(() => {
         'Content-Type': 'multipart/form-data',
       }}
       );
-      setServices(res.data);
+      
       
     } catch (error) {
-      console.error('Failed to update service status:', error);
+      console.error('Failed to update service status:', error.response.data);
     }
   };
 

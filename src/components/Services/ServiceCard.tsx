@@ -38,7 +38,7 @@ export function ServiceCard({ service, onViewDetails }: ServiceCardProps) {
         
         <div className="flex items-center text-sm text-gray-500 mb-2">
           <MapPin className="w-4 h-4 ml-1" />
-          <span>{service.center}، {service.governorate}</span>
+          <span> {service.governorate} , {service.center}</span>
         </div>
         
         {service.user && (

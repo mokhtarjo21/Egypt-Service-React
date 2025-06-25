@@ -20,7 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       
     } catch (error: any) {
-      logout();
+      console.error('Refresh token error:', error.response?.data);
+      if (error.response?.status === 401) {
+        // If refresh token is invalid, clear local storage
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
+        localStorage.removeItem('currentUser');
+        setCurrentUser(null);
+      }
     }
   };
   frefresh();
@@ -30,7 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  
+const [totaluser, setTotaluser] = useState(0);
+
   const sendOTP = async (phoneNumber: string) => {
     try {
       const response = await instance.post('/api/users/send-otp/', { phoneNumber });
@@ -91,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sublogout = async () => {
     const refresh = localStorage.getItem("refresh");
    const access =localStorage.getItem('access')
-      const responsee = await instance.post("/api/users/logout",
+      const response = await instance.post("/api/users/logout",
         { refresh },
        { headers: {
     'Authorization': `Bearer ${access}`, 
@@ -168,6 +176,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     currentUser,
+    totaluser,
+    setTotaluser,
     login,
     logout,
     register,

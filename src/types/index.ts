@@ -34,10 +34,10 @@ export interface Service {
 
 export interface AuthContextType {
   currentUser: User | null;
-   
+  setTotaluser: (total: number) => void;
   login: (phoneNumber: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
- 
+  totaluser: number;
   register: (userData: Partial<User>) => Promise<{ success: boolean; message: string }>;
   resetpasswort: (phoneNumber: string, otp: string, newPassword:string) => Promise<{ success: boolean; message: string }>;
   verifyPhone: (phoneNumber: string, otp: string) => Promise<{ success: boolean; message: string }>;
