@@ -16,7 +16,7 @@ export const LanguageToggle: React.FC = () => {
   };
 
   const getCurrentLanguageCode = () => {
-    return i18n.language === 'ar' ? 'EN' : 'عر';
+    return i18n.language === 'ar' ? 'EN' : 'AR';
   };
 
   return (
