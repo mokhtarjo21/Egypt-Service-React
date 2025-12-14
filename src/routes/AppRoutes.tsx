@@ -23,6 +23,9 @@ const SubscriptionManagement = React.lazy(() => import('../pages/admin/Subscript
 const SafetyDashboard = React.lazy(() => import('../pages/admin/SafetyDashboard'));
 const PolicyPage = React.lazy(() => import('../pages/PolicyPage'));
 const AppealPage = React.lazy(() => import('../pages/AppealPage'));
+const CategoriesPage = React.lazy(() => import('../pages/CategoriesPage'));
+const AboutPage = React.lazy(() => import('../pages/AboutPage'));
+const ContactPage = React.lazy(() => import('../pages/ContactPage'));
 
 const AppRoutes: React.FC = () => {
   return (
@@ -38,6 +41,9 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/services/:slug" element={<ServiceDetailPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />

@@ -1,4 +1,186 @@
 {
+  "hero": {
+    "title": "Find the Best Services in Egypt",
+    "subtitle": "Discover thousands of services from trusted providers across Egypt",
+    "searchPlaceholder": "Search for the service you need...",
+    "searchButton": "Search",
+    "allCategories": "All Categories"
+  },
+  "featuredServices": {
+    "title": "Featured Services",
+    "subtitle": "Discover the best services available on the platform",
+    "viewMore": "View Details"
+  },
+  "whyChooseUs": {
+    "title": "Why Choose Us?",
+    "verified": {
+      "title": "Verified Service Providers",
+      "description": "All service providers are identity verified and credentials reviewed"
+    },
+    "coverage": {
+      "title": "All Governorates Coverage",
+      "description": "We provide services in all Egyptian governorates wherever you are"
+    },
+    "trusted": {
+      "title": "Trust & Safety",
+      "description": "Transparent ratings and reviews system to ensure service quality"
+    }
+  },
+  "subscription": {
+    "title": "Subscription Plans",
+    "subtitle": "Choose the plan that fits your needs",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "save": "Save",
+    "currentPlan": "Current Plan",
+    "subscribe": "Subscribe Now",
+    "startFree": "Start Free",
+    "popular": "Most Popular",
+    "features": "Features",
+    "services": "services",
+    "unlimited": "Unlimited",
+    "teamMembers": "Team Members",
+    "advancedAnalytics": "Advanced Analytics",
+    "prioritySupport": "Priority Support",
+    "featuredCredits": "Featured Credits",
+    "compare": "Compare Plans",
+    "faq": "FAQ",
+    "cancelAnytime": "Cancel Anytime",
+    "managePlan": "Manage Subscription",
+    "cancelPlan": "Cancel Subscription",
+    "expiresIn": "Expires in",
+    "days": "days"
+  },
+  "security": {
+    "title": "Security Settings",
+    "subtitle": "Manage your account security and connected devices",
+    "twoFactor": {
+      "title": "Two-Factor Authentication (2FA)",
+      "description": "Add an extra layer of protection to your account",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "backupCodes": "Backup Codes",
+      "scanQR": "Scan QR code with your authenticator app",
+      "enterCode": "Enter verification code",
+      "verify": "Verify & Enable"
+    },
+    "devices": {
+      "title": "Connected Devices",
+      "currentDevice": "Current Device",
+      "trusted": "Trusted",
+      "lastSeen": "Last seen",
+      "revoke": "Revoke",
+      "logoutAll": "Log out all devices"
+    },
+    "alerts": {
+      "title": "Security Alerts",
+      "noAlerts": "No security alerts",
+      "accountSafe": "Your account is safe"
+    },
+    "password": {
+      "title": "Password",
+      "change": "Change Password",
+      "lastUpdated": "Last updated"
+    },
+    "tips": {
+      "title": "Security Tips",
+      "strongPassword": "Use a strong and complex password",
+      "dontShare": "Never share your password with anyone",
+      "enable2FA": "Enable two-factor authentication for extra protection",
+      "reviewDevices": "Review connected devices regularly"
+    }
+  },
+  "addService": {
+    "title": "Add New Service",
+    "subtitle": "Add your service and get new customers",
+    "basicInfo": "Basic Information",
+    "titleAr": "Service Title (Arabic)",
+    "titleEn": "Service Title (English)",
+    "descriptionAr": "Service Description (Arabic)",
+    "descriptionEn": "Service Description (English)",
+    "categoryLocation": "Category & Location",
+    "mainCategory": "Main Category",
+    "subCategory": "Sub Category",
+    "selectCategory": "Select Category",
+    "selectSubCategory": "Select Sub Category",
+    "governorate": "Governorate",
+    "center": "Center/City",
+    "selectGovernorate": "Select Governorate",
+    "selectCenter": "Select Center",
+    "pricing": "Pricing",
+    "pricingType": "Pricing Type",
+    "fixed": "Fixed Price",
+    "hourly": "Hourly",
+    "package": "Package",
+    "negotiable": "Negotiable",
+    "price": "Price (EGP)",
+    "images": "Service Images",
+    "uploadImages": "Select images or drag them here",
+    "imageLimit": "PNG, JPG up to 10MB per image (5 images max)",
+    "primaryImage": "Primary",
+    "submit": "Add Service",
+    "cancel": "Cancel",
+    "notes": {
+      "title": "Important Notes",
+      "review": "Your service will be reviewed by our team within 24-48 hours",
+      "accuracy": "Ensure accuracy of information and uploaded images",
+      "edit": "You can edit the service after approval",
+      "notification": "You will receive a notification upon approval or rejection"
+    }
+  },
+  "appeal": {
+    "title": "Appeal Administrative Action",
+    "subtitle": "You can appeal the administrative action taken against your account",
+    "actionDetails": "Administrative Action Details",
+    "reasonCode": "Reason Code",
+    "reason": "Action Reason",
+    "actionDate": "Action Date",
+    "expiresAt": "Expires",
+    "submitAppeal": "Submit Appeal",
+    "appealText": "Appeal Explanation",
+    "appealPlaceholder": "Explain why you believe the administrative action is unjustified...",
+    "additionalEvidence": "Additional Evidence (Optional)",
+    "selectFile": "Select file or drag it here",
+    "fileTypes": "PNG, JPG, PDF up to 10MB",
+    "submit": "Submit Appeal",
+    "expired": "Appeal Period Expired",
+    "expiredMessage": "The 30-day appeal period has expired",
+    "info": {
+      "title": "Important Information",
+      "reviewTime": "Your appeal will be reviewed within 72 hours",
+      "clearEvidence": "Provide clear and specific evidence",
+      "falseAppeal": "False appeals may result in additional actions",
+      "notification": "You will receive a notification of the appeal decision"
+    },
+    "actionTypes": {
+      "warn": "Warning",
+      "hide_content": "Hide Content",
+      "reject_content": "Reject Content",
+      "suspend_user": "Suspend Account",
+      "block_user": "Block Account",
+      "remove_content": "Remove Content"
+    }
+  },
+  "policy": {
+    "title": "Policies",
+    "effectiveDate": "Effective from",
+    "version": "Version",
+    "createdBy": "By",
+    "acknowledge": "I agree to the policy",
+    "acknowledged": "Policy Acknowledged",
+    "acknowledgedMessage": "You have acknowledged reading and understanding this policy",
+    "changeSummary": "Change Summary",
+    "notFound": "Policy Not Found",
+    "notFoundMessage": "The requested policy is not available",
+    "types": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "community": "Community Guidelines",
+      "safety": "Safety Guidelines"
+    }
+  },
   "navigation": {
     "home": "Home",
     "services": "Services",
@@ -532,6 +714,101 @@
     "settingsSaved": "Settings saved successfully",
     "emailVerified": "Email verified successfully",
     "phoneVerified": "Phone verified successfully"
+  },
+  "categoriesPage": {
+    "title": "Browse All Categories",
+    "subtitle": "Explore our complete range of service categories to find exactly what you need",
+    "servicesAvailable": "{{count}} services available",
+    "noCategories": "No categories found",
+    "noCategoriesDescription": "Categories will appear here once they are added"
+  },
+  "aboutPage": {
+    "hero": {
+      "title": "About Our Platform",
+      "subtitle": "We are Egypt's leading marketplace connecting customers with trusted service providers across all governorates. Our mission is to make finding and booking quality services simple, safe, and reliable."
+    },
+    "stats": {
+      "providers": "Service Providers",
+      "customers": "Happy Customers",
+      "governorates": "Governorates",
+      "categories": "Service Categories"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "We believe everyone deserves access to quality services. Our platform bridges the gap between skilled service providers and customers who need them, creating opportunities for both while ensuring safety, transparency, and trust.",
+      "vision": "Our Vision",
+      "visionDescription": "To be the most trusted service marketplace in Egypt",
+      "trusted": "Trusted Platform",
+      "trustedDescription": "Verified providers & secure payments"
+    },
+    "values": {
+      "title": "Our Core Values",
+      "subtitle": "The principles that guide everything we do",
+      "trust": {
+        "title": "Trust & Safety",
+        "description": "We verify all service providers and ensure secure transactions for peace of mind"
+      },
+      "community": {
+        "title": "Community First",
+        "description": "We build meaningful connections between service providers and customers"
+      },
+      "quality": {
+        "title": "Quality Service",
+        "description": "We maintain high standards through reviews, ratings, and continuous improvement"
+      },
+      "care": {
+        "title": "Customer Care",
+        "description": "We provide dedicated support to ensure the best experience for everyone"
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Join thousands of satisfied customers and service providers on Egypt's trusted marketplace"
+    }
+  },
+  "contactPage": {
+    "hero": {
+      "title": "Contact Us",
+      "subtitle": "We're here to help! Reach out to us with any questions, feedback, or concerns"
+    },
+    "info": {
+      "email": {
+        "title": "Email Us"
+      },
+      "phone": {
+        "title": "Call Us"
+      },
+      "address": {
+        "title": "Visit Us",
+        "value": "Cairo, Egypt"
+      },
+      "hours": {
+        "title": "Working Hours",
+        "value": "Sun - Thu: 9AM - 6PM"
+      }
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "name": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter your phone number",
+      "subject": "Subject",
+      "selectSubject": "Select a subject",
+      "subjects": {
+        "general": "General Inquiry",
+        "support": "Technical Support",
+        "billing": "Billing & Payments",
+        "partnership": "Partnership Opportunities"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent successfully! We'll get back to you soon."
+    }
   },
   "time": {
     "now": "Now",
