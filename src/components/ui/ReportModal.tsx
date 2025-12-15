@@ -21,6 +21,7 @@ interface ReportFormData {
   description: string;
   evidence?: FileList;
 }
+const API_BASE = import.meta.env?.VITE_API_BASE ||"";
 
 export const ReportModal: React.FC<ReportModalProps> = ({
   isOpen,
@@ -65,7 +66,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         formData.append('evidence', data.evidence[0]);
       }
 
-      const response = await fetch('/api/v1/moderation/reports/', {
+      const response = await fetch(API_BASE+'/api/v1/moderation/reports/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,

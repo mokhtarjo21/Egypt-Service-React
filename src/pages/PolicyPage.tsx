@@ -37,7 +37,7 @@ const PolicyPage: React.FC = () => {
 
   const loadPolicy = async () => {
     try {
-      const response = await fetch('/api/v1/moderation/policies/current/');
+      const response = await fetch(API_BASE+'/api/v1/moderation/policies/current/');
       if (response.ok) {
         const data = await response.json();
         if (policyType && data[policyType]) {
@@ -55,7 +55,7 @@ const PolicyPage: React.FC = () => {
     if (!policy) return;
     
     try {
-      const response = await fetch('/api/v1/moderation/policies/acknowledge/', {
+      const response = await fetch(API_BASE+'/api/v1/moderation/policies/acknowledge/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

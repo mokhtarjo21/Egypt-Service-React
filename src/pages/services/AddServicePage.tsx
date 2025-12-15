@@ -118,7 +118,7 @@ const AddServicePage: React.FC = () => {
 
   const loadGovernorates = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/geo/governorates/');
+      const response = await fetch(API_BASE+'/api/v1/health/geo/governorates/');
       if (response.ok) {
         const data = await response.json();
         setGovernorates(data);
@@ -130,7 +130,7 @@ const AddServicePage: React.FC = () => {
 
   const loadCenters = async (governorateId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/api/v1/geo/centers/?gov_id=${governorateId}`);
+      const response = await fetch(`${API_BASE}/api/v1/health/geo/centers/?gov_id=${governorateId}`);
       if (response.ok) {
         const data = await response.json();
         setCenters(data);

@@ -57,7 +57,7 @@ interface CurrentSubscription {
   team_members_count: number;
   featured_credits_used: number;
 }
-
+const API_BASE = import.meta.env?.VITE_API_BASE || "";
 const CheckoutForm: React.FC<{
   plan: SubscriptionPlan;
   onSuccess: () => void;
@@ -73,7 +73,7 @@ const CheckoutForm: React.FC<{
     if (!couponCode.trim()) return;
     
     try {
-      const response = await fetch('/api/v1/subscriptions/validate-coupon/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/validate-coupon/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ const CheckoutForm: React.FC<{
       }
 
       // Create subscription
-      const response = await fetch('/api/v1/subscriptions/subscriptions/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/subscriptions/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +265,7 @@ const SubscriptionPage: React.FC = () => {
 
   const loadPlans = async () => {
     try {
-      const response = await fetch('/api/v1/subscriptions/plans/');
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/plans/');
       if (response.ok) {
         const data = await response.json();
         setPlans(data);
@@ -277,7 +277,7 @@ const SubscriptionPage: React.FC = () => {
 
   const loadCurrentSubscription = async () => {
     try {
-      const response = await fetch('/api/v1/subscriptions/subscriptions/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/subscriptions/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },

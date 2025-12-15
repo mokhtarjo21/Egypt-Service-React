@@ -44,7 +44,8 @@ interface Subscription {
   services_count: number;
   created_at: string;
 }
-
+const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "") ;
 interface Coupon {
   id: string;
   code: string;
@@ -87,7 +88,7 @@ const SubscriptionManagement: React.FC = () => {
   const loadSubscriptions = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/subscriptions/admin/subscriptions/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/admin/subscriptions/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -107,7 +108,7 @@ const SubscriptionManagement: React.FC = () => {
   const loadCoupons = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/subscriptions/admin/coupons/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/admin/coupons/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -126,7 +127,7 @@ const SubscriptionManagement: React.FC = () => {
 
   const exportSubscriptionData = async () => {
     try {
-      const response = await fetch('/api/v1/subscriptions/admin/export/', {
+      const response = await fetch(API_BASE+'/api/v1/subscriptions/admin/export/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },

@@ -52,7 +52,7 @@ const AppealPage: React.FC = () => {
 
   const loadModerationAction = async () => {
     try {
-      const response = await fetch(`/api/v1/moderation/actions/${actionId}/`, {
+      const response = await fetch(`${API_BASE}/api/v1/moderation/actions/${actionId}/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },

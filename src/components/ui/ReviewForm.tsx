@@ -21,7 +21,7 @@ interface ReviewFormData {
   title: string;
   comment: string;
 }
-
+const API_BASE = import.meta.env?.VITE_API_BASE ||"";
 export const ReviewForm: React.FC<ReviewFormProps> = ({
   isOpen,
   onClose,
@@ -50,7 +50,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/v1/reviews/reviews/', {
+      const response = await fetch(API_BASE+'/api/v1/reviews/reviews/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
