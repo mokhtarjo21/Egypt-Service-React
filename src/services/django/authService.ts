@@ -1,5 +1,6 @@
-import { apiClient } from '../api/client';
-import toast from 'react-hot-toast';
+import { apiClient } from "../api/client";
+import toast from "react-hot-toast";
+const API_BASE = import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000";
 
 interface AuthTokens {
   access: string;
@@ -24,55 +25,72 @@ interface AuthResponse {
 }
 
 export const djangoAuthService = {
-  async signUp(phoneNumber: string, password: string, fullName: string, email?: string) {
+  async signUp(
+    phoneNumber: string,
+    password: string,
+    fullName: string,
+    email?: string
+  ) {
     try {
-      const response = await apiClient.post('/accounts/auth/register/', {
-        phone_number: phoneNumber,
-        password,
-        password2: password,
-        full_name: fullName,
-        email: email || '',
-      });
+      const response = await apiClient.post(
+        API_BASE + "/accounts/auth/register/",
+        {
+          phone_number: phoneNumber,
+          password,
+          password2: password,
+          full_name: fullName,
+          email: email || "",
+        }
+      );
 
       return {
         data: {
           user: response.data,
-          session: null
+          session: null,
         },
-        error: null
+        error: null,
       };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل التسجيل';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل التسجيل";
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
   },
 
-  async verifyOTP(phoneNumber: string, code: string, purpose: string = 'registration') {
+  async verifyOTP(
+    phoneNumber: string,
+    code: string,
+    purpose: string = "registration"
+  ) {
     try {
-      const response = await apiClient.post<AuthResponse>('/accounts/auth/verify-otp/', {
-        phone_number: phoneNumber,
-        code,
-        purpose,
-      });
+      const response = await apiClient.post<AuthResponse>(
+        API_BASE + "/accounts/auth/verify-otp/",
+        {
+          phone_number: phoneNumber,
+          code,
+          purpose,
+        }
+      );
 
       const { user, tokens } = response.data;
 
-      localStorage.setItem('access_token', tokens.access);
-      localStorage.setItem('refresh_token', tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("access_token", tokens.access);
+      localStorage.setItem("refresh_token", tokens.refresh);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      toast.success('تم التحقق بنجاح!');
+      toast.success("تم التحقق بنجاح!");
       return {
         data: { user, session: { access_token: tokens.access } },
-        error: null
+        error: null,
       };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل التحقق';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل التحقق";
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -80,26 +98,30 @@ export const djangoAuthService = {
 
   async signIn(phoneNumber: string, password: string) {
     try {
-      const response = await apiClient.post<AuthResponse>('/accounts/auth/login/', {
-        phone_number: phoneNumber,
-        password,
-      });
+      const response = await apiClient.post<AuthResponse>(
+        API_BASE + "/accounts/auth/login/",
+        {
+          phone_number: phoneNumber,
+          password,
+        }
+      );
 
       const { user, tokens } = response.data;
 
-      localStorage.setItem('access_token', tokens.access);
-      localStorage.setItem('refresh_token', tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("access_token", tokens.access);
+      localStorage.setItem("refresh_token", tokens.refresh);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      toast.success('تم تسجيل الدخول بنجاح!');
+      toast.success("تم تسجيل الدخول بنجاح!");
       return {
         data: { user, session: { access_token: tokens.access } },
-        error: null
+        error: null,
       };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل تسجيل الدخول';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل تسجيل الدخول";
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -107,60 +129,69 @@ export const djangoAuthService = {
 
   async signOut() {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = localStorage.getItem("refresh_token");
       if (refreshToken) {
-        await apiClient.post('/accounts/auth/logout/', {
+        await apiClient.post(API_BASE + "/accounts/auth/logout/", {
           refresh: refreshToken,
         });
       }
 
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
 
-      toast.success('تم تسجيل الخروج بنجاح');
+      toast.success("تم تسجيل الخروج بنجاح");
       return { error: null };
     } catch (error: any) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
 
-      toast.error(error.response?.data?.message || 'فشل تسجيل الخروج');
-      return { error: { message: 'Logout failed' } };
+      toast.error(error.response?.data?.message || "فشل تسجيل الخروج");
+      return { error: { message: "Logout failed" } };
     }
   },
 
   async resetPassword(phoneNumber: string) {
     try {
-      await apiClient.post('/accounts/auth/password-reset/', {
+      await apiClient.post(API_BASE + "/accounts/auth/password-reset/", {
         phone_number: phoneNumber,
       });
 
-      toast.success('تم إرسال رمز التحقق');
+      toast.success("تم إرسال رمز التحقق");
       return { error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل إرسال رمز التحقق';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل إرسال رمز التحقق";
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
 
-  async confirmPasswordReset(phoneNumber: string, code: string, newPassword: string) {
+  async confirmPasswordReset(
+    phoneNumber: string,
+    code: string,
+    newPassword: string
+  ) {
     try {
-      await apiClient.post('/accounts/auth/password-reset-confirm/', {
-        phone_number: phoneNumber,
-        code,
-        new_password: newPassword,
-      });
+      await apiClient.post(
+        API_BASE + "/accounts/auth/password-reset-confirm/",
+        {
+          phone_number: phoneNumber,
+          code,
+          new_password: newPassword,
+        }
+      );
 
-      toast.success('تم تغيير كلمة المرور بنجاح');
+      toast.success("تم تغيير كلمة المرور بنجاح");
       return { error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل تغيير كلمة المرور';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل تغيير كلمة المرور";
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
@@ -168,28 +199,29 @@ export const djangoAuthService = {
 
   async updatePassword(currentPassword: string, newPassword: string) {
     try {
-      await apiClient.post('/accounts/auth/change-password/', {
+      await apiClient.post(API_BASE + "/accounts/auth/change-password/", {
         old_password: currentPassword,
         new_password: newPassword,
       });
 
-      toast.success('تم تحديث كلمة المرور بنجاح');
+      toast.success("تم تحديث كلمة المرور بنجاح");
       return { error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل تحديث كلمة المرور';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل تحديث كلمة المرور";
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
 
   async getSession() {
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = localStorage.getItem("access_token");
     if (accessToken) {
       return {
         session: { access_token: accessToken },
-        error: null
+        error: null,
       };
     }
     return { session: null, error: null };
@@ -197,24 +229,26 @@ export const djangoAuthService = {
 
   async getUser() {
     try {
-      const userString = localStorage.getItem('user');
+      const userString = localStorage.getItem("user");
       if (!userString) {
-        return { user: null, error: { message: 'No user logged in' } };
+        return { user: null, error: { message: "No user logged in" } };
       }
 
-      const response = await apiClient.get<User>('/accounts/profile/');
+      const response = await apiClient.get<User>(
+        API_BASE + "/accounts/profile/"
+      );
       const user = response.data;
 
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
 
       return { user, error: null };
     } catch (error: any) {
-      const userString = localStorage.getItem('user');
+      const userString = localStorage.getItem("user");
       if (userString) {
         const cachedUser = JSON.parse(userString);
         return { user: cachedUser, error: null };
       }
-      return { user: null, error: { message: 'Failed to fetch user' } };
+      return { user: null, error: { message: "Failed to fetch user" } };
     }
   },
 
@@ -222,9 +256,9 @@ export const djangoAuthService = {
     const checkAuth = async () => {
       const { session } = await this.getSession();
       if (session) {
-        callback('SIGNED_IN', session);
+        callback("SIGNED_IN", session);
       } else {
-        callback('SIGNED_OUT', null);
+        callback("SIGNED_OUT", null);
       }
     };
 
@@ -241,19 +275,20 @@ export const djangoAuthService = {
     };
   },
 
-  async resendOTP(phoneNumber: string, purpose: string = 'registration') {
+  async resendOTP(phoneNumber: string, purpose: string = "registration") {
     try {
-      await apiClient.post('/accounts/auth/send-otp/', {
+      await apiClient.post(API_BASE + "/accounts/auth/send-otp/", {
         phone_number: phoneNumber,
         purpose,
       });
 
-      toast.success('تم إرسال رمز التحقق');
+      toast.success("تم إرسال رمز التحقق");
       return { error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل إرسال رمز التحقق';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل إرسال رمز التحقق";
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
