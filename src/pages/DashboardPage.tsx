@@ -53,7 +53,7 @@ const DashboardPage: React.FC = () => {
       }
 
       // Fetch recent activity
-      const activityResponse = await fetch(`${API_BASE}/api/v1/activity/recent`, {
+      const activityResponse = await fetch(`${API_BASE}/api/v1/moderation/dashboard`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },

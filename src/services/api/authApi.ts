@@ -5,7 +5,7 @@ import type {
   RegisterData,
   AuthResponse,
 } from "../../types/auth";
-const API_BASE = import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000";
+const API_BASE = import.meta.env?.VITE_API_BASE||"";
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { 
-  Shield, 
-  Smartphone, 
-  Key, 
+import {
+  Shield,
+  Smartphone,
+  Key,
   AlertTriangle,
   CheckCircle,
   Monitor,
@@ -12,7 +12,9 @@ import {
   Clock,
   Download,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import toast from 'react-hot-toast';
@@ -23,7 +25,8 @@ import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-
+ const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
 interface Device {
   id: string;
   device_name: string;
@@ -53,10 +56,17 @@ const SecurityPage: React.FC = () => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [qrCodeData, setQrCodeData] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     loadSecurityData();
@@ -65,7 +75,7 @@ const SecurityPage: React.FC = () => {
   const loadSecurityData = async () => {
     try {
       // Load devices
-      const devicesResponse = await fetch('/api/v1/accounts/users/sessions/', {
+      const devicesResponse = await fetch(API_BASE+'/api/v1/accounts/users/sessions/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -77,7 +87,7 @@ const SecurityPage: React.FC = () => {
       }
 
       // Load security alerts
-      const alertsResponse = await fetch('/api/v1/accounts/security/alerts/', {
+      const alertsResponse = await fetch(API_BASE+'/api/v1/accounts/security/alerts/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -89,7 +99,7 @@ const SecurityPage: React.FC = () => {
       }
 
       // Check 2FA status
-      const twoFactorResponse = await fetch('/api/v1/accounts/security/2fa/status/', {
+      const twoFactorResponse = await fetch(API_BASE+'/api/v1/accounts/security/2fa/status/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -107,7 +117,7 @@ const SecurityPage: React.FC = () => {
   const enable2FA = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/accounts/security/2fa/enable/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/security/2fa/enable/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -128,7 +138,7 @@ const SecurityPage: React.FC = () => {
 
   const verify2FA = async () => {
     try {
-      const response = await fetch('/api/v1/accounts/security/2fa/verify/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/security/2fa/verify/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +164,7 @@ const SecurityPage: React.FC = () => {
 
   const disable2FA = async () => {
     try {
-      const response = await fetch('/api/v1/accounts/security/2fa/disable/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/security/2fa/disable/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -172,7 +182,7 @@ const SecurityPage: React.FC = () => {
 
   const revokeDevice = async (deviceId: string) => {
     try {
-      const response = await fetch(`/api/v1/accounts/security/devices/${deviceId}/revoke/`, {
+      const response = await fetch(`${API_BASE}/api/v1/accounts/security/devices/${deviceId}/revoke/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -190,7 +200,7 @@ const SecurityPage: React.FC = () => {
 
   const logoutAllSessions = async () => {
     try {
-      const response = await fetch('/api/v1/accounts/users/logout_all_sessions/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/users/logout_all_sessions/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -216,6 +226,54 @@ const SecurityPage: React.FC = () => {
     a.download = 'backup_codes.txt';
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword || !newPasswordConfirm) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirm) {
+      toast.error('كلمات المرور غير متطابقة');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast.error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_BASE + '/api/v1/accounts/profile/change-password/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword,
+          new_password_confirm: newPasswordConfirm,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('تم تحديث كلمة المرور بنجاح');
+        setOldPassword('');
+        setNewPassword('');
+        setNewPasswordConfirm('');
+        setShowChangePasswordModal(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || errorData.detail || 'فشل في تحديث كلمة المرور');
+      }
+    } catch (error) {
+      toast.error('حدث خطأ في الاتصال بالخادم');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!user) {
@@ -406,7 +464,7 @@ const SecurityPage: React.FC = () => {
                     <p className="text-sm text-gray-600">آخر تحديث منذ 3 أشهر</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setShowChangePasswordModal(true)}>
                   تغيير كلمة المرور
                 </Button>
               </div>
@@ -516,6 +574,116 @@ const SecurityPage: React.FC = () => {
               className="flex-1"
             >
               تم الحفظ
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal
+        isOpen={showChangePasswordModal}
+        onClose={() => {
+          setShowChangePasswordModal(false);
+          setOldPassword('');
+          setNewPassword('');
+          setNewPasswordConfirm('');
+        }}
+        title="تغيير كلمة المرور"
+        size="md"
+      >
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              كلمة المرور الحالية
+            </label>
+            <div className="relative">
+              <input
+                type={showOldPassword ? 'text' : 'password'}
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="••••••"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              >
+                {showOldPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              كلمة المرور الجديدة
+            </label>
+            <div className="relative">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              >
+                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              تأكيد كلمة المرور الجديدة
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={newPasswordConfirm}
+                onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                placeholder="••••••"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على أحرف وأرقام
+            </p>
+          </div>
+
+          <div className="flex space-x-4 rtl:space-x-reverse">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowChangePasswordModal(false);
+                setOldPassword('');
+                setNewPassword('');
+                setNewPasswordConfirm('');
+              }}
+              className="flex-1"
+            >
+              إلغاء
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              className="flex-1"
+              isLoading={isLoading}
+              disabled={!oldPassword || !newPassword || !newPasswordConfirm}
+            >
+              تحديث كلمة المرور
             </Button>
           </div>
         </div>

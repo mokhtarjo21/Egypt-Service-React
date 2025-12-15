@@ -1,6 +1,6 @@
 import { apiClient } from "../api/client";
 import toast from "react-hot-toast";
-const API_BASE = import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000";
+const API_BASE = import.meta.env?.VITE_API_BASE ||"";
 
 interface AuthTokens {
   access: string;
@@ -67,6 +67,7 @@ export const djangoAuthService = {
   ) {
     try {
       const response = await apiClient.post<AuthResponse>(
+
         API_BASE + "/accounts/auth/verify-otp/",
         {
           phone_number: phoneNumber,

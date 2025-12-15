@@ -8,7 +8,8 @@ import toast from 'react-hot-toast';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
-
+ const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
 interface OTPFormData {
   code: string;
 }
@@ -53,7 +54,7 @@ const OTPVerificationPage: React.FC = () => {
   const onSubmit = async (data: OTPFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/accounts/auth/otp/verify/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/auth/otp/verify/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ const OTPVerificationPage: React.FC = () => {
   const handleResendOTP = async () => {
     setIsResending(true);
     try {
-      const response = await fetch('/api/v1/accounts/auth/otp/send/', {
+      const response = await fetch(API_BASE+'/api/v1/accounts/auth/otp/send/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

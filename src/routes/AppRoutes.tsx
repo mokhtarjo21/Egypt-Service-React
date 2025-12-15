@@ -29,6 +29,7 @@ const ContactPage = React.lazy(() => import('../pages/ContactPage'));
 const HelpPage = React.lazy(() => import('../pages/HelpPage'));
 const SettingsPage = React.lazy(() => import('../pages/SettingsPage'));
 const VerifyAccountPage = React.lazy(() => import('../pages/auth/VerifyAccountPage'));
+const ForgotPasswordPage = React.lazy(() => import('../pages/auth/ForgotPasswordPage'));
 
 const AppRoutes: React.FC = () => {
   return (
@@ -55,6 +56,7 @@ const AppRoutes: React.FC = () => {
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-phone" element={<OTPVerificationPage />} />
         <Route path="/verify-account" element={<VerifyAccountPage />} />
         

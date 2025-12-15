@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -36,7 +36,41 @@ const RegisterPage: React.FC = () => {
   const [step, setStep] = useState(1);
 
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const [governorates, setGovernorates] = useState([]);
+  const [centers, setCenters] = useState([]);
+  const [selectedGovernorate, setSelectedGovernorate] = useState("");
+  const getGovernorates = async () => {
+    try {
+      const response = await fetch(API_BASE + "/api/v1/health/geo/governorates/");
+      const data = await response.json();
+      setGovernorates(data.results);
+    } catch (error) {
+      console.error("Error fetching governorates:", error);
+    }
+  };
 
+  const getCenters = async (governorateId: string) => {
+    try {
+      const response = await fetch(
+        API_BASE + `/api/v1/health/geo/centers/?gov_id=${governorateId}`
+      );
+      const data = await response.json();
+      
+      setCenters(data.results);
+    } catch (error) {
+      console.error("Error fetching centers:", error);
+    }
+  };
+
+  useEffect(() => {
+    getGovernorates();
+  }, []);
+
+  useEffect(() => {
+   
+      getCenters(selectedGovernorate);
+    
+  }, [selectedGovernorate]);
   const {
     register,
     handleSubmit,
@@ -242,11 +276,14 @@ const RegisterPage: React.FC = () => {
                     {...register("governorate", {
                       required: "المحافظة مطلوبة",
                     })}
+                    onChange={(e) => setSelectedGovernorate(e.target.value)}
                   >
                     <option value="">اختر المحافظة</option>
-                    <option value="1">القاهرة</option>
-                    <option value="2">الإسكندرية</option>
-                    <option value="3">الجيزة</option>
+                    {governorates.map((gov: any) => (
+                      <option key={gov.id} value={gov.id}>
+                        {gov.name}
+                      </option>
+                    ))}
                   </select>
 
                   <select
@@ -254,9 +291,11 @@ const RegisterPage: React.FC = () => {
                     {...register("center", { required: "المركز مطلوب" })}
                   >
                     <option value="">اختر المركز</option>
-                    <option value="1">وسط البلد</option>
-                    <option value="2">مدينة نصر</option>
-                    <option value="3">الزمالك</option>
+                    {centers.map((center: any) => (
+                      <option key={center.id} value={center.id}>
+                        {center.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
