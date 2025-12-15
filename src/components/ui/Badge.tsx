@@ -1,5 +1,6 @@
 import React from 'react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 import { Shield, Star, Zap, Trophy, Award, Sparkles } from 'lucide-react';
 
 interface BadgeProps {
@@ -15,42 +16,44 @@ export const Badge: React.FC<BadgeProps> = ({
   showTooltip = true,
   className,
 }) => {
+  const { t } = useTranslation();
+  
   const badgeConfig = {
     verified: {
       icon: Shield,
-      label: 'موثق',
+      label: t('badges.verified.label'),
       color: 'bg-green-100 text-green-800 border-green-200',
-      tooltip: 'تم التحقق من الهوية والمستندات',
+      tooltip: t('badges.verified.tooltip'),
     },
     top_rated: {
       icon: Star,
-      label: 'الأعلى تقييماً',
+      label: t('badges.top_rated.label'),
       color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      tooltip: 'متوسط تقييم 4.8+ مع 20+ تقييم في آخر 90 يوم',
+      tooltip: t('badges.top_rated.tooltip'),
     },
     responsive: {
       icon: Zap,
-      label: 'سريع الاستجابة',
+      label: t('badges.responsive.label'),
       color: 'bg-blue-100 text-blue-800 border-blue-200',
-      tooltip: 'متوسط وقت الاستجابة أقل من 30 دقيقة',
+      tooltip: t('badges.responsive.tooltip'),
     },
     featured: {
       icon: Trophy,
-      label: 'مميز',
+      label: t('badges.featured.label'),
       color: 'bg-purple-100 text-purple-800 border-purple-200',
-      tooltip: 'خدمة مميزة ومدفوعة الترويج',
+      tooltip: t('badges.featured.tooltip'),
     },
     expert: {
       icon: Award,
-      label: 'خبير',
+      label: t('badges.expert.label'),
       color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-      tooltip: 'خبير معتمد في هذا المجال',
+      tooltip: t('badges.expert.tooltip'),
     },
     new_provider: {
       icon: Sparkles,
-      label: 'مقدم جديد',
+      label: t('badges.new_provider.label'),
       color: 'bg-pink-100 text-pink-800 border-pink-200',
-      tooltip: 'مقدم خدمة جديد على المنصة',
+      tooltip: t('badges.new_provider.tooltip'),
     },
   };
 

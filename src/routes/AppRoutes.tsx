@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
@@ -26,6 +26,7 @@ const AppealPage = React.lazy(() => import('../pages/AppealPage'));
 const CategoriesPage = React.lazy(() => import('../pages/CategoriesPage'));
 const AboutPage = React.lazy(() => import('../pages/AboutPage'));
 const ContactPage = React.lazy(() => import('../pages/ContactPage'));
+const HelpPage = React.lazy(() => import('../pages/HelpPage'));
 
 const AppRoutes: React.FC = () => {
   return (
@@ -44,6 +45,9 @@ const AppRoutes: React.FC = () => {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/terms" element={<Navigate to="/policies/terms" replace />} />
+        <Route path="/privacy" element={<Navigate to="/policies/privacy" replace />} />
         
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />

@@ -44,7 +44,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
 
   const onSubmit = async (data: ReviewFormData) => {
     if (selectedRating === 0) {
-      toast.error('يرجى اختيار تقييم');
+      toast.error(t('reviews.selectRating'));
       return;
     }
 
@@ -65,17 +65,17 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
       });
 
       if (response.ok) {
-        toast.success('تم إرسال التقييم بنجاح. سيتم مراجعته قبل النشر.');
+        toast.success(t('reviews.submitSuccess'));
         reset();
         setSelectedRating(0);
         onClose();
         onReviewSubmitted?.();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || 'حدث خطأ في إرسال التقييم');
+        toast.error(errorData.error || t('reviews.submitError'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في إرسال التقييم');
+      toast.error(t('reviews.submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -93,25 +93,25 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   const ratingLabels = {
-    1: 'سيء جداً',
-    2: 'سيء',
-    3: 'متوسط',
-    4: 'جيد',
-    5: 'ممتاز',
+    1: t('reviews.ratingLabels.1'),
+    2: t('reviews.ratingLabels.2'),
+    3: t('reviews.ratingLabels.3'),
+    4: t('reviews.ratingLabels.4'),
+    5: t('reviews.ratingLabels.5'),
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="كتابة تقييم" size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('reviews.writeReview')} size="md">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">تقييم الخدمة:</p>
+          <p className="text-sm text-gray-600 mb-1">{t('reviews.reviewingService')}:</p>
           <p className="font-medium text-gray-900">{serviceTitle}</p>
         </div>
 
         {/* Star Rating */}
         <div className="text-center">
           <label className="block text-sm font-medium text-gray-700 mb-4">
-            التقييم *
+            {t('reviews.rating')} *
           </label>
           <div className="flex justify-center space-x-2 rtl:space-x-reverse mb-2">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -141,31 +141,31 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
         </div>
 
         <Input
-          label="عنوان التقييم *"
-          placeholder="اكتب عنواناً مختصراً للتقييم"
+          label={`${t('reviews.reviewTitle')} *`}
+          placeholder={t('reviews.titlePlaceholder')}
           error={errors.title?.message}
           {...register('title', {
-            required: 'عنوان التقييم مطلوب',
+            required: t('reviews.titleRequired'),
             minLength: {
               value: 5,
-              message: 'العنوان يجب أن يكون 5 أحرف على الأقل',
+              message: t('reviews.titleMinLength'),
             },
           })}
         />
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            تفاصيل التقييم *
+            {t('reviews.reviewText')} *
           </label>
           <textarea
             rows={4}
-            placeholder="شارك تجربتك مع هذه الخدمة..."
+            placeholder={t('reviews.commentPlaceholder')}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             {...register('comment', {
-              required: 'تفاصيل التقييم مطلوبة',
+              required: t('reviews.detailsRequired'),
               minLength: {
                 value: 20,
-                message: 'التقييم يجب أن يكون 20 حرف على الأقل',
+                message: t('reviews.detailsMinLength'),
               },
             })}
           />
@@ -182,12 +182,12 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
               </div>
             </div>
             <div className="mr-3 rtl:mr-0 rtl:ml-3 text-sm text-blue-800">
-              <p className="font-medium mb-1">إرشادات التقييم</p>
+              <p className="font-medium mb-1">{t('reviews.guidelines.title')}</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>كن صادقاً وموضوعياً في تقييمك</li>
-                <li>ركز على جودة الخدمة والتعامل</li>
-                <li>تجنب المعلومات الشخصية</li>
-                <li>سيتم مراجعة التقييم قبل النشر</li>
+                <li>{t('reviews.guidelines.honest')}</li>
+                <li>{t('reviews.guidelines.focus')}</li>
+                <li>{t('reviews.guidelines.avoid')}</li>
+                <li>{t('reviews.guidelines.review')}</li>
               </ul>
             </div>
           </div>
@@ -200,7 +200,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
             onClick={handleClose}
             className="flex-1"
           >
-            إلغاء
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
@@ -209,7 +209,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
             leftIcon={<Send className="w-4 h-4" />}
             disabled={selectedRating === 0}
           >
-            إرسال التقييم
+            {t('reviews.submitReview')}
           </Button>
         </div>
       </form>

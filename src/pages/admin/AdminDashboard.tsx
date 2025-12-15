@@ -264,12 +264,12 @@ const AdminDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: 'معلق' },
-      verified: { color: 'bg-green-100 text-green-800', label: 'موثق' },
-      approved: { color: 'bg-green-100 text-green-800', label: 'مُوافق عليه' },
-      rejected: { color: 'bg-red-100 text-red-800', label: 'مرفوض' },
-      suspended: { color: 'bg-orange-100 text-orange-800', label: 'معلق' },
-      blocked: { color: 'bg-red-100 text-red-800', label: 'محظور' },
+      pending: { color: 'bg-yellow-100 text-yellow-800', label: t('admin.serviceStatus.pending') },
+      verified: { color: 'bg-green-100 text-green-800', label: t('admin.serviceStatus.verified') },
+      approved: { color: 'bg-green-100 text-green-800', label: t('admin.serviceStatus.approved') },
+      rejected: { color: 'bg-red-100 text-red-800', label: t('admin.serviceStatus.rejected') },
+      suspended: { color: 'bg-orange-100 text-orange-800', label: t('admin.serviceStatus.suspended') },
+      blocked: { color: 'bg-red-100 text-red-800', label: t('admin.serviceStatus.blocked') },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;

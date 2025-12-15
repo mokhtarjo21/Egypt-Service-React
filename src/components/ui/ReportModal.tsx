@@ -40,16 +40,16 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   } = useForm<ReportFormData>();
 
   const reasonOptions = [
-    { value: 'spam', label: 'محتوى مزعج' },
-    { value: 'inappropriate', label: 'محتوى غير مناسب' },
-    { value: 'fake', label: 'خدمة أو ملف شخصي مزيف' },
-    { value: 'fraud', label: 'احتيال أو نصب' },
-    { value: 'harassment', label: 'تحرش أو إزعاج' },
-    { value: 'copyright', label: 'انتهاك حقوق الطبع' },
-    { value: 'pricing', label: 'تسعير مضلل' },
-    { value: 'location', label: 'موقع خاطئ' },
-    { value: 'quality', label: 'جودة خدمة ضعيفة' },
-    { value: 'other', label: 'أخرى' },
+    { value: 'spam', label: t('report.reasons.spam') },
+    { value: 'inappropriate', label: t('report.reasons.inappropriate') },
+    { value: 'fake', label: t('report.reasons.fake') },
+    { value: 'fraud', label: t('report.reasons.fraud') },
+    { value: 'harassment', label: t('report.reasons.harassment') },
+    { value: 'copyright', label: t('report.reasons.copyright') },
+    { value: 'pricing', label: t('report.reasons.pricing') },
+    { value: 'location', label: t('report.reasons.location') },
+    { value: 'quality', label: t('report.reasons.quality') },
+    { value: 'other', label: t('report.reasons.other') },
   ];
 
   const onSubmit = async (data: ReportFormData) => {
@@ -74,15 +74,15 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       });
 
       if (response.ok) {
-        toast.success('تم إرسال البلاغ بنجاح. سيتم مراجعته من قبل فريقنا.');
+        toast.success(t('report.submitSuccess'));
         reset();
         onClose();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || 'حدث خطأ في إرسال البلاغ');
+        toast.error(errorData.error || t('report.submitError'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في إرسال البلاغ');
+      toast.error(t('report.submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -94,24 +94,24 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="إبلاغ عن مشكلة" size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('report.title')} size="md">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {targetTitle && (
           <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600 mb-1">تقوم بالإبلاغ عن:</p>
+            <p className="text-sm text-gray-600 mb-1">{t('report.reporting')}:</p>
             <p className="font-medium text-gray-900">{targetTitle}</p>
           </div>
         )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            سبب البلاغ *
+            {t('report.reason')} *
           </label>
           <select
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            {...register('reason', { required: 'سبب البلاغ مطلوب' })}
+            {...register('reason', { required: t('report.reasonRequired') })}
           >
-            <option value="">اختر السبب</option>
+            <option value="">{t('report.selectReason')}</option>
             {reasonOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -125,17 +125,17 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            تفاصيل إضافية *
+            {t('report.details')} *
           </label>
           <textarea
             rows={4}
-            placeholder="اشرح المشكلة بالتفصيل..."
+            placeholder={t('report.detailsPlaceholder')}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             {...register('description', {
-              required: 'التفاصيل مطلوبة',
+              required: t('report.detailsRequired'),
               minLength: {
                 value: 20,
-                message: 'يجب أن تكون التفاصيل 20 حرف على الأقل',
+                message: t('report.detailsMinLength'),
               },
             })}
           />
@@ -146,7 +146,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            دليل (اختياري)
+            {t('report.evidence')}
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -161,10 +161,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               htmlFor="evidence"
               className="cursor-pointer text-primary-600 hover:text-primary-500"
             >
-              اختر ملف أو اسحبه هنا
+              {t('report.selectFile')}
             </label>
             <p className="text-xs text-gray-500 mt-1">
-              PNG, JPG, PDF حتى 10MB
+              {t('report.fileTypes')}
             </p>
           </div>
         </div>
@@ -173,10 +173,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           <div className="flex items-start">
             <Flag className="w-5 h-5 text-yellow-600 mt-0.5 mr-3" />
             <div className="text-sm text-yellow-800">
-              <p className="font-medium mb-1">ملاحظة مهمة</p>
+              <p className="font-medium mb-1">{t('report.importantNote')}</p>
               <p>
-                سيتم مراجعة البلاغ من قبل فريقنا خلال 24-48 ساعة. 
-                البلاغات الكاذبة قد تؤدي إلى تعليق حسابك.
+                {t('report.noteText')}
               </p>
             </div>
           </div>
@@ -189,7 +188,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             onClick={handleClose}
             className="flex-1"
           >
-            إلغاء
+            {t('report.cancel')}
           </Button>
           <Button
             type="submit"
@@ -197,7 +196,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             className="flex-1"
             leftIcon={<Flag className="w-4 h-4" />}
           >
-            إرسال البلاغ
+            {t('report.submit')}
           </Button>
         </div>
       </form>

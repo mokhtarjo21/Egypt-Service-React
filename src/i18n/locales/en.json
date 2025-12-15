@@ -475,7 +475,31 @@
     "mostRecent": "Most Recent",
     "mostHelpful": "Most Helpful",
     "highestRated": "Highest Rated",
-    "lowestRated": "Lowest Rated"
+    "lowestRated": "Lowest Rated",
+    "ratingLabels": {
+      "1": "Very Poor",
+      "2": "Poor",
+      "3": "Average",
+      "4": "Good",
+      "5": "Excellent"
+    },
+    "reviewingService": "Reviewing Service",
+    "titlePlaceholder": "Write a brief review title",
+    "titleRequired": "Review title is required",
+    "titleMinLength": "Title must be at least 5 characters",
+    "detailsRequired": "Review details are required",
+    "detailsMinLength": "Review must be at least 20 characters",
+    "commentPlaceholder": "Share your experience with this service...",
+    "guidelines": {
+      "title": "Review Guidelines",
+      "honest": "Be honest and objective in your review",
+      "focus": "Focus on service quality and interaction",
+      "avoid": "Avoid personal information",
+      "review": "Review will be moderated before publishing"
+    },
+    "selectRating": "Please select a rating",
+    "submitSuccess": "Review submitted successfully. It will be reviewed before publishing.",
+    "submitError": "Error submitting review"
   },
   "notifications": {
     "title": "Notifications",
@@ -538,7 +562,35 @@
     "newUsersToday": "New Users Today",
     "newServesToday": "New Services Today",
     "pendingReviews": "Pending Reviews",
-    "reportedContent": "Reported Content"
+    "reportedContent": "Reported Content",
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "reportStatus": {
+      "pending": "Pending",
+      "assigned": "Assigned",
+      "investigating": "Investigating",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed",
+      "escalated": "Escalated"
+    },
+    "serviceStatus": {
+      "pending": "Pending",
+      "verified": "Verified",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "suspended": "Suspended",
+      "blocked": "Blocked"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "reports": "Reports",
+      "appeals": "Appeals",
+      "policies": "Policies"
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -686,6 +738,72 @@
     "locationNotSupported": "Location not supported",
     "tryAgain": "Please try again",
     "contactSupport": "Please contact support"
+  },
+  "report": {
+    "title": "Report an Issue",
+    "reporting": "You are reporting",
+    "reason": "Report Reason",
+    "reasonRequired": "Report reason is required",
+    "selectReason": "Select a reason",
+    "details": "Additional Details",
+    "detailsRequired": "Details are required",
+    "detailsMinLength": "Details must be at least 20 characters",
+    "detailsPlaceholder": "Explain the problem in detail...",
+    "evidence": "Evidence (Optional)",
+    "selectFile": "Select file or drag it here",
+    "fileTypes": "PNG, JPG, PDF up to 10MB",
+    "importantNote": "Important Note",
+    "noteText": "Your report will be reviewed by our team within 24-48 hours. False reports may result in account suspension.",
+    "cancel": "Cancel",
+    "submit": "Submit Report",
+    "submitSuccess": "Report submitted successfully. It will be reviewed by our team.",
+    "submitError": "Error submitting report",
+    "reasons": {
+      "spam": "Spam Content",
+      "inappropriate": "Inappropriate Content",
+      "fake": "Fake Service or Profile",
+      "fraud": "Fraud or Scam",
+      "harassment": "Harassment or Bullying",
+      "copyright": "Copyright Violation",
+      "pricing": "Misleading Pricing",
+      "location": "Wrong Location",
+      "quality": "Poor Service Quality",
+      "other": "Other"
+    }
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "Sorry, the page you are looking for does not exist or has been moved to another location.",
+    "backHome": "Back to Home",
+    "browseServices": "Browse Services",
+    "errorMessage": "If you believe this is an error, please",
+    "contactUs": "contact us"
+  },
+  "badges": {
+    "verified": {
+      "label": "Verified",
+      "tooltip": "Identity and documents verified"
+    },
+    "top_rated": {
+      "label": "Top Rated",
+      "tooltip": "4.8+ average rating with 20+ reviews in last 90 days"
+    },
+    "responsive": {
+      "label": "Responsive",
+      "tooltip": "Average response time less than 30 minutes"
+    },
+    "featured": {
+      "label": "Featured",
+      "tooltip": "Featured and promoted service"
+    },
+    "expert": {
+      "label": "Expert",
+      "tooltip": "Certified expert in this field"
+    },
+    "new_provider": {
+      "label": "New Provider",
+      "tooltip": "New service provider on the platform"
+    }
   },
   "success": {
     "general": "Success",
@@ -855,5 +973,125 @@
     "noon": "noon",
     "am": "AM",
     "pm": "PM"
+  },
+  "footer": {
+    "description": "Egypt's trusted services marketplace connecting customers with verified service providers across Egypt. We provide a safe and reliable experience to find and book the best services.",
+    "quickLinks": "Quick Links",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "allRightsReserved": "All Rights Reserved",
+    "madeInEgypt": "Made in Egypt"
+  },
+  "navbar": {
+    "platformName": "Egypt Services",
+    "platformNameEn": "Egypt Services",
+    "addService": "Add Service",
+    "adminPanel": "Admin Panel",
+    "verifiedAccount": "Verified Account",
+    "startTyping": "Start typing what you're looking for..."
+  },
+  "helpPage": {
+    "hero": {
+      "title": "Help Center",
+      "subtitle": "We're here to help! Find answers to your questions or contact us",
+      "searchPlaceholder": "Search frequently asked questions..."
+    },
+    "quickLinks": {
+      "contactSupport": "Contact Support",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy",
+      "aboutUs": "About Us"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find answers to your most common questions"
+    },
+    "categories": {
+      "gettingStarted": {
+        "title": "Getting Started",
+        "questions": {
+          "howToRegister": "How do I create an account?",
+          "howToVerify": "How do I verify my account?",
+          "howToAddService": "How do I add a new service?"
+        },
+        "answers": {
+          "howToRegister": "You can create a new account by clicking the 'Sign Up' button on the homepage. You'll need to enter your personal information, phone number, and email address.",
+          "howToVerify": "After creating your account, you'll need to verify your phone number and email. You can do this from your profile page under 'Security Settings'.",
+          "howToAddService": "After verifying your account, you can add a new service by clicking 'Add Service' in the menu. You'll need to fill in the service information, images, and details."
+        }
+      },
+      "services": {
+        "title": "Services",
+        "questions": {
+          "howToSearch": "How do I search for a service?",
+          "howToBook": "How do I book a service?",
+          "howToReview": "How do I review a service?"
+        },
+        "answers": {
+          "howToSearch": "You can search for services using the search bar on the homepage or services page. You can also use filters to search by category, location, and price.",
+          "howToBook": "After finding the right service, click 'Book Now' and select your preferred date and time. You'll need to confirm the booking and make payment.",
+          "howToReview": "After completing a service, you can review it from the service page. Click 'Write Review' and share your experience with others."
+        }
+      },
+      "payments": {
+        "title": "Payments",
+        "questions": {
+          "paymentMethods": "What payment methods are available?",
+          "refundPolicy": "What is the refund policy?",
+          "subscription": "How do subscription plans work?"
+        },
+        "answers": {
+          "paymentMethods": "We accept credit and debit cards, as well as cash on delivery for some services. All transactions are secure and encrypted.",
+          "refundPolicy": "You can request a refund within 24 hours of booking if the service hasn't started yet. For full details, please see our Terms of Service page.",
+          "subscription": "Subscription plans are available for service providers and offer additional features like service promotion and advanced analytics. You can subscribe from the Subscriptions page."
+        }
+      },
+      "safety": {
+        "title": "Safety & Security",
+        "questions": {
+          "howToReport": "How do I report an issue?",
+          "verifiedProviders": "What are verified providers?",
+          "dataPrivacy": "How do you protect my personal data?"
+        },
+        "answers": {
+          "howToReport": "You can report any issue by clicking the 'Report' button on a service or profile page. Reports will be reviewed by our team within 24-48 hours.",
+          "verifiedProviders": "Verified providers are service providers whose identity and documents have been verified by our team. You can identify them by the 'Verified' badge on their profile.",
+          "dataPrivacy": "We protect your personal data strictly according to our Privacy Policy. We do not share your data with third parties without your consent."
+        }
+      },
+      "account": {
+        "title": "Account",
+        "questions": {
+          "changePassword": "How do I change my password?",
+          "updateProfile": "How do I update my profile?",
+          "deleteAccount": "How do I delete my account?"
+        },
+        "answers": {
+          "changePassword": "You can change your password from the 'Security Settings' page in your profile. You'll need to enter your current password and then your new password.",
+          "updateProfile": "You can update your profile information from the 'Profile' page. Click 'Edit Profile' and update the required information.",
+          "deleteAccount": "To delete your account, please contact our support team from the 'Contact Us' page. Your account will be permanently deleted after confirmation."
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "questions": {
+          "manageNotifications": "How do I manage notifications?",
+          "emailNotifications": "How do I enable email notifications?"
+        },
+        "answers": {
+          "manageNotifications": "You can manage notification settings from the 'Notifications' page in the menu. You can enable or disable different types of notifications.",
+          "emailNotifications": "You can enable email notifications from the 'Notification Settings' page. You'll receive notifications about bookings, messages, and important updates."
+        }
+      }
+    },
+    "contact": {
+      "title": "Still need help?",
+      "description": "Our support team is ready to help you anytime. Contact us via email or phone.",
+      "emailUs": "Email Us",
+      "callUs": "Call Us"
+    }
   }
 }

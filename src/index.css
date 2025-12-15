@@ -152,6 +152,24 @@
   .shadow-glow-secondary {
     box-shadow: 0 0 20px rgba(20, 184, 166, 0.15);
   }
+
+  /* Smooth transitions for colors */
+  .transition-colors {
+    transition-property: color, background-color, border-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* Better focus styles */
+  .focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .focus-ring:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
 }
 
 /* Custom Components */

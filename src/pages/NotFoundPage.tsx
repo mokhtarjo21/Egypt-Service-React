@@ -14,17 +14,17 @@ const NotFoundPage: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-9xl font-bold text-primary-600 mb-4">404</h1>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            الصفحة غير موجودة
+            {t('notFound.title')}
           </h2>
           <p className="text-gray-600 mb-8">
-            عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى موقع آخر.
+            {t('notFound.description')}
           </p>
         </div>
 
         <div className="space-y-4">
           <Link to="/">
             <Button className="w-full" leftIcon={<Home className="w-5 h-5" />}>
-              العودة للرئيسية
+              {t('notFound.backHome')}
             </Button>
           </Link>
           
@@ -34,16 +34,16 @@ const NotFoundPage: React.FC = () => {
               className="w-full" 
               leftIcon={<ArrowRight className="w-5 h-5" />}
             >
-              تصفح الخدمات
+              {t('notFound.browseServices')}
             </Button>
           </Link>
         </div>
 
         <div className="mt-12">
           <p className="text-sm text-gray-500">
-            إذا كنت تعتقد أن هذا خطأ، يرجى{' '}
+            {t('notFound.errorMessage')}{' '}
             <Link to="/contact" className="text-primary-600 hover:text-primary-500">
-              التواصل معنا
+              {t('notFound.contactUs')}
             </Link>
           </p>
         </div>

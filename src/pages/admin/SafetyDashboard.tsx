@@ -221,10 +221,10 @@ const SafetyDashboard: React.FC = () => {
 
   const getSeverityBadge = (severity: string) => {
     const severityConfig = {
-      critical: { color: 'bg-red-100 text-red-800', label: 'حرج' },
-      high: { color: 'bg-orange-100 text-orange-800', label: 'عالي' },
-      medium: { color: 'bg-yellow-100 text-yellow-800', label: 'متوسط' },
-      low: { color: 'bg-green-100 text-green-800', label: 'منخفض' },
+      critical: { color: 'bg-red-100 text-red-800', label: t('admin.severity.critical') },
+      high: { color: 'bg-orange-100 text-orange-800', label: t('admin.severity.high') },
+      medium: { color: 'bg-yellow-100 text-yellow-800', label: t('admin.severity.medium') },
+      low: { color: 'bg-green-100 text-green-800', label: t('admin.severity.low') },
     };
 
     const config = severityConfig[severity as keyof typeof severityConfig] || severityConfig.medium;
@@ -238,12 +238,12 @@ const SafetyDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: 'معلق' },
-      assigned: { color: 'bg-blue-100 text-blue-800', label: 'مُعين' },
-      investigating: { color: 'bg-purple-100 text-purple-800', label: 'قيد التحقيق' },
-      resolved: { color: 'bg-green-100 text-green-800', label: 'محلول' },
-      dismissed: { color: 'bg-gray-100 text-gray-800', label: 'مُستبعد' },
-      escalated: { color: 'bg-red-100 text-red-800', label: 'مُصعد' },
+      pending: { color: 'bg-yellow-100 text-yellow-800', label: t('admin.reportStatus.pending') },
+      assigned: { color: 'bg-blue-100 text-blue-800', label: t('admin.reportStatus.assigned') },
+      investigating: { color: 'bg-purple-100 text-purple-800', label: t('admin.reportStatus.investigating') },
+      resolved: { color: 'bg-green-100 text-green-800', label: t('admin.reportStatus.resolved') },
+      dismissed: { color: 'bg-gray-100 text-gray-800', label: t('admin.reportStatus.dismissed') },
+      escalated: { color: 'bg-red-100 text-red-800', label: t('admin.reportStatus.escalated') },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -256,10 +256,10 @@ const SafetyDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'overview', label: 'نظرة عامة', icon: TrendingUp },
-    { id: 'reports', label: 'البلاغات', icon: AlertTriangle },
-    { id: 'appeals', label: 'الاستئنافات', icon: Gavel },
-    { id: 'policies', label: 'السياسات', icon: FileText },
+    { id: 'overview', label: t('admin.tabs.overview'), icon: TrendingUp },
+    { id: 'reports', label: t('admin.tabs.reports'), icon: AlertTriangle },
+    { id: 'appeals', label: t('admin.tabs.appeals'), icon: Gavel },
+    { id: 'policies', label: t('admin.tabs.policies'), icon: FileText },
   ];
 
   return (
