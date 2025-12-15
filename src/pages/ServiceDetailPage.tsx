@@ -24,7 +24,8 @@ const ServiceDetailPage: React.FC = () => {
   
   const { currentService: service, isLoading } = useSelector((state: RootState) => state.services);
   const { user } = useSelector((state: RootState) => state.auth);
-  
+   const API_BASE =
+    (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -47,7 +48,7 @@ const ServiceDetailPage: React.FC = () => {
 
   const loadRecommendations = async () => {
     try {
-      const response = await fetch(`/api/v1/recommendations/services/${service.id}/`);
+      const response = await fetch(`${API_BASE}/api/v1/recommendations/services/${service.id}/`);
       if (response.ok) {
         const data = await response.json();
         setRecommendations(data);
@@ -59,7 +60,7 @@ const ServiceDetailPage: React.FC = () => {
 
   const loadSentimentData = async () => {
     try {
-      const response = await fetch(`/api/v1/recommendations/sentiment/${service.owner.id}/`);
+      const response = await fetch(`${API_BASE}/api/v1/recommendations/sentiment/${service.owner.id}/`);
       if (response.ok) {
         const data = await response.json();
         setSentimentData(data);

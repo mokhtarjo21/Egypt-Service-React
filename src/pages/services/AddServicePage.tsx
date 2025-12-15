@@ -59,7 +59,8 @@ const AddServicePage: React.FC = () => {
   const [centers, setCenters] = useState<Center[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+ const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   const {
     register,
     handleSubmit,
@@ -93,10 +94,10 @@ const AddServicePage: React.FC = () => {
 
   const loadCategories = async () => {
     try {
-      const response = await fetch('/api/v1/services/categories/');
+      const response = await fetch(API_BASE+'/api/v1/services/categories/');
       if (response.ok) {
         const data = await response.json();
-        setCategories(data);
+        setCategories(data.results);
       }
     } catch (error) {
       console.error('Failed to load categories:', error);
@@ -105,7 +106,7 @@ const AddServicePage: React.FC = () => {
 
   const loadSubcategories = async (categoryId: string) => {
     try {
-      const response = await fetch(`/api/v1/services/categories/${categoryId}/subcategories/`);
+      const response = await fetch(`${API_BASE}/api/v1/services/categories/${categoryId}/subcategories/`);
       if (response.ok) {
         const data = await response.json();
         setSubcategories(data);
@@ -117,7 +118,7 @@ const AddServicePage: React.FC = () => {
 
   const loadGovernorates = async () => {
     try {
-      const response = await fetch('/api/v1/geo/governorates/');
+      const response = await fetch(API_BASE+'/api/v1/geo/governorates/');
       if (response.ok) {
         const data = await response.json();
         setGovernorates(data);
@@ -129,7 +130,7 @@ const AddServicePage: React.FC = () => {
 
   const loadCenters = async (governorateId: string) => {
     try {
-      const response = await fetch(`/api/v1/geo/centers/?gov_id=${governorateId}`);
+      const response = await fetch(`${API_BASE}/api/v1/geo/centers/?gov_id=${governorateId}`);
       if (response.ok) {
         const data = await response.json();
         setCenters(data);
@@ -172,7 +173,7 @@ const AddServicePage: React.FC = () => {
     setIsLoading(true);
     try {
       // Create service
-      const serviceResponse = await fetch('/api/v1/services/services/', {
+      const serviceResponse = await fetch(API_BASE+'/api/v1/services/services/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +195,7 @@ const AddServicePage: React.FC = () => {
           formData.append('images', image);
         });
 
-        await fetch(`/api/v1/services/services/${service.slug}/upload_images/`, {
+        await fetch(`${API_BASE}/api/v1/services/services/${service.slug}/upload_images/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,

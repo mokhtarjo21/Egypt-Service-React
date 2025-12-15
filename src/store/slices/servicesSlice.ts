@@ -80,7 +80,7 @@ export const fetchServices = createAsyncThunk(
       }
 
       return {
-        results: data,
+        results: data.results || [],
         count: pagination?.total || 0,
         current_page: pagination?.page || 1,
         page_size: pagination?.limit || 20,
@@ -99,7 +99,9 @@ export const fetchCategories = createAsyncThunk(
       if (error) {
         return rejectWithValue(error.message || 'فشل جلب الفئات');
       }
-      return data || [];
+      console.log(data);
+      
+      return data.results || [];
     } catch (error: any) {
       return rejectWithValue(error.message || 'فشل جلب الفئات');
     }
@@ -114,7 +116,10 @@ export const fetchFeaturedServices = createAsyncThunk(
       if (error) {
         return rejectWithValue(error.message || 'فشل جلب الخدمات المميزة');
       }
-      return data || [];
+      console.log(data);
+      
+      return data.results || [];
+      
     } catch (error: any) {
       return rejectWithValue(error.message || 'فشل جلب الخدمات المميزة');
     }

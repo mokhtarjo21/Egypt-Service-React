@@ -60,17 +60,17 @@ const LoginPage: React.FC = () => {
         {/* Form */}
         <Card className="mt-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email */}
+             {/* Phone Number */}
             <Input
-              label={t('auth.login.email')}
-              type="email"
-              leftIcon={<Mail className="w-5 h-5" />}
-              error={errors.email?.message}
-              {...register('email', {
-                required: 'البريد الإلكتروني مطلوب',
+              label={t('auth.login.phone')}
+              type="tel"
+              leftIcon={<Mail className="w-5 h-5" />} // يمكنك استبدال الأيقونة بأيقونة هاتف إذا أردت
+              error={errors.phone_number?.message}
+              {...register('phone_number', {
+                required: 'رقم الهاتف مطلوب',
                 pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'البريد الإلكتروني غير صحيح',
+                  value: /^\+20[0-9]{10}$/, // تحقق من أن الرقم يبدأ بـ +20 ويليه 9 أرقام
+                  message: 'رقم الهاتف يجب أن يكون بصيغة +201234567890',
                 },
               })}
             />
@@ -103,6 +103,8 @@ const LoginPage: React.FC = () => {
                 },
               })}
             />
+
+           
 
             {/* Forgot Password */}
             <div className="text-right">

@@ -62,7 +62,8 @@ const MessagesPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
+   const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   useEffect(() => {
     loadConversations();
   }, []);
@@ -75,47 +76,20 @@ const MessagesPage: React.FC = () => {
 
   const loadConversations = async () => {
     try {
-      // Mock data - replace with actual API call
-      setConversations([
-        {
-          id: '1',
-          service: {
-            title_ar: 'صيانة أجهزة كهربائية',
-            slug: 'electrical-repair',
-          },
-          other_user: {
-            full_name: 'أحمد محمد',
-            avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
-            is_online: true,
-          },
-          last_message: {
-            content: 'متى يمكنك القدوم لإصلاح الثلاجة؟',
-            created_at: '2024-01-20T14:30:00Z',
-            sender_id: '2',
-          },
-          unread_count: 2,
-          is_archived: false,
+      const response = await fetch(API_BASE+'/api/v1/messages/conversations/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        {
-          id: '2',
-          service: {
-            title_ar: 'دروس خصوصية رياضيات',
-            slug: 'math-tutoring',
-          },
-          other_user: {
-            full_name: 'فاطمة علي',
-            avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100',
-            is_online: false,
-          },
-          last_message: {
-            content: 'شكراً لك على الدرس الممتاز',
-            created_at: '2024-01-19T16:45:00Z',
-            sender_id: '3',
-          },
-          unread_count: 0,
-          is_archived: false,
-        },
-      ]);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data.results);
+        return;
+      }
+      
+      console.error('Failed to load conversations:', response.statusText);
+      
     } catch (error) {
       console.error('Failed to load conversations:', error);
     }
@@ -124,44 +98,20 @@ const MessagesPage: React.FC = () => {
   const loadMessages = async (conversationId: string) => {
     setIsLoading(true);
     try {
-      // Mock data - replace with actual API call
-      setMessages([
-        {
-          id: '1',
-          sender: {
-            id: '2',
-            full_name: 'أحمد محمد',
-            avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
-          },
-          content: 'مرحباً، أحتاج إلى صيانة الثلاجة',
-          message_type: 'text',
-          is_read: true,
-          created_at: '2024-01-20T10:00:00Z',
+      const response = await fetch(`${API_BASE}/api/v1/messages/conversations/${conversationId}/messages/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        {
-          id: '2',
-          sender: {
-            id: user?.id || '1',
-            full_name: user?.full_name || 'أنت',
-          },
-          content: 'أهلاً وسهلاً، ما هي المشكلة بالتحديد؟',
-          message_type: 'text',
-          is_read: true,
-          created_at: '2024-01-20T10:05:00Z',
-        },
-        {
-          id: '3',
-          sender: {
-            id: '2',
-            full_name: 'أحمد محمد',
-            avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
-          },
-          content: 'الثلاجة لا تبرد بشكل جيد ويوجد صوت غريب',
-          message_type: 'text',
-          is_read: true,
-          created_at: '2024-01-20T10:10:00Z',
-        },
-      ]);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.results);
+        return;
+      }
+      
+      console.error('Failed to load messages:', response.statusText);
+      
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {

@@ -35,7 +35,8 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<CurrentSubscription | null>(null);
   const [usage, setUsage] = useState<SubscriptionUsage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+ const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   useEffect(() => {
     if (user) {
       loadSubscriptionData();
@@ -45,7 +46,7 @@ export const useSubscription = () => {
   const loadSubscriptionData = async () => {
     try {
       // Load current subscription
-      const subResponse = await fetch('/api/v1/subscriptions/subscriptions/', {
+      const subResponse = await fetch(API_BASE+'/api/v1/subscriptions/subscriptions/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -59,14 +60,14 @@ export const useSubscription = () => {
       }
 
       // Load usage data
-      const usageResponse = await fetch('/api/v1/subscriptions/usage/', {
+      const usageResponse = await fetch(API_BASE+'/api/v1/subscriptions/usage/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
       
       if (usageResponse.ok) {
-        const usageData = await usageResponse.json();
+        const usageData = await usageResponse;
         setUsage(usageData);
       }
     } catch (error) {

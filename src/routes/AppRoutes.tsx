@@ -74,7 +74,7 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/add-service" 
           element={
-            <ProtectedRoute requireVerification>
+            <ProtectedRoute >
               <AddServicePage />
             </ProtectedRoute>
           } 

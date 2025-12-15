@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { 
+  User,
   Users, 
   Briefcase, 
   AlertTriangle, 
@@ -63,7 +64,8 @@ interface Service {
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
-  
+  const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'services' | 'reports'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -97,29 +99,39 @@ const AdminDashboard: React.FC = () => {
   }, [activeTab, timeFilter]);
 
   const loadStats = async () => {
-    // Mock stats - replace with actual API call
-    setStats({
-      total_users: 1247,
-      pending_users: 23,
-      total_services: 856,
-      pending_services: 12,
-      total_reports: 45,
-      pending_reports: 8,
+     const response = await fetch(`${API_BASE}/api/v1/analytics/admin/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
     });
+     
+    setStats({...(await response.json())});
   };
 
   const loadAdminAnalytics = async () => {
     try {
-      const response = await fetch(`/api/v1/analytics/admin/?days=${timeFilter}`, {
+      const response = await fetch(`${API_BASE}/api/v1/analytics/admin/?days=${timeFilter}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setAdminAnalytics(data);
-      }
+       const contentType = response.headers.get('content-type');
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  if (!contentType?.includes('application/json')) {
+    const html = await response.text();
+    console.error('Expected JSON but got HTML:', html);
+    return;
+  }
+
+  const data = await response.json();
+  setAdminAnalytics(data);
+
+       
+      
     } catch (error) {
       console.error('Failed to load admin analytics:', error);
     }
@@ -127,7 +139,7 @@ const AdminDashboard: React.FC = () => {
 
   const exportAdminData = async () => {
     try {
-      const response = await fetch(`/api/v1/analytics/export/?days=${timeFilter}`, {
+      const response = await fetch(`${API_BASE}/api/v1/analytics/export/?days=${timeFilter}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -150,31 +162,14 @@ const AdminDashboard: React.FC = () => {
   const loadUsers = async () => {
     setIsLoading(true);
     try {
-      // Mock data - replace with actual API call
-      setUsers([
-        {
-          id: '1',
-          full_name: 'أحمد محمد علي',
-          phone_number: '+201012345678',
-          status: 'pending',
-          role: 'user',
-          is_phone_verified: true,
-          date_joined: '2024-01-15T10:30:00Z',
-          services_count: 2,
-          documents_count: 1,
+      const response = await fetch(API_BASE+'/api/v1/accounts/admin/users/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        {
-          id: '2',
-          full_name: 'فاطمة حسن',
-          phone_number: '+201098765432',
-          status: 'verified',
-          role: 'user',
-          is_phone_verified: true,
-          date_joined: '2024-01-10T14:20:00Z',
-          services_count: 5,
-          documents_count: 2,
-        },
-      ]);
+      });
+      const data = await response.json();
+
+      setUsers(data.results || []);
     } catch (error) {
       console.error('Failed to load users:', error);
     } finally {
@@ -185,33 +180,14 @@ const AdminDashboard: React.FC = () => {
   const loadServices = async () => {
     setIsLoading(true);
     try {
-      // Mock data - replace with actual API call
-      setServices([
-        {
-          id: '1',
-          title_ar: 'صيانة أجهزة كهربائية',
-          owner: {
-            full_name: 'أحمد محمد',
-            phone_number: '+201012345678',
-          },
-          status: 'pending',
-          created_at: '2024-01-20T09:15:00Z',
-          price: 150,
-          images_count: 3,
+      const response = await fetch(API_BASE+'/api/v1/services/admin/services/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        {
-          id: '2',
-          title_ar: 'دروس خصوصية رياضيات',
-          owner: {
-            full_name: 'فاطمة علي',
-            phone_number: '+201098765432',
-          },
-          status: 'pending',
-          created_at: '2024-01-19T16:45:00Z',
-          price: 200,
-          images_count: 1,
-        },
-      ]);
+      });
+      const data = await response.json();
+
+      setServices([...data.results] || []);
     } catch (error) {
       console.error('Failed to load services:', error);
     } finally {
@@ -222,7 +198,7 @@ const AdminDashboard: React.FC = () => {
   const handleUserStatusUpdate = async (userId: string, newStatus: string, reason?: string) => {
     try {
       // API call to update user status
-      const response = await fetch(`/api/v1/accounts/admin/users/${userId}/status/`, {
+      const response = await fetch(`${API_BASE}/api/v1/accounts/admin/users/${userId}/status/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -243,7 +219,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleServiceStatusUpdate = async (serviceId: string, action: 'approve' | 'reject', reason?: string) => {
     try {
-      const response = await fetch(`/api/v1/services/admin/services/${serviceId}/status/`, {
+      const response = await fetch(`${API_BASE}/api/v1/services/admin/services/${serviceId}/status/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

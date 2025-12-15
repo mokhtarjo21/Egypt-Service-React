@@ -32,61 +32,27 @@ const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-
+ const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   useEffect(() => {
     loadNotifications();
   }, []);
 
   const loadNotifications = async () => {
     try {
-      // Mock data - replace with actual API call
-      setNotifications([
-        {
-          id: '1',
-          type: 'service_approved',
-          title_ar: 'تم الموافقة على خدمتك',
-          message_ar: 'تم الموافقة على خدمة "صيانة أجهزة كهربائية" وهي الآن متاحة للعملاء',
-          is_read: false,
-          created_at: '2024-01-20T14:30:00Z',
-          related_object: {
-            type: 'service',
-            id: '1',
-            title: 'صيانة أجهزة كهربائية',
-          },
+      const response = await fetch(API_BASE+'/api/v1/notifications/notifications/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        {
-          id: '2',
-          type: 'message',
-          title_ar: 'رسالة جديدة',
-          message_ar: 'لديك رسالة جديدة من أحمد محمد حول خدمة الصيانة',
-          is_read: false,
-          created_at: '2024-01-20T13:15:00Z',
-          related_object: {
-            type: 'conversation',
-            id: '1',
-          },
-        },
-        {
-          id: '3',
-          type: 'review',
-          title_ar: 'تقييم جديد',
-          message_ar: 'حصلت على تقييم 5 نجوم من فاطمة علي',
-          is_read: true,
-          created_at: '2024-01-19T16:45:00Z',
-          related_object: {
-            type: 'review',
-            id: '1',
-          },
-        },
-        {
-          id: '4',
-          type: 'payment',
-          title_ar: 'تم استلام الدفعة',
-          message_ar: 'تم استلام دفعة بقيمة 200 ج.م من عميل',
-          is_read: true,
-          created_at: '2024-01-18T11:20:00Z',
-        },
-      ]);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.results);
+        return;
+      }
+      
+      console.error('Failed to load notifications:', response.statusText);
     } catch (error) {
       console.error('Failed to load notifications:', error);
     }

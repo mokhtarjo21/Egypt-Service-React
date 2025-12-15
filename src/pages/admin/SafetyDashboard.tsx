@@ -77,7 +77,8 @@ interface Appeal {
 const SafetyDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
-  
+   const API_BASE =
+  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'appeals' | 'policies'>('overview');
   const [queueStats, setQueueStats] = useState<QueueStats | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
@@ -111,7 +112,7 @@ const SafetyDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const response = await fetch('/api/v1/moderation/dashboard/', {
+      const response = await fetch(API_BASE+'/api/v1/moderation/dashboard/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -133,7 +134,7 @@ const SafetyDashboard: React.FC = () => {
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (filterSeverity !== 'all') params.append('severity', filterSeverity);
       
-      const response = await fetch(`/api/v1/moderation/reports/?${params.toString()}`, {
+      const response = await fetch(`${API_BASE}/api/v1/moderation/reports/?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -153,7 +154,7 @@ const SafetyDashboard: React.FC = () => {
   const loadAppeals = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/moderation/appeals/', {
+      const response = await fetch(API_BASE+'/api/v1/moderation/appeals/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -172,7 +173,7 @@ const SafetyDashboard: React.FC = () => {
 
   const handleReportAction = async (reportId: string, actionType: string, reasonCode: string, reasonText: string) => {
     try {
-      const response = await fetch(`/api/v1/moderation/reports/${reportId}/resolve/`, {
+      const response = await fetch(`${API_BASE}/api/v1/moderation/reports/${reportId}/resolve/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ const SafetyDashboard: React.FC = () => {
 
   const handleAppealDecision = async (appealId: string, decision: string, notes: string) => {
     try {
-      const response = await fetch(`/api/v1/moderation/appeals/${appealId}/review/`, {
+      const response = await fetch(`${API_BASE}/api/v1/moderation/appeals/${appealId}/review/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -26,6 +26,7 @@ export interface User {
 }
 
 export interface LoginCredentials {
+  phone_number?: string;
   email: string;
   password: string;
 }
