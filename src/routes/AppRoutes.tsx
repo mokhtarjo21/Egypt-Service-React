@@ -27,6 +27,8 @@ const CategoriesPage = React.lazy(() => import('../pages/CategoriesPage'));
 const AboutPage = React.lazy(() => import('../pages/AboutPage'));
 const ContactPage = React.lazy(() => import('../pages/ContactPage'));
 const HelpPage = React.lazy(() => import('../pages/HelpPage'));
+const SettingsPage = React.lazy(() => import('../pages/SettingsPage'));
+const VerifyAccountPage = React.lazy(() => import('../pages/auth/VerifyAccountPage'));
 
 const AppRoutes: React.FC = () => {
   return (
@@ -46,6 +48,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/policies/:policyType" element={<PolicyPage />} />
         <Route path="/terms" element={<Navigate to="/policies/terms" replace />} />
         <Route path="/privacy" element={<Navigate to="/policies/privacy" replace />} />
         
@@ -53,6 +56,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-phone" element={<OTPVerificationPage />} />
+        <Route path="/verify-account" element={<VerifyAccountPage />} />
         
         {/* Protected Routes */}
         <Route 
@@ -98,20 +102,28 @@ const AppRoutes: React.FC = () => {
         <Route 
           path="/security" 
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <SecurityPage />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/subscription" 
+        <Route
+          path="/subscription"
           element={
             <ProtectedRoute>
               <SubscriptionPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Admin Routes */}
         <Route 
           path="/admin" 
@@ -138,15 +150,14 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* Policy and Appeal Routes */}
-        <Route path="/policies/:policyType" element={<PolicyPage />} />
-        <Route 
-          path="/appeal/:actionId" 
+        {/* Appeal Routes */}
+        <Route
+          path="/appeal/:actionId"
           element={
             <ProtectedRoute>
               <AppealPage />
             </ProtectedRoute>
-          } 
+          }
         />
         
         {/* 404 Page */}

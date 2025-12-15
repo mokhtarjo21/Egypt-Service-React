@@ -54,15 +54,15 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {isLoading ? (
-        <LoadingSpinner size="sm" className="mr-2" />
+        <LoadingSpinner size="sm" className="mr-2 rtl:mr-0 rtl:ml-2" />
       ) : leftIcon ? (
-        <span className={clsx('mr-2', iconSizeClasses[size])}>{leftIcon}</span>
+        <span className={clsx('mr-2 rtl:mr-0 rtl:ml-2', iconSizeClasses[size])}>{leftIcon}</span>
       ) : null}
-      
+
       {children}
-      
+
       {!isLoading && rightIcon && (
-        <span className={clsx('ml-2', iconSizeClasses[size])}>{rightIcon}</span>
+        <span className={clsx('ml-2 rtl:ml-0 rtl:mr-2', iconSizeClasses[size])}>{rightIcon}</span>
       )}
     </button>
   );

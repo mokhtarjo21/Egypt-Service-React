@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Calendar, Edit, Shield, Star, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { RootState } from '../store/store';
 import { Button } from '../components/ui/Button';
@@ -11,7 +13,9 @@ import { SentimentBar } from '../components/ui/SentimentBar';
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(false);
 
   if (!user) {
     return (
@@ -35,6 +39,31 @@ const ProfilePage: React.FC = () => {
     negative: 8,
     total: 105,
   };
+
+  const handleEditProfile = () => {
+    toast.success('انتقل إلى صفحة تعديل الملف الشخصي');
+  };
+
+  const handleManageTeam = () => {
+    toast.success('انتقل إلى إدارة الفريق');
+  };
+
+  const handleEditInfo = () => {
+    toast.success('انتقل إلى تعديل المعلومات الشخصية');
+  };
+
+  const handleVerifyEmail = () => {
+    navigate('/verify-account');
+  };
+
+  const handleVerifyPhone = () => {
+    navigate('/verify-account');
+  };
+
+  const handleChangePassword = () => {
+    navigate('/security');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -69,7 +98,7 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
               
-              <Button className="w-full" leftIcon={<Edit className="w-4 h-4" />}>
+              <Button className="w-full" leftIcon={<Edit className="w-4 h-4" />} onClick={handleEditProfile}>
                 تعديل الملف الشخصي
               </Button>
             </Card>
@@ -117,7 +146,7 @@ const ProfilePage: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900">
                   الفريق
                 </h3>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleManageTeam}>
                   <Users className="w-4 h-4" />
                 </Button>
               </div>
@@ -137,7 +166,7 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
               
-              <Button variant="outline" className="w-full mt-4">
+              <Button variant="outline" className="w-full mt-4" onClick={handleManageTeam}>
                 إدارة الفريق
               </Button>
             </Card>
@@ -151,7 +180,7 @@ const ProfilePage: React.FC = () => {
                 <h3 className="text-xl font-semibold text-gray-900">
                   المعلومات الشخصية
                 </h3>
-                <Button variant="outline" size="sm" leftIcon={<Edit className="w-4 h-4" />}>
+                <Button variant="outline" size="sm" leftIcon={<Edit className="w-4 h-4" />} onClick={handleEditInfo}>
                   تعديل
                 </Button>
               </div>
@@ -219,7 +248,7 @@ const ProfilePage: React.FC = () => {
                     </p>
                   </div>
                   {!user.email_verified && (
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleVerifyEmail}>
                       تحقق الآن
                     </Button>
                   )}
@@ -233,7 +262,7 @@ const ProfilePage: React.FC = () => {
                     </p>
                   </div>
                   {!user.phone_verified && (
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleVerifyPhone}>
                       تحقق الآن
                     </Button>
                   )}
@@ -244,7 +273,7 @@ const ProfilePage: React.FC = () => {
                     <p className="font-medium text-gray-900">كلمة المرور</p>
                     <p className="text-sm text-gray-600">آخر تحديث منذ 3 أشهر</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={handleChangePassword}>
                     تغيير
                   </Button>
                 </div>
