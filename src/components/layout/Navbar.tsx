@@ -167,9 +167,6 @@ export const Navbar: React.FC = () => {
                 <Link to="/notifications">
                   <Button variant="ghost" size="sm" className="relative">
                     <Bell className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                      3
-                    </span>
                   </Button>
                 </Link>
               )}
@@ -203,7 +200,7 @@ export const Navbar: React.FC = () => {
                   {/* User Dropdown Menu */}
                   {showUserMenu && (
                     <div
-                      className={`absolute top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 ${isRTL ? "right-0" : "left-0"}`}
+                      className={`absolute top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 ${isRTL ? "left-0" : "right-0"}`}
                     >
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="font-medium text-gray-900">
@@ -291,13 +288,17 @@ export const Navbar: React.FC = () => {
 
           {/* Sidebar */}
           <div
-            className={`fixed top-0 ${isRTL ? "right-0" : "left-0"} h-full w-80 bg-white shadow-xl transform transition-transform`}
+            className={`fixed h-full w-80 bg-white shadow-xl transform transition-transform`}
           >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">خ</span>
+                <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="w-full h-full object-fill"
+                  />
                 </div>
                 <span className="font-bold text-gray-900">
                   {isRTL

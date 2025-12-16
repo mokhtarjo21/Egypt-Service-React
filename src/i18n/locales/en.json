@@ -209,6 +209,7 @@
       "title": "Welcome Back",
       "subtitle": "Sign in to access your account",
       "email": "Email Address",
+      "phone": "Phone Number",
       "password": "Password",
       "rememberMe": "Remember me",
       "forgotPassword": "Forgot Password?",

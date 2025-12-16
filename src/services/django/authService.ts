@@ -55,7 +55,6 @@ export const djangoAuthService = {
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل التسجيل";
-      toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
   },
@@ -82,7 +81,6 @@ export const djangoAuthService = {
       localStorage.setItem("refresh_token", tokens.refresh);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast.success("تم التحقق بنجاح!");
       return {
         data: { user, session: { access_token: tokens.access } },
         error: null,
@@ -92,7 +90,6 @@ export const djangoAuthService = {
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل التحقق";
-      toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
   },
@@ -113,7 +110,6 @@ export const djangoAuthService = {
       localStorage.setItem("refresh_token", tokens.refresh);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast.success("تم تسجيل الدخول بنجاح!");
       return {
         data: { user, session: { access_token: tokens.access } },
         error: null,
@@ -123,7 +119,6 @@ export const djangoAuthService = {
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل تسجيل الدخول";
-      toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
   },
@@ -141,14 +136,12 @@ export const djangoAuthService = {
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
 
-      toast.success("تم تسجيل الخروج بنجاح");
       return { error: null };
     } catch (error: any) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
 
-      toast.error(error.response?.data?.message || "فشل تسجيل الخروج");
       return { error: { message: "Logout failed" } };
     }
   },
@@ -159,14 +152,12 @@ export const djangoAuthService = {
         phone_number: phoneNumber,
       });
 
-      toast.success("تم إرسال رمز التحقق");
       return { error: null };
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل إرسال رمز التحقق";
-      toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
@@ -186,14 +177,12 @@ export const djangoAuthService = {
         }
       );
 
-      toast.success("تم تغيير كلمة المرور بنجاح");
       return { error: null };
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل تغيير كلمة المرور";
-      toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
@@ -205,14 +194,12 @@ export const djangoAuthService = {
         new_password: newPassword,
       });
 
-      toast.success("تم تحديث كلمة المرور بنجاح");
       return { error: null };
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل تحديث كلمة المرور";
-      toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
@@ -283,14 +270,12 @@ export const djangoAuthService = {
         purpose,
       });
 
-      toast.success("تم إرسال رمز التحقق");
       return { error: null };
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل إرسال رمز التحقق";
-      toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
   },
