@@ -97,6 +97,8 @@ const AddServicePage: React.FC = () => {
       const response = await fetch(API_BASE+'/api/v1/services/categories/');
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
+        
         setCategories(data.results);
       }
     } catch (error) {
@@ -106,10 +108,12 @@ const AddServicePage: React.FC = () => {
 
   const loadSubcategories = async (categoryId: string) => {
     try {
-      const response = await fetch(`${API_BASE}/api/v1/services/categories/${categoryId}/subcategories/`);
+      const response = await fetch(`${API_BASE}/api/v1/services/subcategories/?category__slug=${categoryId}`);
       if (response.ok) {
         const data = await response.json();
-        setSubcategories(data);
+        console.log(data);
+        
+        setSubcategories(data.results);
       }
     } catch (error) {
       console.error('Failed to load subcategories:', error);
@@ -121,7 +125,7 @@ const AddServicePage: React.FC = () => {
       const response = await fetch(API_BASE+'/api/v1/health/geo/governorates/');
       if (response.ok) {
         const data = await response.json();
-        setGovernorates(data);
+        setGovernorates(data.results);
       }
     } catch (error) {
       console.error('Failed to load governorates:', error);
@@ -133,7 +137,7 @@ const AddServicePage: React.FC = () => {
       const response = await fetch(`${API_BASE}/api/v1/health/geo/centers/?gov_id=${governorateId}`);
       if (response.ok) {
         const data = await response.json();
-        setCenters(data);
+        setCenters(data.results);
       }
     } catch (error) {
       console.error('Failed to load centers:', error);

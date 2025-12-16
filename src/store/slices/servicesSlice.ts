@@ -99,7 +99,7 @@ export const fetchCategories = createAsyncThunk(
       if (error) {
         return rejectWithValue(error.message || 'فشل جلب الفئات');
       }
-      console.log(data);
+     
       
       return data.results || [];
     } catch (error: any) {
@@ -116,7 +116,7 @@ export const fetchFeaturedServices = createAsyncThunk(
       if (error) {
         return rejectWithValue(error.message || 'فشل جلب الخدمات المميزة');
       }
-      console.log(data);
+     
       
       return data.results || [];
       

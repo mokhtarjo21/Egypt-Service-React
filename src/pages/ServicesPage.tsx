@@ -56,6 +56,8 @@ const ServicesPage: React.FC = () => {
     
     dispatch(setFilters(cleanParams) as any);
     dispatch(fetchServices({ filters: cleanParams, page: cleanParams.page }) as any);
+   
+    
   }, [searchQuery, localFilters, searchParams, dispatch]);
 
   const handleSearch = (query: string) => {
