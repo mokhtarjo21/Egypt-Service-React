@@ -32,7 +32,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
           >
             {label}
           </label>
@@ -43,7 +43,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <div
               className={clsx(
                 'absolute top-1/2 -translate-y-1/2 text-gray-400',
-                isRTL ? 'right-3' : 'left-3'
+                isRTL ? 'right-3 sm:right-4' : 'left-3 sm:left-4'
               )}
             >
               {leftIcon}
@@ -54,9 +54,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={clsx(
-              'w-full px-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
-              leftIcon && (isRTL ? 'pr-10' : 'pl-10'),
-              rightIcon && (isRTL ? 'pl-10' : 'pr-10'),
+              'w-full px-4 sm:px-5 py-3 sm:py-4 border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+              leftIcon && (isRTL ? 'pr-10 sm:pr-12' : 'pl-10 sm:pl-12'),
+              rightIcon && (isRTL ? 'pl-10 sm:pl-12' : 'pr-10 sm:pr-12'),
               error
                 ? 'border-red-300 text-red-900 focus:ring-red-500'
                 : 'border-gray-300 focus:border-primary-500',
@@ -69,7 +69,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <div
               className={clsx(
                 'absolute top-1/2 -translate-y-1/2 text-gray-400',
-                isRTL ? 'left-3' : 'right-3'
+                isRTL ? 'left-3 sm:left-4' : 'right-3 sm:right-4'
               )}
             >
               {rightIcon}
@@ -77,9 +77,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-sm sm:text-base text-red-600">{error}</p>}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-1 text-sm sm:text-base text-gray-500">{helperText}</p>
         )}
       </div>
     );

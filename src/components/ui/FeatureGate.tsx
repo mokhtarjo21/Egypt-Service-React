@@ -46,23 +46,26 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   };
 
   return (
-    <Card className="text-center py-12">
-      <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Crown className="w-8 h-8 text-white" />
+    <Card className="text-center py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8">
+      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2">
         {featureNames[feature]}
       </h3>
-      <p className="text-gray-600 mb-6">
+      <p className="text-sm sm:text-base text-gray-600 mb-6">
         هذه الميزة متاحة في خطة {planNames[requiredPlan]} وما فوق
       </p>
-      <div className="flex justify-center space-x-4 rtl:space-x-reverse">
+      <div className="flex flex-wrap justify-center gap-4">
         <Link to="/subscription">
-          <Button leftIcon={<Crown className="w-4 h-4" />}>
+          <Button
+            leftIcon={<Crown className="w-4 h-4 sm:w-5 sm:h-5" />}
+            className="w-full sm:w-auto"
+          >
             ترقية الخطة
           </Button>
         </Link>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           تعرف على المزيد
         </Button>
       </div>

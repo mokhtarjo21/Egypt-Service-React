@@ -12,7 +12,7 @@ import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Card } from "../../components/ui/Card";
 import { useDirection } from "../../hooks/useDirection";
-const API_BASE = import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000";
+const API_BASE = import.meta.env?.VITE_API_BASE || "http://localhost:8000";
 
 interface RegisterFormData {
   phone_number: string;

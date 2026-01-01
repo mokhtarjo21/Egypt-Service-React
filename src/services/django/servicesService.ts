@@ -50,9 +50,10 @@ export const djangoServicesService = {
       if (filters?.page) params.page = filters.page;
       if (filters?.limit) params.limit = filters.limit;
 
-      const response = await apiClient.get('/services/', { params });
-
-      const results = response.data.results || response.data;
+      const response = await apiClient.get('/services/services/', { params });
+  
+      
+      const results = response.data.results
       const count = response.data.count || results.length;
       const page = filters?.page || 1;
       const limit = filters?.limit || 20;
@@ -78,7 +79,7 @@ export const djangoServicesService = {
 
   async getServiceBySlug(slug: string) {
     try {
-      const response = await apiClient.get(`/services/${slug}/`);
+      const response = await apiClient.get(`/services/services/${slug}/`);
       const service = response.data;
 
       await apiClient.post(`/services/${slug}/increment_views/`).catch(() => {});

@@ -60,7 +60,7 @@ const AddServicePage: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
  const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   const {
     register,
     handleSubmit,
@@ -191,7 +191,8 @@ const AddServicePage: React.FC = () => {
       }
 
       const service = await serviceResponse.json();
-
+      console.log(service);
+      
       // Upload images if any
       if (selectedImages.length > 0) {
         const formData = new FormData();

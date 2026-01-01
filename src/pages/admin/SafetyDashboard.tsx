@@ -78,7 +78,7 @@ const SafetyDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
    const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'appeals' | 'policies'>('overview');
   const [queueStats, setQueueStats] = useState<QueueStats | null>(null);
   const [reports, setReports] = useState<Report[]>([]);

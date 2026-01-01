@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { Star, MapPin, Clock, Users, Shield, MessageCircle, Flag, Heart, ChevronLeft, ChevronRight, Eye, ThumbsUp } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import { RootState, AppDispatch } from '../store/store';
 import { fetchServiceBySlug } from '../store/slices/servicesSlice';
@@ -16,22 +17,57 @@ import { ReviewForm } from '../components/ui/ReviewForm';
 import { useDirection } from '../hooks/useDirection';
 import { formatCurrency, formatRelativeTime } from '../utils/dateFormatter';
 
+interface Review {
+  id: string;
+  author: {
+    id: string;
+    full_name: string;
+    avatar?: string;
+  };
+  rating: number;
+  comment: string;
+  created_at: string;
+  helpful_count: number;
+  is_verified_purchase?: boolean;
+}
+
+interface RatingDistribution {
+  5: number;
+  4: number;
+  3: number;
+  2: number;
+  1: number;
+  total: number;
+}
+
 const ServiceDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const dispatch = useDispatch<AppDispatch>();
-  
+  const navigate = useNavigate();
+
   const { currentService: service, isLoading } = useSelector((state: RootState) => state.services);
   const { user } = useSelector((state: RootState) => state.auth);
-   const API_BASE =
-    (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  const API_BASE =
+    (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [recommendations, setRecommendations] = useState([]);
   const [sentimentData, setSentimentData] = useState(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [ratingDistribution, setRatingDistribution] = useState<RatingDistribution>({
+    5: 0,
+    4: 0,
+    3: 0,
+    2: 0,
+    1: 0,
+    total: 0,
+  });
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -43,6 +79,7 @@ const ServiceDetailPage: React.FC = () => {
     if (service) {
       loadRecommendations();
       loadSentimentData();
+      loadReviews();
     }
   }, [service]);
 
@@ -69,17 +106,75 @@ const ServiceDetailPage: React.FC = () => {
       console.error('Failed to load sentiment data:', error);
     }
   };
+
+  const loadReviews = async () => {
+    setReviewsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/reviews/reviews/?service=${service.id}`, {
+        headers: {
+          'Authorization': localStorage.getItem('access_token')
+            ? `Bearer ${localStorage.getItem('access_token')}`
+            : '',
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const reviewsArray = Array.isArray(data) ? data : data.results || [];
+        setReviews(reviewsArray);
+
+        // Calculate rating distribution
+        const distribution: RatingDistribution = {
+          5: 0,
+          4: 0,
+          3: 0,
+          2: 0,
+          1: 0,
+          total: reviewsArray.length,
+        };
+
+        reviewsArray.forEach((review: Review) => {
+          const rating = review.rating as keyof RatingDistribution;
+          if (rating >= 1 && rating <= 5) {
+            distribution[rating]++;
+          }
+        });
+
+        setRatingDistribution(distribution);
+      }
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
   const toggleFavorite = () => {
     setIsFavorited(!isFavorited);
-    // TODO: API call to add/remove from favorites
+  };
+
+  const handleBookNow = () => {
+    if (!user) {
+      toast.error('يرجى تسجيل الدخول لحجز هذه الخدمة');
+      navigate('/login');
+      return;
+    }
+    // Navigate to booking page or show booking modal
+    toast.info('سيتم توجيهك إلى صفحة الحجز');
+    // TODO: Implement booking flow
   };
 
   const handleContactProvider = () => {
     if (!user) {
-      // Redirect to login
+      toast.error('يرجى تسجيل الدخول للتواصل مع مقدم الخدمة');
+      navigate('/login');
       return;
     }
-    // TODO: Create conversation or navigate to existing one
+    // Navigate to messages page with provider
+    navigate(`/messages?provider=${service.owner.id}`);
+  };
+
+  const handleViewProviderProfile = () => {
+    navigate(`/profile/${service.owner.id}`);
   };
 
   const nextImage = () => {
@@ -92,6 +187,17 @@ const ServiceDetailPage: React.FC = () => {
     if (service?.images) {
       setCurrentImageIndex((prev) => (prev - 1 + service.images.length) % service.images.length);
     }
+  };
+
+  const getAverageRating = (): number => {
+    if (reviews.length === 0) return service?.owner?.rating || 0;
+
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return totalRating / reviews.length;
+  };
+
+  const getTotalReviews = (): number => {
+    return reviews.length;
   };
 
   if (isLoading) {
@@ -116,12 +222,14 @@ const ServiceDetailPage: React.FC = () => {
     );
   }
 
+  const avgRating = getAverageRating();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
-          <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm text-gray-600">
+          <div className="flex flex-wrap items-center space-x-2 rtl:space-x-reverse text-sm sm:text-base text-gray-600">
             <Link to="/" className="hover:text-primary-600">الرئيسية</Link>
             <span>/</span>
             <Link to="/services" className="hover:text-primary-600">الخدمات</Link>
@@ -132,7 +240,7 @@ const ServiceDetailPage: React.FC = () => {
           </div>
         </nav>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Service Images */}
@@ -143,10 +251,10 @@ const ServiceDetailPage: React.FC = () => {
                     <img
                       src={service.images[currentImageIndex]?.image}
                       alt={isRTL ? service.title_ar : service.title_en || service.title_ar}
-                      className="w-full h-96 object-cover"
+                      className="w-full h-48 sm:h-64 md:h-96 object-cover"
                     />
                   </div>
-                  
+
                   {service.images.length > 1 && (
                     <>
                       <button
@@ -169,7 +277,7 @@ const ServiceDetailPage: React.FC = () => {
                   <span className="text-gray-500">لا توجد صور</span>
                 </div>
               )}
-              
+
               {service.images && service.images.length > 1 && (
                 <div className="flex gap-2 p-4 overflow-x-auto">
                   {service.images.map((image, index) => (
@@ -193,12 +301,12 @@ const ServiceDetailPage: React.FC = () => {
 
             {/* Service Details */}
             <Card>
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-wrap items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4">
                     {isRTL ? service.title_ar : service.title_en || service.title_ar}
                   </h1>
-                  
+
                   {/* Service Badges */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {service.owner.is_verified && <Badge type="verified" />}
@@ -225,7 +333,7 @@ const ServiceDetailPage: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-6 mb-6 text-gray-600">
                 {service.duration_minutes && (
                   <div className="flex items-center">
@@ -235,7 +343,7 @@ const ServiceDetailPage: React.FC = () => {
                 )}
                 <div className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  {service.is_on_site && service.is_online ? 'خدمة منزلية وعبر الإنترنت' : 
+                  {service.is_on_site && service.is_online ? 'خدمة منزلية وعبر الإنترنت' :
                    service.is_on_site ? 'خدمة منزلية' : 'عبر الإنترنت'}
                 </div>
                 <div className="flex items-center">
@@ -248,7 +356,7 @@ const ServiceDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-gray-700 leading-relaxed mb-6">
+              <p className="text-gray-700 leading-relaxed mb-6 break-words whitespace-normal">
                 {isRTL ? service.description_ar : service.description_en || service.description_ar}
               </p>
 
@@ -268,7 +376,7 @@ const ServiceDetailPage: React.FC = () => {
                   </ul>
                 </div>
               )}
-              
+
               {/* Action Buttons */}
               <div className="flex space-x-4 rtl:space-x-reverse pt-6 border-t border-gray-200">
                 <Button
@@ -291,23 +399,23 @@ const ServiceDetailPage: React.FC = () => {
 
             {/* Reviews Section */}
             <Card>
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
                 التقييمات والمراجعات
               </h3>
-              
+
               <div className="space-y-6">
                 {/* Review Summary */}
-                <div className="flex items-center gap-4 pb-6 border-b border-gray-200">
+                <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-gray-200">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-900">
-                      {service.owner.rating || 4.5}
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {avgRating.toFixed(1)}
                     </div>
                     <div className="flex items-center justify-center mb-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
                           className={`w-4 h-4 ${
-                            i < Math.floor(service.owner.rating || 4.5)
+                            i < Math.floor(avgRating)
                               ? 'text-yellow-400 fill-current'
                               : 'text-gray-300'
                           }`}
@@ -315,95 +423,110 @@ const ServiceDetailPage: React.FC = () => {
                       ))}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {service.owner.total_reviews || 0} تقييم
+                      {getTotalReviews()} تقييم
                     </div>
                   </div>
-                  
+
                   {/* Rating Distribution */}
                   <div className="flex-1 space-y-2">
-                    {[5, 4, 3, 2, 1].map((stars) => (
-                      <div key={stars} className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span className="text-sm text-gray-600 w-8">{stars}★</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-yellow-400 h-2 rounded-full"
-                            style={{ width: `${Math.random() * 80 + 10}%` }}
-                          />
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = ratingDistribution[stars as keyof RatingDistribution];
+                      const percentage = ratingDistribution.total > 0
+                        ? (count / ratingDistribution.total) * 100
+                        : 0;
+                      return (
+                        <div key={stars} className="flex items-center space-x-2 rtl:space-x-reverse">
+                          <span className="text-sm text-gray-600 w-8">{stars}★</span>
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-yellow-400 h-2 rounded-full transition-all"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600 w-8">
+                            {count}
+                          </span>
                         </div>
-                        <span className="text-sm text-gray-600 w-8">
-                          {Math.floor(Math.random() * 50 + 10)}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Individual Reviews - Mock data */}
+                {/* Individual Reviews */}
                 <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                      <div className="flex items-start gap-3">
-                        <img
-                          src={`https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=50`}
-                          alt="Reviewer"
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-gray-900">
-                              عميل {index + 1}
-                            </span>
-                            <div className="flex items-center">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < 5 - index
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
+                  {reviewsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <LoadingSpinner />
+                    </div>
+                  ) : reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={review.author.avatar || `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=50`}
+                            alt={review.author.full_name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-900">
+                                {review.author.full_name}
+                              </span>
+                              <div className="flex items-center">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${
+                                      i < review.rating
+                                        ? 'text-yellow-400 fill-current'
+                                        : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              {review.is_verified_purchase && (
+                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                                  شراء مُحقق
+                                </span>
+                              )}
                             </div>
-                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                              شراء مُحقق
-                            </span>
-                          </div>
-                          <p className="text-gray-700 text-sm">
-                            خدمة ممتازة وسريعة. تم إصلاح الثلاجة في وقت قياسي والفني محترف جداً.
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-gray-500">
-                              منذ {index + 1} أسبوع
-                            </span>
-                            <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                              <button className="flex items-center text-xs text-gray-500 hover:text-primary-600">
-                                <ThumbsUp className="w-3 h-3 mr-1" />
-                                مفيد (12)
-                              </button>
-                              <button className="text-xs text-gray-500 hover:text-primary-600">
-                                مفيد (12)
-                              </button>
-                              <button className="text-xs text-gray-500 hover:text-red-600">
-                                إبلاغ
-                              </button>
+                            <p className="text-gray-700 text-sm">
+                              {review.comment}
+                            </p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-gray-500">
+                                منذ {formatRelativeTime(review.created_at, isRTL ? 'ar' : 'en')}
+                              </span>
+                              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                <button className="flex items-center text-xs text-gray-500 hover:text-primary-600">
+                                  <ThumbsUp className="w-3 h-3 mr-1" />
+                                  مفيد ({review.helpful_count})
+                                </button>
+                                <button className="text-xs text-gray-500 hover:text-primary-600">
+                                  الإبلاغ
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-8">
+                      لا توجد تقييمات حتى الآن
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
-            
+
             {/* Similar Services */}
             {recommendations.length > 0 && (
               <Card>
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
                   خدمات مشابهة
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {recommendations.slice(0, 4).map((rec, index) => (
                     <Link key={index} to={`/services/${rec.recommended_service.slug}`}>
                       <Card hoverable className="!p-4">
@@ -411,7 +534,7 @@ const ServiceDetailPage: React.FC = () => {
                           <img
                             src={rec.recommended_service.primary_image?.image || 'https://images.pexels.com/photos/8985471/pexels-photo-8985471.jpeg?auto=compress&cs=tinysrgb&w=100'}
                             alt={rec.recommended_service.title_ar}
-                            className="w-16 h-16 rounded-lg object-cover"
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover"
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-gray-900 truncate">
@@ -439,7 +562,7 @@ const ServiceDetailPage: React.FC = () => {
             {/* Booking Card */}
             <Card>
               <div className="text-center mb-6">
-                <div className="text-3xl font-bold text-primary-600 mb-2">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary-600 mb-2">
                   {formatCurrency(service.price, isRTL ? 'ar' : 'en')}
                 </div>
                 <p className="text-gray-600">
@@ -450,15 +573,18 @@ const ServiceDetailPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <Button className="w-full" size="lg" disabled={!user}>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleBookNow}
+                >
                   {user ? 'احجز الآن' : 'سجل دخولك للحجز'}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
+                <Button
+                  variant="outline"
+                  className="w-full"
                   leftIcon={<MessageCircle className="w-5 h-5" />}
                   onClick={handleContactProvider}
-                  disabled={!user}
                 >
                   تواصل مع مقدم الخدمة
                 </Button>
@@ -467,19 +593,19 @@ const ServiceDetailPage: React.FC = () => {
 
             {/* Provider Info */}
             <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
                 مقدم الخدمة
               </h3>
-              
+
               <div className="flex items-center gap-3 mb-4">
                 {service.owner.avatar ? (
                   <img
                     src={service.owner.avatar}
                     alt={service.owner.full_name}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-primary rounded-full flex items-center justify-center">
                     <span className="text-white font-medium">
                       {service.owner.full_name.charAt(0)}
                     </span>
@@ -511,7 +637,7 @@ const ServiceDetailPage: React.FC = () => {
                 <MapPin className="w-4 h-4 mr-2" />
                 {service.governorate?.name_ar}, {service.center?.name_ar}
               </div>
-              
+
               <div className="space-y-3 mb-6 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">المشاهدات</span>
@@ -540,7 +666,11 @@ const ServiceDetailPage: React.FC = () => {
                   />
                 </div>
               )}
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleViewProviderProfile}
+              >
                 عرض الملف الشخصي
               </Button>
             </Card>
@@ -572,7 +702,7 @@ const ServiceDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Report Modal */}
       <ReportModal
         isOpen={showReportModal}
@@ -581,7 +711,7 @@ const ServiceDetailPage: React.FC = () => {
         targetId={service.id.toString()}
         targetTitle={service.title_ar}
       />
-      
+
       {/* Review Modal */}
       <ReviewForm
         isOpen={showReviewModal}
@@ -589,7 +719,7 @@ const ServiceDetailPage: React.FC = () => {
         serviceId={service.id.toString()}
         serviceTitle={service.title_ar}
         onReviewSubmitted={() => {
-          // Refresh reviews
+          loadReviews();
         }}
       />
     </div>

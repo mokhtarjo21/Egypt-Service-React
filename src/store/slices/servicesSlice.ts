@@ -80,7 +80,7 @@ export const fetchServices = createAsyncThunk(
       }
 
       return {
-        results: data.results || [],
+        results: data || [],
         count: pagination?.total || 0,
         current_page: pagination?.page || 1,
         page_size: pagination?.limit || 20,

@@ -2,7 +2,7 @@ import axios, { AxiosResponse, AxiosError } from 'axios';
 
 // Create axios instance
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://192.168.1.7:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ apiClient.interceptors.response.use(
       if (refreshToken) {
         try {
           const response = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://192.168.1.7:8000/api/v1'}/accounts/auth/refresh/`,
+            `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/accounts/auth/refresh/`,
             { refresh: refreshToken }
           );
 

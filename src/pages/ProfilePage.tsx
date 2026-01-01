@@ -27,7 +27,7 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import djangoProfileService from '../services/django/profileService';
 import { fetchUserProfile } from '../store/slices/authSlice';
 
-const API_BASE = import.meta.env?.VITE_API_BASE || 'http://192.168.1.7:8000';
+const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:8000';
 
 interface Badge {
   id: string;

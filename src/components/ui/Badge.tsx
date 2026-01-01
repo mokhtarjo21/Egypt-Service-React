@@ -5,7 +5,7 @@ import { Shield, Star, Zap, Trophy, Award, Sparkles } from 'lucide-react';
 
 interface BadgeProps {
   type: 'verified' | 'top_rated' | 'responsive' | 'featured' | 'expert' | 'new_provider';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | { sm?: string; md?: string; lg?: string };
   showTooltip?: boolean;
   className?: string;
 }
@@ -60,29 +60,41 @@ export const Badge: React.FC<BadgeProps> = ({
   const config = badgeConfig[type];
   const Icon = config.icon;
 
-  const sizeClasses = {
-    sm: 'px-2 py-1 text-xs',
-    md: 'px-2.5 py-1 text-xs',
-    lg: 'px-3 py-1.5 text-sm',
-  };
+  const sizeClasses = typeof size === 'string'
+    ? {
+        sm: 'px-2 py-1 text-xs',
+        md: 'px-2.5 py-1 text-xs',
+        lg: 'px-3 py-1.5 text-sm',
+      }[size]
+    : clsx(
+        size.sm && `sm:${size.sm}`,
+        size.md && `md:${size.md}`,
+        size.lg && `lg:${size.lg}`
+      );
 
-  const iconSizes = {
-    sm: 'w-3 h-3',
-    md: 'w-3.5 h-3.5',
-    lg: 'w-4 h-4',
-  };
+  const iconSizes = typeof size === 'string'
+    ? {
+        sm: 'w-3 h-3',
+        md: 'w-3.5 h-3.5',
+        lg: 'w-4 h-4',
+      }[size]
+    : clsx(
+        size.sm && `sm:w-${size.sm} sm:h-${size.sm}`,
+        size.md && `md:w-${size.md} md:h-${size.md}`,
+        size.lg && `lg:w-${size.lg} lg:h-${size.lg}`
+      );
 
   return (
     <span
       className={clsx(
         'inline-flex items-center rounded-full font-medium border',
         config.color,
-        sizeClasses[size],
+        sizeClasses,
         className
       )}
       title={showTooltip ? config.tooltip : undefined}
     >
-      <Icon className={clsx(iconSizes[size], 'mr-1 rtl:mr-0 rtl:ml-1')} />
+      <Icon className={clsx(iconSizes, 'mr-1 rtl:mr-0 rtl:ml-1')} />
       {config.label}
     </span>
   );

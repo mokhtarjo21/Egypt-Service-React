@@ -30,7 +30,7 @@ const DashboardPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [timeFilter, setTimeFilter] = useState(30);
  const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   useEffect(() => {
     if (user) {
       fetchDashboardData();

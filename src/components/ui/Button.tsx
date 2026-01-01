@@ -4,7 +4,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | { sm?: string; md?: string; lg?: string };
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -30,24 +30,36 @@ export const Button: React.FC<ButtonProps> = ({
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500',
   };
 
-  const sizeClasses = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2.5 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
+  const sizeClasses = typeof size === 'string'
+    ? {
+        sm: 'px-3 py-2 text-sm',
+        md: 'px-4 py-2.5 text-base',
+        lg: 'px-6 py-3 text-lg',
+      }[size]
+    : clsx(
+        size.sm && `sm:${size.sm}`,
+        size.md && `md:${size.md}`,
+        size.lg && `lg:${size.lg}`
+      );
 
-  const iconSizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6',
-  };
+  const iconSizeClasses = typeof size === 'string'
+    ? {
+        sm: 'w-4 h-4',
+        md: 'w-5 h-5',
+        lg: 'w-6 h-6',
+      }[size]
+    : clsx(
+        size.sm && `sm:w-${size.sm} sm:h-${size.sm}`,
+        size.md && `md:w-${size.md} md:h-${size.md}`,
+        size.lg && `lg:w-${size.lg} lg:h-${size.lg}`
+      );
 
   return (
     <button
       className={clsx(
         baseClasses,
         variantClasses[variant],
-        sizeClasses[size],
+        sizeClasses,
         className
       )}
       disabled={disabled || isLoading}
@@ -56,13 +68,13 @@ export const Button: React.FC<ButtonProps> = ({
       {isLoading ? (
         <LoadingSpinner size="sm" className="mr-2 rtl:mr-0 rtl:ml-2" />
       ) : leftIcon ? (
-        <span className={clsx('mr-2 rtl:mr-0 rtl:ml-2', iconSizeClasses[size])}>{leftIcon}</span>
+        <span className={clsx('mr-2 rtl:mr-0 rtl:ml-2', iconSizeClasses)}>{leftIcon}</span>
       ) : null}
 
       {children}
 
       {!isLoading && rightIcon && (
-        <span className={clsx('ml-2 rtl:ml-0 rtl:mr-2', iconSizeClasses[size])}>{rightIcon}</span>
+        <span className={clsx('ml-2 rtl:ml-0 rtl:mr-2', iconSizeClasses)}>{rightIcon}</span>
       )}
     </button>
   );

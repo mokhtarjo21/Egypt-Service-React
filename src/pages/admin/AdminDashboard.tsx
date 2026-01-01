@@ -65,7 +65,7 @@ const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
   const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'services' | 'reports'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);

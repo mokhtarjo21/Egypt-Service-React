@@ -26,7 +26,7 @@ import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
  const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://192.168.1.7:8000") ;
+  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
 interface Device {
   id: string;
   device_name: string;

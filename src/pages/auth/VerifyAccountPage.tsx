@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 
-const API_BASE = import.meta.env?.VITE_API_BASE || 'http://192.168.1.7:8000';
+const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:8000';
 
 const VerifyAccountPage: React.FC = () => {
   const { t } = useTranslation();

@@ -24,11 +24,11 @@ export const LanguageToggle: React.FC = () => {
       variant="ghost"
       size="sm"
       onClick={toggleLanguage}
-      className="flex items-center gap-2 hover:bg-gray-100 transition-colors"
+      className="flex items-center gap-2 sm:gap-3 hover:bg-gray-100 transition-colors"
       aria-label={`Switch to ${getCurrentLanguageLabel()}`}
     >
-      <Globe className="w-4 h-4" />
-      <span className="text-sm font-medium">
+      <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+      <span className="text-sm sm:text-base font-medium">
         {getCurrentLanguageCode()}
       </span>
     </Button>
