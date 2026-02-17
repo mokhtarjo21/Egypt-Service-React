@@ -163,6 +163,7 @@
       "remove_content": "حذف المحتوى"
     }
   },
+
   "policy": {
     "title": "السياسات",
     "effectiveDate": "نافذ من",
@@ -205,6 +206,7 @@
     "menu": "القائمة"
   },
   "auth": {
+     "login_required": "يرجى تسجيل الدخول لعرض لوحة التحكم",
     "login": {
       "title": "مرحباً بعودتك",
       "subtitle": "سجل دخولك للوصول إلى حسابك",
@@ -391,8 +393,39 @@
     "disable": "إلغاء التفعيل"
   },
   "dashboard": {
+    "welcome": "مرحباً",
+    "subtitle": "نظرة عامة على أداء حسابك",
+
+    "last_7_days": "آخر 7 أيام",
+    "last_30_days": "آخر 30 يوم",
+    "last_90_days": "آخر 90 يوم",
+
+    "total_profile_views": "مشاهدات الملف الشخصي",
+    "total_service_views": "مشاهدات الخدمات",
+    "total_messages": "الرسائل",
+    "total_bookings": "الحجوزات",
+    "total_revenue": "إجمالي الإيرادات",
+    "avg_rating": "متوسط التقييم",
+
+    "conversion_rate": "معدل التحويل",
+    "avg_response_time": "متوسط زمن الاستجابة",
+
+    "daily_performance": "الأداء اليومي",
+    "no_data": "لا توجد بيانات لعرضها",
+
+    "top_services": "أفضل الخدمات",
+    "views": "مشاهدة",
+
+    "pending_reports": "بلاغات قيد الانتظار",
+    "assigned_reports": "بلاغات مخصصة",
+    "overdue_reports": "بلاغات متأخرة",
+    "pending_appeals": "طعون قيد الانتظار",
+    "overdue_appeals": "طعون متأخرة",
+
+    "moderator_workload": "عبء عمل المشرفين",
+    "active_reports": "بلاغ نشط",
     "title": "لوحة التحكم",
-    "welcome": "مرحباً، {{name}}",
+    
     "overview": "نظرة عامة",
     "statistics": "الإحصائيات",
     "recentActivity": "النشاط الأخير",
@@ -591,6 +624,7 @@
     }
   },
   "common": {
+    "na": "غير متوفر",
     "loading": "جاري التحميل...",
     "error": "حدث خطأ",
     "success": "تم بنجاح",

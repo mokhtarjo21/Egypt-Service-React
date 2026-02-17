@@ -19,7 +19,7 @@ import { formatCurrency, formatRelativeTime } from '../utils/dateFormatter';
 
 interface Review {
   id: string;
-  author: {
+  reviewer: {
     id: string;
     full_name: string;
     avatar?: string;
@@ -119,6 +119,8 @@ const ServiceDetailPage: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
+        
         const reviewsArray = Array.isArray(data) ? data : data.results || [];
         setReviews(reviewsArray);
 
@@ -159,7 +161,7 @@ const ServiceDetailPage: React.FC = () => {
       return;
     }
     // Navigate to booking page or show booking modal
-    toast.info('سيتم توجيهك إلى صفحة الحجز');
+    toast.success('سيتم توجيهك إلى صفحة الحجز');
     // TODO: Implement booking flow
   };
 
@@ -463,14 +465,14 @@ const ServiceDetailPage: React.FC = () => {
                       <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
                         <div className="flex items-start gap-3">
                           <img
-                            src={review.author.avatar || `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=50`}
-                            alt={review.author.full_name}
+                            src={review.reviewer.avatar || `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=50`}
+                            alt={review.reviewer.full_name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-gray-900">
-                                {review.author.full_name}
+                                {review.reviewer.full_name}
                               </span>
                               <div className="flex items-center">
                                 {Array.from({ length: 5 }).map((_, i) => (

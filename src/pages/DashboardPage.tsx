@@ -1,84 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { 
-  BarChart3, 
-  Users, 
-  Star, 
-  TrendingUp, 
-  Plus,
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import {
   Eye,
+  BarChart3,
   MessageCircle,
   Calendar,
-  Download,
-} from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+  TrendingUp,
+  Star,
+  Users,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-import { RootState } from '../store/store';
-import { useSubscription } from '../hooks/useSubscription';
-import { FeatureGate } from '../components/ui/FeatureGate';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { RootState } from "../store/store";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { subscription, getRemainingServices, getRemainingFeaturedCredits } = useSubscription();
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [timeFilter, setTimeFilter] = useState(30);
- const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [activity, setActivity] = useState<any>(null);
+  const [days, setDays] = useState(7);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user, timeFilter]);
+    if (!user) return;
+    fetchData();
+  }, [user, days]);
 
-  const fetchDashboardData = async () => {
-    setIsLoading(true);
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      // Fetch analytics data
-      const analyticsResponse = await fetch(`${API_BASE}/api/v1/analytics/provider/?days=${timeFilter}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
+      const [analyticsRes, activityRes] = await Promise.all([
+        fetch(`${API_BASE}/api/v1/analytics/provider/?days=${days}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }),
+        fetch(`${API_BASE}/api/v1/moderation/dashboard`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }),
+      ]);
 
-      if (analyticsResponse.ok) {
-        const analytics = await analyticsResponse.json();
-        setAnalyticsData(analytics.results);
+      if (analyticsRes.ok) {
+        setAnalytics(await analyticsRes.json());
       }
 
-      // Fetch recent activity
-      const activityResponse = await fetch(`${API_BASE}/api/v1/moderation/dashboard`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (activityResponse.ok) {
-        const activity = await activityResponse.json();
-        setRecentActivity(activity.results);
+      if (activityRes.ok) {
+        setActivity(await activityRes.json());
       }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch (e) {
+      console.error(e);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>يرجى تسجيل الدخول لعرض لوحة التحكم</p>
+        {t("auth.login_required")}
       </div>
     );
   }
 
-  if (isLoading) {
+  if (loading || !analytics || !activity) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -86,114 +86,154 @@ const DashboardPage: React.FC = () => {
     );
   }
 
+  const stats = [
+    { key: "total_profile_views", icon: Eye },
+    { key: "total_service_views", icon: BarChart3 },
+    { key: "total_messages", icon: MessageCircle },
+    { key: "total_bookings", icon: Calendar },
+    { key: "total_revenue", icon: TrendingUp },
+    { key: "avg_rating", icon: Star },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              مرحباً، {user.full_name}
+            <h1 className="text-3xl font-bold">
+              {t("dashboard.welcome")}, {user.full_name}
             </h1>
-            <p className="text-gray-600">
-              {user.user_type === 'provider' ? 'تحليلات أداء خدماتك' : 'تتبع حجوزاتك ومراجعاتك'}
+            <p className="text-gray-500">
+              {t("dashboard.subtitle")}
             </p>
           </div>
-          
-          <div className="flex items-center space-x-4 rtl:space-x-reverse">
-            <select
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value={7}>آخر 7 أيام</option>
-              <option value={30}>آخر 30 يوم</option>
-              <option value={90}>آخر 90 يوم</option>
-            </select>
-            
-            {user.user_type === 'provider' && (
-              <>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  تصدير CSV
-                </Button>
-                <Button leftIcon={<Plus className="w-5 h-5" />}>
-                  إضافة خدمة جديدة
-                </Button>
-              </>
-            )}
-          </div>
+
+          <select
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+            className="border rounded-md px-3 py-2"
+          >
+            <option value={7}>{t("dashboard.last_7_days")}</option>
+            <option value={30}>{t("dashboard.last_30_days")}</option>
+            <option value={90}>{t("dashboard.last_90_days")}</option>
+          </select>
         </div>
 
-        {/* Analytics for Providers */}
-        {user.user_type === 'provider' && analyticsData ? (
-          <div className="space-y-8">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  label: 'مشاهدات الملف الشخصي',
-                  value: analyticsData.current_totals.total_profile_views || 0,
-                  icon: Eye,
-                  color: 'text-blue-600',
-                },
-                {
-                  label: 'مشاهدات الخدمات',
-                  value: analyticsData.current_totals.total_service_views || 0,
-                  icon: BarChart3,
-                  color: 'text-green-600',
-                },
-                {
-                  label: 'الرسائل',
-                  value: analyticsData.current_totals.total_messages || 0,
-                  icon: MessageCircle,
-                  color: 'text-purple-600',
-                },
-                {
-                  label: 'معدل التحويل',
-                  value: `${analyticsData.conversion_rate.toFixed(1)}%`,
-                  icon: TrendingUp,
-                  color: 'text-orange-600',
-                },
-              ].map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <Card key={index}>
-                    <div className="flex items-center">
-                      <div className={`p-3 rounded-lg bg-gray-100 ${stat.color}`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div className="ml-4 rtl:ml-0 rtl:mr-4">
-                        <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {/* Recent Activity */}
-            <Card>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                النشاط الأخير
-              </h3>
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{activity.title}</p>
-                      <p className="text-sm text-gray-600">{activity.description}</p>
-                    </div>
-                    <p className="text-sm text-gray-500">{activity.date}</p>
-                  </div>
-                ))}
+        {/* KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {stats.map(({ key, icon: Icon }) => (
+            <Card key={key} className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500">
+                    {t(`dashboard.${key}`)}
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {analytics.current_totals[key] ?? 0}
+                  </p>
+                </div>
+                <Icon className="w-6 h-6 text-primary" />
               </div>
             </Card>
-          </div>
-        ) : (
-          <p>لا توجد بيانات لعرضها</p>
-        )}
+          ))}
+        </div>
+
+        {/* Conversion + Response */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <p className="text-gray-500">{t("dashboard.conversion_rate")}</p>
+            <p className="text-4xl font-bold text-green-600">
+              {analytics.conversion_rate}%
+            </p>
+          </Card>
+
+          <Card className="p-6">
+            <p className="text-gray-500">{t("dashboard.avg_response_time")}</p>
+            <p className="text-4xl font-bold">
+              {analytics.current_totals.avg_response_time ?? t("common.na")}
+            </p>
+          </Card>
+        </div>
+
+        {/* Daily Chart */}
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4">
+            {t("dashboard.daily_performance")}
+          </h3>
+
+          {analytics.daily_data.length === 0 ? (
+            <p className="text-center text-gray-500">
+              {t("dashboard.no_data")}
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analytics.daily_data}>
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line dataKey="views" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+
+        {/* Top Services */}
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4">
+            {t("dashboard.top_services")}
+          </h3>
+
+          <ul className="space-y-3">
+            {analytics.top_services.map((service: any) => (
+              <li
+                key={service.slug}
+                className="flex justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <span>{service.title}</span>
+                <span className="text-sm text-gray-500">
+                  {service.views} {t("dashboard.views")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        {/* Queue Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Object.entries(activity.queue_stats).map(([key, value]) => (
+            <Card key={key} className="p-4 text-center">
+              <p className="text-sm text-gray-500">
+                {t(`dashboard.${key}`)}
+              </p>
+              <p className="text-2xl font-bold">{value as number}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* Moderator Workload */}
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            {t("dashboard.moderator_workload")}
+          </h3>
+
+          <ul className="space-y-3">
+            {activity.moderator_workload.map((mod: any) => (
+              <li
+                key={mod.id}
+                className="flex justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <span>{mod.full_name}</span>
+                <span className="text-sm text-gray-500">
+                  {mod.active_reports} {t("dashboard.active_reports")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
       </div>
     </div>
   );

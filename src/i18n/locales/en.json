@@ -1,4 +1,8 @@
 {
+ 
+
+  
+
   "hero": {
     "title": "Find the Best Services in Egypt",
     "subtitle": "Discover thousands of services from trusted providers across Egypt",
@@ -205,6 +209,7 @@
     "menu": "Menu"
   },
   "auth": {
+     "login_required": "Please log in to view the dashboard",
     "login": {
       "title": "Welcome Back",
       "subtitle": "Sign in to access your account",
@@ -274,14 +279,14 @@
     "category": "Category",
     "subcategory": "Subcategory",
     "priceRange": "Price Range",
-    "location": "Location",
+    
     "serviceType": "Service Type",
     "online": "Online",
     "onSite": "On-Site",
     "both": "Both",
-    "rating": "Rating",
+    
     "experience": "Years of Experience",
-    "availability": "Availability",
+    
     "clearFilters": "Clear Filters",
     "applyFilters": "Apply Filters",
     "sortBy": "Sort By",
@@ -394,8 +399,38 @@
     "disable": "Disable"
   },
   "dashboard": {
+    "welcome": "Welcome",
+    "subtitle": "Overview of your account performance",
+
+    "last_7_days": "Last 7 days",
+    "last_30_days": "Last 30 days",
+    "last_90_days": "Last 90 days",
+
+    "total_profile_views": "Profile Views",
+    "total_service_views": "Service Views",
+    "total_messages": "Messages",
+    "total_bookings": "Bookings",
+    "total_revenue": "Total Revenue",
+    "avg_rating": "Average Rating",
+
+    "conversion_rate": "Conversion Rate",
+    "avg_response_time": "Average Response Time",
+
+    "daily_performance": "Daily Performance",
+    "no_data": "No data available",
+
+    "top_services": "Top Services",
+    "views": "views",
+
+    "pending_reports": "Pending Reports",
+    "assigned_reports": "Assigned Reports",
+    "overdue_reports": "Overdue Reports",
+    "pending_appeals": "Pending Appeals",
+    "overdue_appeals": "Overdue Appeals",
+
+    "moderator_workload": "Moderator Workload",
+    "active_reports": "Active Reports",
     "title": "Dashboard",
-    "welcome": "Welcome, {{name}}",
     "overview": "Overview",
     "statistics": "Statistics",
     "recentActivity": "Recent Activity",
@@ -594,6 +629,7 @@
     }
   },
   "common": {
+    "na": "N/A",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -688,9 +724,9 @@
     "required": "Required",
     "optional": "Optional",
     "recommended": "Recommended",
-    "popular": "Popular",
+    
     "trending": "Trending",
-    "featured": "Featured",
+    
     "sponsored": "Sponsored",
     "verified": "Verified",
     "unverified": "Unverified",

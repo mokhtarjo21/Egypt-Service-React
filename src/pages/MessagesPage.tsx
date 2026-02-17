@@ -16,7 +16,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { useDirection } from '../hooks/useDirection';
-
+import { useSearchParams } from "react-router-dom";
 interface Conversation {
   id: string;
   service: {
@@ -55,7 +55,8 @@ const MessagesPage: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const { user } = useSelector((state: RootState) => state.auth);
-  
+  const [searchParams] = useSearchParams();
+  const providerId = searchParams.get("provider") || null;
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -66,6 +67,9 @@ const MessagesPage: React.FC = () => {
   (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   useEffect(() => {
     loadConversations();
+    if (providerId) {
+      loadMessages(providerId);
+    }
   }, []);
 
   useEffect(() => {
@@ -84,6 +88,8 @@ const MessagesPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
+        
         setConversations(data.results);
         return;
       }
@@ -106,6 +112,7 @@ const MessagesPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         setMessages(data.results);
         return;
       }
@@ -136,9 +143,11 @@ const MessagesPage: React.FC = () => {
           message_type: 'text',
         }),
       });
-
+      
+      
       if (response.ok) {
         setNewMessage('');
+
         loadMessages(selectedConversation.id); // Refresh messages
       }
     } catch (error) {

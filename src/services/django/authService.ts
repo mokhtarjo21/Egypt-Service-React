@@ -1,6 +1,6 @@
 import { apiClient } from "../api/client";
 import toast from "react-hot-toast";
-const API_BASE = import.meta.env?.VITE_API_BASE ||"";
+const API_BASE = import.meta.env?.VITE_API_URL ||"";
 
 interface AuthTokens {
   access: string;
@@ -96,6 +96,8 @@ export const djangoAuthService = {
 
   async signIn(phoneNumber: string, password: string) {
     try {
+      console.log(phoneNumber,password);
+      
       const response = await apiClient.post<AuthResponse>(
         API_BASE + "/accounts/auth/login/",
         {
