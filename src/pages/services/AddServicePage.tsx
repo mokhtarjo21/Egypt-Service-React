@@ -97,7 +97,6 @@ const AddServicePage: React.FC = () => {
       const response = await fetch(API_BASE+'/api/v1/services/categories/');
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         
         setCategories(data.results);
       }
@@ -111,7 +110,7 @@ const AddServicePage: React.FC = () => {
       const response = await fetch(`${API_BASE}/api/v1/services/subcategories/?category__slug=${categoryId}`);
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
+       
         
         setSubcategories(data.results);
       }
@@ -122,7 +121,7 @@ const AddServicePage: React.FC = () => {
 
   const loadGovernorates = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/health/geo/governorates/');
+      const response = await fetch(API_BASE+'/api/v1/health/geo/governorates');
       if (response.ok) {
         const data = await response.json();
         setGovernorates(data.results);
@@ -191,7 +190,7 @@ const AddServicePage: React.FC = () => {
       }
 
       const service = await serviceResponse.json();
-      console.log(service);
+      
       
       // Upload images if any
       if (selectedImages.length > 0) {

@@ -50,7 +50,7 @@ const ServiceDetailPage: React.FC = () => {
   const { currentService: service, isLoading } = useSelector((state: RootState) => state.services);
   const { user } = useSelector((state: RootState) => state.auth);
   const API_BASE =
-    (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+    (import.meta.env?.VITE_API_BASE || "http://localhost:8000");
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -119,8 +119,8 @@ const ServiceDetailPage: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
-        
+
+
         const reviewsArray = Array.isArray(data) ? data : data.results || [];
         setReviews(reviewsArray);
 
@@ -156,18 +156,16 @@ const ServiceDetailPage: React.FC = () => {
 
   const handleBookNow = () => {
     if (!user) {
-      toast.error('يرجى تسجيل الدخول لحجز هذه الخدمة');
+      toast.error(t('serviceDetail.toasts.loginToBook'));
       navigate('/login');
       return;
     }
-    // Navigate to booking page or show booking modal
-    toast.success('سيتم توجيهك إلى صفحة الحجز');
-    // TODO: Implement booking flow
+    navigate(`/services/${service.slug}/book`);
   };
 
   const handleContactProvider = () => {
     if (!user) {
-      toast.error('يرجى تسجيل الدخول للتواصل مع مقدم الخدمة');
+      toast.error(t('serviceDetail.toasts.loginToContact'));
       navigate('/login');
       return;
     }
@@ -214,10 +212,10 @@ const ServiceDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">الخدمة غير موجودة</h2>
-          <p className="text-gray-600 mb-4">الخدمة التي تبحث عنها غير متاحة أو تم حذفها</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('serviceDetail.notFound.title')}</h2>
+          <p className="text-gray-600 mb-4">{t('serviceDetail.notFound.description')}</p>
           <Link to="/services">
-            <Button>تصفح الخدمات</Button>
+            <Button>{t('serviceDetail.notFound.browse')}</Button>
           </Link>
         </div>
       </div>
@@ -232,9 +230,9 @@ const ServiceDetailPage: React.FC = () => {
         {/* Breadcrumb */}
         <nav className="mb-6">
           <div className="flex flex-wrap items-center space-x-2 rtl:space-x-reverse text-sm sm:text-base text-gray-600">
-            <Link to="/" className="hover:text-primary-600">الرئيسية</Link>
+            <Link to="/" className="hover:text-primary-600">{t('serviceDetail.breadcrumb.home')}</Link>
             <span>/</span>
-            <Link to="/services" className="hover:text-primary-600">الخدمات</Link>
+            <Link to="/services" className="hover:text-primary-600">{t('serviceDetail.breadcrumb.services')}</Link>
             <span>/</span>
             <span className="text-gray-900">{service.category.name_ar}</span>
             <span>/</span>
@@ -276,7 +274,7 @@ const ServiceDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="aspect-w-16 aspect-h-10 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500">لا توجد صور</span>
+                  <span className="text-gray-500">{t('serviceDetail.noImages')}</span>
                 </div>
               )}
 
@@ -286,9 +284,8 @@ const ServiceDetailPage: React.FC = () => {
                     <button
                       key={image.id}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                        index === currentImageIndex ? 'border-primary-500' : 'border-transparent'
-                      }`}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${index === currentImageIndex ? 'border-primary-500' : 'border-transparent'
+                        }`}
                     >
                       <img
                         src={image.image}
@@ -336,25 +333,25 @@ const ServiceDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 mb-6 text-gray-600">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-4 sm:mb-6 text-sm sm:text-base text-gray-600">
                 {service.duration_minutes && (
                   <div className="flex items-center">
                     <Clock className="w-5 h-5 mr-2" />
-                    {service.duration_minutes} دقيقة
+                    {service.duration_minutes} {t('serviceDetail.minutes')}
                   </div>
                 )}
                 <div className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  {service.is_on_site && service.is_online ? 'خدمة منزلية وعبر الإنترنت' :
-                   service.is_on_site ? 'خدمة منزلية' : 'عبر الإنترنت'}
+                  {service.is_on_site && service.is_online ? t('serviceDetail.locationTypes.both') :
+                    service.is_on_site ? t('serviceDetail.locationTypes.onSite') : t('serviceDetail.locationTypes.online')}
                 </div>
                 <div className="flex items-center">
                   <Users className="w-5 h-5 mr-2" />
-                  حتى {service.max_participants} شخص
+                  {t('serviceDetail.upToParticipants', { count: service.max_participants })}
                 </div>
                 <div className="flex items-center">
                   <Eye className="w-5 h-5 mr-2" />
-                  {service.views_count} مشاهدة
+                  {service.views_count} {t('serviceDetail.views')}
                 </div>
               </div>
 
@@ -366,7 +363,7 @@ const ServiceDetailPage: React.FC = () => {
               {service.attribute_values && service.attribute_values.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    مميزات الخدمة
+                    {t('serviceDetail.features')}
                   </h3>
                   <ul className="grid md:grid-cols-2 gap-2">
                     {service.attribute_values.map((attr, index) => (
@@ -387,14 +384,14 @@ const ServiceDetailPage: React.FC = () => {
                   leftIcon={<Star className="w-4 h-4" />}
                   disabled={!user}
                 >
-                  كتابة تقييم
+                  {t('serviceDetail.actions.writeReview')}
                 </Button>
                 <Button
                   variant="outline"
                   leftIcon={<Flag className="w-4 h-4" />}
                   onClick={() => setShowReportModal(true)}
                 >
-                  إبلاغ
+                  {t('serviceDetail.actions.report')}
                 </Button>
               </div>
             </Card>
@@ -402,7 +399,7 @@ const ServiceDetailPage: React.FC = () => {
             {/* Reviews Section */}
             <Card>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
-                التقييمات والمراجعات
+                {t('serviceDetail.reviews.title')}
               </h3>
 
               <div className="space-y-6">
@@ -416,16 +413,15 @@ const ServiceDetailPage: React.FC = () => {
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < Math.floor(avgRating)
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          }`}
+                          className={`w-4 h-4 ${i < Math.floor(avgRating)
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                            }`}
                         />
                       ))}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {getTotalReviews()} تقييم
+                      {getTotalReviews()} {t('serviceDetail.reviews.ratings')}
                     </div>
                   </div>
 
@@ -478,17 +474,16 @@ const ServiceDetailPage: React.FC = () => {
                                 {Array.from({ length: 5 }).map((_, i) => (
                                   <Star
                                     key={i}
-                                    className={`w-4 h-4 ${
-                                      i < review.rating
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
+                                    className={`w-4 h-4 ${i < review.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                      }`}
                                   />
                                 ))}
                               </div>
                               {review.is_verified_purchase && (
                                 <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                                  شراء مُحقق
+                                  {t('serviceDetail.reviews.verifiedPurchase')}
                                 </span>
                               )}
                             </div>
@@ -497,15 +492,15 @@ const ServiceDetailPage: React.FC = () => {
                             </p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-xs text-gray-500">
-                                منذ {formatRelativeTime(review.created_at, isRTL ? 'ar' : 'en')}
+                                {t('serviceDetail.reviews.ago', { time: formatRelativeTime(review.created_at, isRTL ? 'ar' : 'en') })}
                               </span>
                               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                 <button className="flex items-center text-xs text-gray-500 hover:text-primary-600">
                                   <ThumbsUp className="w-3 h-3 mr-1" />
-                                  مفيد ({review.helpful_count})
+                                  {t('serviceDetail.reviews.helpful', { count: review.helpful_count })}
                                 </button>
                                 <button className="text-xs text-gray-500 hover:text-primary-600">
-                                  الإبلاغ
+                                  {t('serviceDetail.reviews.report')}
                                 </button>
                               </div>
                             </div>
@@ -515,7 +510,7 @@ const ServiceDetailPage: React.FC = () => {
                     ))
                   ) : (
                     <p className="text-center text-gray-500 py-8">
-                      لا توجد تقييمات حتى الآن
+                      {t('serviceDetail.reviews.noReviews')}
                     </p>
                   )}
                 </div>
@@ -526,7 +521,7 @@ const ServiceDetailPage: React.FC = () => {
             {recommendations.length > 0 && (
               <Card>
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
-                  خدمات مشابهة
+                  {t('serviceDetail.similarServices')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {recommendations.slice(0, 4).map((rec, index) => (
@@ -568,9 +563,9 @@ const ServiceDetailPage: React.FC = () => {
                   {formatCurrency(service.price, isRTL ? 'ar' : 'en')}
                 </div>
                 <p className="text-gray-600">
-                  {service.pricing_type === 'fixed' ? 'سعر ثابت' :
-                   service.pricing_type === 'hourly' ? 'بالساعة' :
-                   service.pricing_type === 'package' ? 'باقة' : 'قابل للتفاوض'}
+                  {service.pricing_type === 'fixed' ? t('serviceDetail.pricingTypes.fixed') :
+                    service.pricing_type === 'hourly' ? t('serviceDetail.pricingTypes.hourly') :
+                      service.pricing_type === 'package' ? t('serviceDetail.pricingTypes.package') : t('serviceDetail.pricingTypes.negotiable')}
                 </p>
               </div>
 
@@ -580,7 +575,7 @@ const ServiceDetailPage: React.FC = () => {
                   size="lg"
                   onClick={handleBookNow}
                 >
-                  {user ? 'احجز الآن' : 'سجل دخولك للحجز'}
+                  {user ? t('serviceDetail.sidebar.bookNow') : t('serviceDetail.sidebar.loginToBook')}
                 </Button>
                 <Button
                   variant="outline"
@@ -588,7 +583,7 @@ const ServiceDetailPage: React.FC = () => {
                   leftIcon={<MessageCircle className="w-5 h-5" />}
                   onClick={handleContactProvider}
                 >
-                  تواصل مع مقدم الخدمة
+                  {t('serviceDetail.sidebar.contactProvider')}
                 </Button>
               </div>
             </Card>
@@ -596,7 +591,7 @@ const ServiceDetailPage: React.FC = () => {
             {/* Provider Info */}
             <Card>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
-                مقدم الخدمة
+                {t('serviceDetail.sidebar.providerInfo')}
               </h3>
 
               <div className="flex items-center gap-3 mb-4">
@@ -624,7 +619,7 @@ const ServiceDetailPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    {service.owner.rating || 4.5} ({service.owner.total_reviews || 0} تقييم)
+                    {service.owner.rating || 4.5} ({service.owner.total_reviews || 0} {t('serviceDetail.sidebar.evaluations')})
                   </div>
                 </div>
               </div>
@@ -642,15 +637,15 @@ const ServiceDetailPage: React.FC = () => {
 
               <div className="space-y-3 mb-6 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">المشاهدات</span>
+                  <span className="text-gray-600">{t('serviceDetail.sidebar.stats.views')}</span>
                   <span className="font-medium">{service.views_count}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">الاستفسارات</span>
+                  <span className="text-gray-600">{t('serviceDetail.sidebar.stats.inquiries')}</span>
                   <span className="font-medium">{service.inquiries_count}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">عضو منذ</span>
+                  <span className="text-gray-600">{t('serviceDetail.sidebar.stats.memberSince')}</span>
                   <span className="font-medium">
                     {formatRelativeTime(service.created_at, isRTL ? 'ar' : 'en')}
                   </span>
@@ -673,31 +668,31 @@ const ServiceDetailPage: React.FC = () => {
                 className="w-full"
                 onClick={handleViewProviderProfile}
               >
-                عرض الملف الشخصي
+                {t('serviceDetail.sidebar.viewProfile')}
               </Button>
             </Card>
 
             {/* Safety Tips */}
             <Card>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                نصائح الأمان
+                {t('serviceDetail.safetyTips.title')}
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-start">
                   <Shield className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  تأكد من هوية مقدم الخدمة
+                  {t('serviceDetail.safetyTips.tip1')}
                 </li>
                 <li className="flex items-start">
                   <Shield className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  لا تدفع مقدماً قبل إنجاز الخدمة
+                  {t('serviceDetail.safetyTips.tip2')}
                 </li>
                 <li className="flex items-start">
                   <Shield className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  احتفظ بإيصال الدفع
+                  {t('serviceDetail.safetyTips.tip3')}
                 </li>
                 <li className="flex items-start">
                   <Shield className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                  استخدم منصة المراسلة للتواصل
+                  {t('serviceDetail.safetyTips.tip4')}
                 </li>
               </ul>
             </Card>

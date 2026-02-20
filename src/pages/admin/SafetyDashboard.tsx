@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { 
-  AlertTriangle, 
-  Shield, 
-  Clock, 
-  CheckCircle, 
+import {
+  AlertTriangle,
+  Shield,
+  Clock,
+  CheckCircle,
   XCircle,
   Eye,
   MessageSquare,
@@ -77,8 +77,8 @@ interface Appeal {
 const SafetyDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
-   const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+  const API_BASE =
+    (import.meta.env?.VITE_API_BASE || "http://localhost:8000");
   const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'appeals' | 'policies'>('overview');
   const [queueStats, setQueueStats] = useState<QueueStats | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
@@ -97,8 +97,8 @@ const SafetyDashboard: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">غير مصرح</h2>
-          <p className="text-gray-600">ليس لديك صلاحية للوصول إلى لوحة الأمان</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('safetyDashboard.unauthorized')}</h2>
+          <p className="text-gray-600">{t('safetyDashboard.noAccess')}</p>
         </div>
       </div>
     );
@@ -112,12 +112,12 @@ const SafetyDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/moderation/dashboard/', {
+      const response = await fetch(API_BASE + '/api/v1/moderation/dashboard/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setQueueStats(data.queue_stats);
@@ -133,13 +133,13 @@ const SafetyDashboard: React.FC = () => {
       const params = new URLSearchParams();
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (filterSeverity !== 'all') params.append('severity', filterSeverity);
-      
+
       const response = await fetch(`${API_BASE}/api/v1/moderation/reports/?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setReports(data.results || data);
@@ -154,12 +154,12 @@ const SafetyDashboard: React.FC = () => {
   const loadAppeals = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_BASE+'/api/v1/moderation/appeals/', {
+      const response = await fetch(API_BASE + '/api/v1/moderation/appeals/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setAppeals(data.results || data);
@@ -222,14 +222,14 @@ const SafetyDashboard: React.FC = () => {
 
   const getSeverityBadge = (severity: string) => {
     const severityConfig = {
-      critical: { color: 'bg-red-100 text-red-800', label: t('admin.severity.critical') },
-      high: { color: 'bg-orange-100 text-orange-800', label: t('admin.severity.high') },
-      medium: { color: 'bg-yellow-100 text-yellow-800', label: t('admin.severity.medium') },
-      low: { color: 'bg-green-100 text-green-800', label: t('admin.severity.low') },
+      critical: { color: 'bg-red-100 text-red-800', label: t('safetyDashboard.severity.critical') },
+      high: { color: 'bg-orange-100 text-orange-800', label: t('safetyDashboard.severity.high') },
+      medium: { color: 'bg-yellow-100 text-yellow-800', label: t('safetyDashboard.severity.medium') },
+      low: { color: 'bg-green-100 text-green-800', label: t('safetyDashboard.severity.low') },
     };
 
     const config = severityConfig[severity as keyof typeof severityConfig] || severityConfig.medium;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -239,16 +239,16 @@ const SafetyDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: t('admin.reportStatus.pending') },
-      assigned: { color: 'bg-blue-100 text-blue-800', label: t('admin.reportStatus.assigned') },
-      investigating: { color: 'bg-purple-100 text-purple-800', label: t('admin.reportStatus.investigating') },
-      resolved: { color: 'bg-green-100 text-green-800', label: t('admin.reportStatus.resolved') },
-      dismissed: { color: 'bg-gray-100 text-gray-800', label: t('admin.reportStatus.dismissed') },
-      escalated: { color: 'bg-red-100 text-red-800', label: t('admin.reportStatus.escalated') },
+      pending: { color: 'bg-yellow-100 text-yellow-800', label: t('safetyDashboard.reportStatus.pending') },
+      assigned: { color: 'bg-blue-100 text-blue-800', label: t('safetyDashboard.reportStatus.assigned') },
+      investigating: { color: 'bg-purple-100 text-purple-800', label: t('safetyDashboard.reportStatus.investigating') },
+      resolved: { color: 'bg-green-100 text-green-800', label: t('safetyDashboard.reportStatus.resolved') },
+      dismissed: { color: 'bg-gray-100 text-gray-800', label: t('safetyDashboard.reportStatus.dismissed') },
+      escalated: { color: 'bg-red-100 text-red-800', label: t('safetyDashboard.reportStatus.escalated') },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -257,10 +257,10 @@ const SafetyDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'overview', label: t('admin.tabs.overview'), icon: TrendingUp },
-    { id: 'reports', label: t('admin.tabs.reports'), icon: AlertTriangle },
-    { id: 'appeals', label: t('admin.tabs.appeals'), icon: Gavel },
-    { id: 'policies', label: t('admin.tabs.policies'), icon: FileText },
+    { id: 'overview', label: t('safetyDashboard.tabs.overview'), icon: TrendingUp },
+    { id: 'reports', label: t('safetyDashboard.tabs.reports'), icon: AlertTriangle },
+    { id: 'appeals', label: t('safetyDashboard.tabs.appeals'), icon: Gavel },
+    { id: 'policies', label: t('safetyDashboard.tabs.policies'), icon: FileText },
   ];
 
   return (
@@ -269,14 +269,14 @@ const SafetyDashboard: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            لوحة الأمان والثقة
+            {t('safetyDashboard.title')}
           </h1>
           <p className="text-gray-600">
-            إدارة البلاغات والسياسات وإجراءات الإشراف
+            {t('safetyDashboard.subtitle')}
           </p>
         </div>
         <Button leftIcon={<Download className="w-4 h-4" />}>
-          تصدير التقارير
+          {t('safetyDashboard.exportReports')}
         </Button>
       </div>
 
@@ -289,11 +289,10 @@ const SafetyDashboard: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 <Icon className="w-5 h-5 mr-2" />
                 {tab.label}
@@ -314,7 +313,7 @@ const SafetyDashboard: React.FC = () => {
                   <AlertTriangle className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm font-medium text-gray-600">بلاغات معلقة</p>
+                  <p className="text-sm font-medium text-gray-600">{t('safetyDashboard.overview.pendingReports')}</p>
                   <p className="text-2xl font-bold text-gray-900">{queueStats.pending_reports}</p>
                 </div>
               </div>
@@ -326,7 +325,7 @@ const SafetyDashboard: React.FC = () => {
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm font-medium text-gray-600">بلاغات مُعينة</p>
+                  <p className="text-sm font-medium text-gray-600">{t('safetyDashboard.overview.assignedReports')}</p>
                   <p className="text-2xl font-bold text-gray-900">{queueStats.assigned_reports}</p>
                 </div>
               </div>
@@ -338,7 +337,7 @@ const SafetyDashboard: React.FC = () => {
                   <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm font-medium text-gray-600">متأخرة عن SLA</p>
+                  <p className="text-sm font-medium text-gray-600">{t('safetyDashboard.overview.overdueReports')}</p>
                   <p className="text-2xl font-bold text-gray-900">{queueStats.overdue_reports}</p>
                 </div>
               </div>
@@ -350,7 +349,7 @@ const SafetyDashboard: React.FC = () => {
                   <Gavel className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm font-medium text-gray-600">استئنافات معلقة</p>
+                  <p className="text-sm font-medium text-gray-600">{t('safetyDashboard.overview.pendingAppeals')}</p>
                   <p className="text-2xl font-bold text-gray-900">{queueStats.pending_appeals}</p>
                 </div>
               </div>
@@ -362,7 +361,7 @@ const SafetyDashboard: React.FC = () => {
                   <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm font-medium text-gray-600">استئنافات متأخرة</p>
+                  <p className="text-sm font-medium text-gray-600">{t('safetyDashboard.overview.overdueAppeals')}</p>
                   <p className="text-2xl font-bold text-gray-900">{queueStats.overdue_appeals}</p>
                 </div>
               </div>
@@ -372,7 +371,7 @@ const SafetyDashboard: React.FC = () => {
           {/* Quick Actions */}
           <Card>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              إجراءات سريعة
+              {t('safetyDashboard.overview.quickActions')}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Button
@@ -381,43 +380,43 @@ const SafetyDashboard: React.FC = () => {
                 onClick={() => setActiveTab('reports')}
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />
-                مراجعة البلاغات
+                {t('safetyDashboard.overview.reviewReports')}
                 {queueStats.pending_reports > 0 && (
                   <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 mr-2">
                     {queueStats.pending_reports}
                   </span>
                 )}
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="justify-start"
                 onClick={() => setActiveTab('appeals')}
               >
                 <Gavel className="w-4 h-4 mr-2" />
-                مراجعة الاستئنافات
+                {t('safetyDashboard.overview.reviewAppeals')}
                 {queueStats.pending_appeals > 0 && (
                   <span className="bg-purple-500 text-white text-xs rounded-full px-2 py-1 mr-2">
                     {queueStats.pending_appeals}
                   </span>
                 )}
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="justify-start"
                 onClick={() => setActiveTab('policies')}
               >
                 <FileText className="w-4 h-4 mr-2" />
-                إدارة السياسات
+                {t('safetyDashboard.overview.managePolicies')}
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="justify-start"
               >
                 <Download className="w-4 h-4 mr-2" />
-                تقارير الأمان
+                {t('safetyDashboard.overview.safetyReports')}
               </Button>
             </div>
           </Card>
@@ -425,20 +424,20 @@ const SafetyDashboard: React.FC = () => {
           {/* SLA Performance */}
           <Card>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              أداء SLA (آخر 30 يوم)
+              {t('safetyDashboard.overview.slaPerformance')}
             </h3>
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">94%</div>
-                <div className="text-sm text-gray-600">البلاغات في الوقت المحدد</div>
+                <div className="text-sm text-gray-600">{t('safetyDashboard.overview.reportsOnTime')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">2.4h</div>
-                <div className="text-sm text-gray-600">متوسط وقت الاستجابة</div>
+                <div className="text-sm text-gray-600">{t('safetyDashboard.overview.avgResponseTime')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600">89%</div>
-                <div className="text-sm text-gray-600">الاستئنافات في الوقت المحدد</div>
+                <div className="text-sm text-gray-600">{t('safetyDashboard.overview.appealsOnTime')}</div>
               </div>
             </div>
           </Card>
@@ -450,31 +449,31 @@ const SafetyDashboard: React.FC = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">
-              إدارة البلاغات
+              {t('safetyDashboard.reports.title')}
             </h2>
             <div className="flex space-x-4 rtl:space-x-reverse">
-              <select 
+              <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="all">جميع الحالات</option>
-                <option value="pending">معلق</option>
-                <option value="assigned">مُعين</option>
-                <option value="investigating">قيد التحقيق</option>
-                <option value="resolved">محلول</option>
+                <option value="all">{t('safetyDashboard.reports.allStatuses')}</option>
+                <option value="pending">{t('safetyDashboard.reports.pending')}</option>
+                <option value="assigned">{t('safetyDashboard.reports.assigned')}</option>
+                <option value="investigating">{t('safetyDashboard.reports.investigating')}</option>
+                <option value="resolved">{t('safetyDashboard.reports.resolved')}</option>
               </select>
-              
-              <select 
+
+              <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="all">جميع الأولويات</option>
-                <option value="critical">حرج</option>
-                <option value="high">عالي</option>
-                <option value="medium">متوسط</option>
-                <option value="low">منخفض</option>
+                <option value="all">{t('safetyDashboard.reports.allSeverities')}</option>
+                <option value="critical">{t('safetyDashboard.reports.critical')}</option>
+                <option value="high">{t('safetyDashboard.reports.high')}</option>
+                <option value="medium">{t('safetyDashboard.reports.medium')}</option>
+                <option value="low">{t('safetyDashboard.reports.low')}</option>
               </select>
             </div>
           </div>
@@ -490,22 +489,22 @@ const SafetyDashboard: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        البلاغ
+                        {t('safetyDashboard.reports.tableHead.report')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        الأولوية
+                        {t('safetyDashboard.reports.tableHead.severity')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        الحالة
+                        {t('safetyDashboard.reports.tableHead.status')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        المُعين إليه
+                        {t('safetyDashboard.reports.tableHead.assignee')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        SLA
+                        {t('safetyDashboard.reports.tableHead.sla')}
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        الإجراءات
+                        {t('safetyDashboard.reports.tableHead.actions')}
                       </th>
                     </tr>
                   </thead>
@@ -529,11 +528,11 @@ const SafetyDashboard: React.FC = () => {
                           {getStatusBadge(report.status)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {report.assigned_to?.full_name || 'غير مُعين'}
+                          {report.assigned_to?.full_name || t('safetyDashboard.reports.unassigned')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className={`text-sm ${report.is_overdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                            {report.is_overdue ? 'متأخر' : new Date(report.sla_due_at).toLocaleDateString('ar-EG')}
+                            {report.is_overdue ? t('safetyDashboard.reports.overdue') : new Date(report.sla_due_at).toLocaleDateString('ar-EG')}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -546,7 +545,7 @@ const SafetyDashboard: React.FC = () => {
                             }}
                             leftIcon={<Eye className="w-4 h-4" />}
                           >
-                            مراجعة
+                            {t('safetyDashboard.reports.review')}
                           </Button>
                         </td>
                       </tr>
@@ -564,7 +563,7 @@ const SafetyDashboard: React.FC = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-900">
-              إدارة الاستئنافات
+              {t('safetyDashboard.appeals.title')}
             </h2>
           </div>
 
@@ -580,12 +579,12 @@ const SafetyDashboard: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-medium text-gray-900">
-                          استئناف من {appeal.appellant.full_name}
+                          {t('safetyDashboard.appeals.from')} {appeal.appellant.full_name}
                         </h4>
                         {getStatusBadge(appeal.status)}
                         {appeal.is_overdue && (
                           <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                            متأخر
+                            {t('safetyDashboard.appeals.overdue')}
                           </span>
                         )}
                       </div>
@@ -593,10 +592,10 @@ const SafetyDashboard: React.FC = () => {
                         {appeal.appeal_text.substring(0, 200)}...
                       </p>
                       <p className="text-xs text-gray-500">
-                        تم الإرسال: {new Date(appeal.created_at).toLocaleDateString('ar-EG')}
+                        {t('safetyDashboard.appeals.sentAt')} {new Date(appeal.created_at).toLocaleDateString('ar-EG')}
                       </p>
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -606,7 +605,7 @@ const SafetyDashboard: React.FC = () => {
                       }}
                       leftIcon={<Eye className="w-4 h-4" />}
                     >
-                      مراجعة
+                      {t('safetyDashboard.appeals.review')}
                     </Button>
                   </div>
                 </Card>
@@ -620,25 +619,25 @@ const SafetyDashboard: React.FC = () => {
       <Modal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        title="مراجعة البلاغ"
+        title={t('safetyDashboard.reports.modal.title')}
         size="lg"
       >
         {selectedReport && (
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">تفاصيل البلاغ</h4>
+                <h4 className="font-medium text-gray-900 mb-2">{t('safetyDashboard.reports.modal.details')}</h4>
                 <div className="space-y-2 text-sm">
-                  <p><strong>المُبلغ:</strong> {selectedReport.reporter.full_name}</p>
-                  <p><strong>السبب:</strong> {selectedReport.reason}</p>
-                  <p><strong>الأولوية:</strong> {getSeverityBadge(selectedReport.severity)}</p>
-                  <p><strong>الحالة:</strong> {getStatusBadge(selectedReport.status)}</p>
-                  <p><strong>تاريخ الإنشاء:</strong> {new Date(selectedReport.created_at).toLocaleDateString('ar-EG')}</p>
+                  <p><strong>{t('safetyDashboard.reports.modal.reporter')}:</strong> {selectedReport.reporter.full_name}</p>
+                  <p><strong>{t('safetyDashboard.reports.modal.reason')}:</strong> {selectedReport.reason}</p>
+                  <p><strong>{t('safetyDashboard.reports.modal.severity')}:</strong> {getSeverityBadge(selectedReport.severity)}</p>
+                  <p><strong>{t('safetyDashboard.reports.modal.status')}:</strong> {getStatusBadge(selectedReport.status)}</p>
+                  <p><strong>{t('safetyDashboard.reports.modal.createdAt')}:</strong> {new Date(selectedReport.created_at).toLocaleDateString('ar-EG')}</p>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">الوصف</h4>
+                <h4 className="font-medium text-gray-900 mb-2">{t('safetyDashboard.reports.modal.summary')}</h4>
                 <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
                   {selectedReport.description}
                 </p>
@@ -646,8 +645,8 @@ const SafetyDashboard: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">إجراءات الإشراف</h4>
-              
+              <h4 className="font-medium text-gray-900">{t('safetyDashboard.reports.modal.moderationActions')}</h4>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Button
                   variant="outline"
@@ -655,43 +654,43 @@ const SafetyDashboard: React.FC = () => {
                   onClick={() => handleReportAction(selectedReport.id, 'warn', 'OTHE_001', 'تحذير عام')}
                   leftIcon={<MessageSquare className="w-4 h-4" />}
                 >
-                  تحذير
+                  {t('safetyDashboard.reports.modal.warn')}
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleReportAction(selectedReport.id, 'hide_content', 'INAP_001', 'محتوى غير مناسب')}
                   leftIcon={<Eye className="w-4 h-4" />}
                 >
-                  إخفاء المحتوى
+                  {t('safetyDashboard.reports.modal.hideContent')}
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleReportAction(selectedReport.id, 'suspend_user', 'HARA_001', 'تعليق مؤقت')}
                   leftIcon={<Clock className="w-4 h-4" />}
                 >
-                  تعليق مؤقت
+                  {t('safetyDashboard.reports.modal.suspend')}
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleReportAction(selectedReport.id, 'block_user', 'FRAU_001', 'حظر دائم')}
                   leftIcon={<XCircle className="w-4 h-4" />}
                 >
-                  حظر دائم
+                  {t('safetyDashboard.reports.modal.block')}
                 </Button>
               </div>
-              
+
               <Button
                 variant="outline"
                 onClick={() => handleReportAction(selectedReport.id, 'dismiss', 'OTHE_001', 'لا يوجد انتهاك')}
                 leftIcon={<CheckCircle className="w-4 h-4" />}
               >
-                استبعاد البلاغ
+                {t('safetyDashboard.reports.modal.dismiss')}
               </Button>
             </div>
           </div>
@@ -702,22 +701,22 @@ const SafetyDashboard: React.FC = () => {
       <Modal
         isOpen={showAppealModal}
         onClose={() => setShowAppealModal(false)}
-        title="مراجعة الاستئناف"
+        title={t('safetyDashboard.appeals.modal.title')}
         size="lg"
       >
         {selectedAppeal && (
           <div className="space-y-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">تفاصيل الاستئناف</h4>
+              <h4 className="font-medium text-gray-900 mb-2">{t('safetyDashboard.appeals.modal.details')}</h4>
               <div className="space-y-2 text-sm">
-                <p><strong>المُستأنف:</strong> {selectedAppeal.appellant.full_name}</p>
-                <p><strong>الحالة:</strong> {getStatusBadge(selectedAppeal.status)}</p>
-                <p><strong>تاريخ الإرسال:</strong> {new Date(selectedAppeal.created_at).toLocaleDateString('ar-EG')}</p>
+                <p><strong>{t('safetyDashboard.appeals.modal.appellant')}:</strong> {selectedAppeal.appellant.full_name}</p>
+                <p><strong>{t('safetyDashboard.appeals.modal.status')}:</strong> {getStatusBadge(selectedAppeal.status)}</p>
+                <p><strong>{t('safetyDashboard.appeals.modal.sentDate')}:</strong> {new Date(selectedAppeal.created_at).toLocaleDateString('ar-EG')}</p>
               </div>
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">نص الاستئناف</h4>
+              <h4 className="font-medium text-gray-900 mb-2">{t('safetyDashboard.appeals.modal.appealText')}</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-700">{selectedAppeal.appeal_text}</p>
               </div>
@@ -728,14 +727,14 @@ const SafetyDashboard: React.FC = () => {
                 onClick={() => handleAppealDecision(selectedAppeal.id, 'approved', 'تم قبول الاستئناف')}
                 leftIcon={<CheckCircle className="w-4 h-4" />}
               >
-                قبول الاستئناف
+                {t('safetyDashboard.appeals.modal.approve')}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handleAppealDecision(selectedAppeal.id, 'denied', 'تم رفض الاستئناف')}
                 leftIcon={<XCircle className="w-4 h-4" />}
               >
-                رفض الاستئناف
+                {t('safetyDashboard.appeals.modal.reject')}
               </Button>
             </div>
           </div>

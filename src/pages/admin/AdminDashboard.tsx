@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { 
+import {
   User,
-  Users, 
-  Briefcase, 
-  AlertTriangle, 
-  CheckCircle, 
+  Users,
+  Briefcase,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   Clock,
   Eye,
@@ -14,7 +14,8 @@ import {
   FileText,
   TrendingUp,
   Download,
-  BarChart3
+  MapPin,
+  Folder
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -64,9 +65,8 @@ interface Service {
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
-  const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'services' | 'reports'>('overview');
+  const API_BASE = (import.meta as any).env?.VITE_API_BASE || "http://localhost:8000";
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'services' | 'reports' | 'safety'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -84,8 +84,8 @@ const AdminDashboard: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">غير مصرح</h2>
-          <p className="text-gray-600">ليس لديك صلاحية للوصول إلى لوحة الإدارة</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('adminDashboard.unauthorized')}</h2>
+          <p className="text-gray-600">{t('adminDashboard.noAccess')}</p>
         </div>
       </div>
     );
@@ -99,13 +99,13 @@ const AdminDashboard: React.FC = () => {
   }, [activeTab, timeFilter]);
 
   const loadStats = async () => {
-     const response = await fetch(`${API_BASE}/api/v1/analytics/admin/`, {
+    const response = await fetch(`${API_BASE}/api/v1/analytics/admin/`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },
     });
-     
-    setStats({...(await response.json())});
+
+    setStats({ ...(await response.json()) });
   };
 
   const loadAdminAnalytics = async () => {
@@ -115,23 +115,23 @@ const AdminDashboard: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
-       const contentType = response.headers.get('content-type');
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
 
-  if (!contentType?.includes('application/json')) {
-    const html = await response.text();
-    console.error('Expected JSON but got HTML:', html);
-    return;
-  }
+      const contentType = response.headers.get('content-type');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-  const data = await response.json();
-  setAdminAnalytics(data);
+      if (!contentType?.includes('application/json')) {
+        const html = await response.text();
+        console.error('Expected JSON but got HTML:', html);
+        return;
+      }
 
-       
-      
+      const data = await response.json();
+      setAdminAnalytics(data);
+
+
+
     } catch (error) {
       console.error('Failed to load admin analytics:', error);
     }
@@ -144,7 +144,7 @@ const AdminDashboard: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -162,7 +162,7 @@ const AdminDashboard: React.FC = () => {
   const loadUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_BASE+'/api/v1/accounts/admin/users/', {
+      const response = await fetch(API_BASE + '/api/v1/accounts/admin/users/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -180,7 +180,7 @@ const AdminDashboard: React.FC = () => {
   const loadServices = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_BASE+'/api/v1/services/admin/services/', {
+      const response = await fetch(API_BASE + '/api/v1/services/admin/services/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -258,10 +258,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'overview', label: 'نظرة عامة', icon: TrendingUp },
-    { id: 'users', label: 'المستخدمون', icon: Users },
-    { id: 'services', label: 'الخدمات', icon: Briefcase },
-    { id: 'safety', label: 'الأمان والثقة', icon: Shield },
+    { id: 'overview', label: t('adminDashboard.tabs.overview'), icon: TrendingUp },
+    { id: 'users', label: t('adminDashboard.tabs.users'), icon: Users },
+    { id: 'services', label: t('adminDashboard.tabs.services'), icon: Briefcase },
+    { id: 'safety', label: t('adminDashboard.tabs.safety'), icon: Shield },
   ];
 
   return (
@@ -270,10 +270,10 @@ const AdminDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            لوحة الإدارة
+            {t('adminDashboard.title')}
           </h1>
           <p className="text-gray-600">
-            إدارة المستخدمين والخدمات والمحتوى
+            {t('adminDashboard.subtitle')}
           </p>
         </div>
 
@@ -287,11 +287,10 @@ const AdminDashboard: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                      ? 'border-primary-500 text-primary-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
                   >
                     <Icon className="w-5 h-5 mr-2 rtl:mr-0 rtl:ml-2" />
                     {tab.label}
@@ -308,7 +307,7 @@ const AdminDashboard: React.FC = () => {
             {/* Time Filter */}
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
-                نظرة عامة على المنصة
+                {t('adminDashboard.overview.title')}
               </h2>
               <div className="flex items-center space-x-4 rtl:space-x-reverse">
                 <select
@@ -316,18 +315,17 @@ const AdminDashboard: React.FC = () => {
                   onChange={(e) => setTimeFilter(Number(e.target.value))}
                   className="px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value={7}>آخر 7 أيام</option>
-                  <option value={30}>آخر 30 يوم</option>
-                  <option value={90}>آخر 90 يوم</option>
+                  <option value={7}>{t('adminDashboard.overview.last7Days')}</option>
+                  <option value={30}>{t('adminDashboard.overview.last30Days')}</option>
+                  <option value={90}>{t('adminDashboard.overview.last90Days')}</option>
                 </select>
                 <Button variant="outline" size="sm" onClick={exportAdminData}>
                   <Download className="w-4 h-4 mr-2" />
-                  تصدير
+                  {t('adminDashboard.overview.export')}
                 </Button>
               </div>
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card>
                 <div className="flex items-center">
@@ -335,9 +333,9 @@ const AdminDashboard: React.FC = () => {
                     <Users className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="mr-4 rtl:mr-0 rtl:ml-4">
-                    <p className="text-sm font-medium text-gray-600">إجمالي المستخدمين</p>
+                    <p className="text-sm font-medium text-gray-600">{t('adminDashboard.overview.totalUsers')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.total_users}</p>
-                    <p className="text-sm text-yellow-600">{stats.pending_users} معلق</p>
+                    <p className="text-sm text-yellow-600">{stats.pending_users} {t('adminDashboard.overview.pendingUsers')}</p>
                   </div>
                 </div>
               </Card>
@@ -348,9 +346,9 @@ const AdminDashboard: React.FC = () => {
                     <Briefcase className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="mr-4 rtl:mr-0 rtl:ml-4">
-                    <p className="text-sm font-medium text-gray-600">إجمالي الخدمات</p>
+                    <p className="text-sm font-medium text-gray-600">{t('adminDashboard.overview.totalServices')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.total_services}</p>
-                    <p className="text-sm text-yellow-600">{stats.pending_services} معلق</p>
+                    <p className="text-sm text-yellow-600">{stats.pending_services} {t('adminDashboard.overview.pendingServices')}</p>
                   </div>
                 </div>
               </Card>
@@ -361,9 +359,9 @@ const AdminDashboard: React.FC = () => {
                     <AlertTriangle className="w-6 h-6 text-red-600" />
                   </div>
                   <div className="mr-4 rtl:mr-0 rtl:ml-4">
-                    <p className="text-sm font-medium text-gray-600">البلاغات</p>
+                    <p className="text-sm font-medium text-gray-600">{t('adminDashboard.overview.reports')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.total_reports}</p>
-                    <p className="text-sm text-red-600">{stats.pending_reports} معلق</p>
+                    <p className="text-sm text-red-600">{stats.pending_reports} {t('adminDashboard.overview.pendingReports')}</p>
                   </div>
                 </div>
               </Card>
@@ -383,17 +381,17 @@ const AdminDashboard: React.FC = () => {
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="total_users" 
-                        stroke="#3B82F6" 
+                      <Line
+                        type="monotone"
+                        dataKey="total_users"
+                        stroke="#3B82F6"
                         strokeWidth={2}
                         name="إجمالي المستخدمين"
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="verified_users" 
-                        stroke="#10B981" 
+                      <Line
+                        type="monotone"
+                        dataKey="verified_users"
+                        stroke="#10B981"
                         strokeWidth={2}
                         name="المستخدمون الموثقون"
                       />
@@ -423,7 +421,7 @@ const AdminDashboard: React.FC = () => {
             {adminAnalytics?.cohort_retention && (
               <Card>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  معدل الاحتفاظ بالمستخدمين
+                  {t('adminDashboard.overview.retentionRateTitle')}
                 </h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={adminAnalytics.cohort_retention}>
@@ -431,7 +429,7 @@ const AdminDashboard: React.FC = () => {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="retention_rate" fill="#10B981" name="معدل الاحتفاظ %" />
+                    <Bar dataKey="retention_rate" fill="#10B981" name={t('adminDashboard.overview.retentionRate')} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
@@ -440,7 +438,7 @@ const AdminDashboard: React.FC = () => {
             {/* Quick Actions */}
             <Card>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                إجراءات سريعة
+                {t('adminDashboard.overview.quickActions')}
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Button
@@ -449,7 +447,7 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => setActiveTab('users')}
                 >
                   <Users className="w-4 h-4 mr-2" />
-                  مراجعة المستخدمين
+                  {t('adminDashboard.overview.reviewUsers')}
                 </Button>
                 <Button
                   variant="outline"
@@ -457,7 +455,7 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => setActiveTab('services')}
                 >
                   <Briefcase className="w-4 h-4 mr-2" />
-                  مراجعة الخدمات
+                  {t('adminDashboard.overview.reviewServices')}
                 </Button>
                 <Button
                   variant="outline"
@@ -465,14 +463,30 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => setActiveTab('reports')}
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  مراجعة البلاغات
+                  {t('adminDashboard.overview.reviewReports')}
                 </Button>
                 <Button
                   variant="outline"
                   className="justify-start"
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  التقارير
+                  {t('adminDashboard.overview.manageReports')}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => window.location.href = '/admin/categories'}
+                >
+                  <Folder className="w-4 h-4 mr-2" />
+                  {t('adminDashboard.tabs.categories')}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => window.location.href = '/admin/locations'}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {t('adminDashboard.tabs.locations')}
                 </Button>
               </div>
             </Card>
@@ -484,15 +498,15 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
-                إدارة المستخدمين
+                {t('adminDashboard.users.title')}
               </h2>
               <div className="flex space-x-4 rtl:space-x-reverse">
                 <select className="px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="">جميع الحالات</option>
-                  <option value="pending">معلق</option>
-                  <option value="verified">موثق</option>
-                  <option value="rejected">مرفوض</option>
-                  <option value="suspended">معلق</option>
+                  <option value="">{t('adminDashboard.users.allStatuses')}</option>
+                  <option value="pending">{t('adminDashboard.users.pending')}</option>
+                  <option value="verified">{t('adminDashboard.users.verified')}</option>
+                  <option value="rejected">{t('adminDashboard.users.rejected')}</option>
+                  <option value="suspended">{t('adminDashboard.users.suspended')}</option>
                 </select>
               </div>
             </div>
@@ -508,19 +522,19 @@ const AdminDashboard: React.FC = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          المستخدم
+                          {t('adminDashboard.users.tableHead.user')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الحالة
+                          {t('adminDashboard.users.tableHead.status')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الخدمات
+                          {t('adminDashboard.users.tableHead.services')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          تاريخ التسجيل
+                          {t('adminDashboard.users.tableHead.joinDate')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الإجراءات
+                          {t('adminDashboard.users.tableHead.actions')}
                         </th>
                       </tr>
                     </thead>
@@ -546,7 +560,7 @@ const AdminDashboard: React.FC = () => {
                             {getStatusBadge(user.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.services_count} خدمة
+                            {user.services_count} {t('adminDashboard.users.servicesCount')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(user.date_joined).toLocaleDateString('ar-EG')}
@@ -561,7 +575,7 @@ const AdminDashboard: React.FC = () => {
                               }}
                               leftIcon={<Eye className="w-4 h-4" />}
                             >
-                              عرض
+                              {t('adminDashboard.users.view')}
                             </Button>
                           </td>
                         </tr>
@@ -579,14 +593,14 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">
-                إدارة الخدمات
+                {t('adminDashboard.services.title')}
               </h2>
               <div className="flex space-x-4 rtl:space-x-reverse">
                 <select className="px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="">جميع الحالات</option>
-                  <option value="pending">معلق</option>
-                  <option value="approved">مُوافق عليه</option>
-                  <option value="rejected">مرفوض</option>
+                  <option value="">{t('adminDashboard.services.allStatuses')}</option>
+                  <option value="pending">{t('adminDashboard.services.pending')}</option>
+                  <option value="approved">{t('adminDashboard.services.approved')}</option>
+                  <option value="rejected">{t('adminDashboard.services.rejected')}</option>
                 </select>
               </div>
             </div>
@@ -602,19 +616,19 @@ const AdminDashboard: React.FC = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الخدمة
+                          {t('adminDashboard.services.tableHead.service')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          مقدم الخدمة
+                          {t('adminDashboard.services.tableHead.provider')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الحالة
+                          {t('adminDashboard.services.tableHead.status')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          السعر
+                          {t('adminDashboard.services.tableHead.price')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          الإجراءات
+                          {t('adminDashboard.services.tableHead.actions')}
                         </th>
                       </tr>
                     </thead>
@@ -626,7 +640,7 @@ const AdminDashboard: React.FC = () => {
                               {service.title_ar}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {service.images_count} صورة
+                              {service.images_count} {t('adminDashboard.services.imagesCount')}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -641,7 +655,7 @@ const AdminDashboard: React.FC = () => {
                             {getStatusBadge(service.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {service.price} ج.م
+                            {service.price} {t('adminDashboard.services.currency')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <Button
@@ -653,7 +667,7 @@ const AdminDashboard: React.FC = () => {
                               }}
                               leftIcon={<Eye className="w-4 h-4" />}
                             >
-                              مراجعة
+                              {t('adminDashboard.services.review')}
                             </Button>
                           </td>
                         </tr>
@@ -673,31 +687,30 @@ const AdminDashboard: React.FC = () => {
           </React.Suspense>
         )}
 
-        {/* User Detail Modal */}
         <Modal
           isOpen={showUserModal}
           onClose={() => setShowUserModal(false)}
-          title="تفاصيل المستخدم"
+          title={t('adminDashboard.users.modal.title')}
           size="lg"
         >
           {selectedUser && (
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">المعلومات الأساسية</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">{t('adminDashboard.users.modal.basicInfo')}</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>الاسم:</strong> {selectedUser.full_name}</p>
-                    <p><strong>الهاتف:</strong> {selectedUser.phone_number}</p>
-                    <p><strong>الحالة:</strong> {getStatusBadge(selectedUser.status)}</p>
-                    <p><strong>الخدمات:</strong> {selectedUser.services_count}</p>
+                    <p><strong>{t('adminDashboard.users.modal.name')}:</strong> {selectedUser.full_name}</p>
+                    <p><strong>{t('adminDashboard.users.modal.phone')}:</strong> {selectedUser.phone_number}</p>
+                    <p><strong>{t('adminDashboard.users.modal.status')}:</strong> {getStatusBadge(selectedUser.status)}</p>
+                    <p><strong>{t('adminDashboard.users.modal.services')}:</strong> {selectedUser.services_count}</p>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">الإحصائيات</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">{t('adminDashboard.users.modal.stats')}</h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>تاريخ التسجيل:</strong> {new Date(selectedUser.date_joined).toLocaleDateString('ar-EG')}</p>
-                    <p><strong>المستندات:</strong> {selectedUser.documents_count}</p>
-                    <p><strong>التحقق:</strong> {selectedUser.is_phone_verified ? 'مُحقق' : 'غير مُحقق'}</p>
+                    <p><strong>{t('adminDashboard.users.modal.joinDate')}:</strong> {new Date(selectedUser.date_joined).toLocaleDateString('ar-EG')}</p>
+                    <p><strong>{t('adminDashboard.users.modal.documents')}:</strong> {selectedUser.documents_count}</p>
+                    <p><strong>{t('adminDashboard.users.modal.verification')}:</strong> {selectedUser.is_phone_verified ? t('adminDashboard.users.modal.verified') : t('adminDashboard.users.modal.notVerified')}</p>
                   </div>
                 </div>
               </div>
@@ -708,44 +721,43 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => handleUserStatusUpdate(selectedUser.id, 'verified')}
                   leftIcon={<CheckCircle className="w-4 h-4" />}
                 >
-                  توثيق
+                  {t('adminDashboard.users.modal.btnVerify')}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleUserStatusUpdate(selectedUser.id, 'rejected', 'مستندات غير واضحة')}
+                  onClick={() => handleUserStatusUpdate(selectedUser.id, 'rejected', t('adminDashboard.users.modal.rejectReason'))}
                   leftIcon={<XCircle className="w-4 h-4" />}
                 >
-                  رفض
+                  {t('adminDashboard.users.modal.btnReject')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => handleUserStatusUpdate(selectedUser.id, 'suspended')}
                   leftIcon={<Clock className="w-4 h-4" />}
                 >
-                  تعليق
+                  {t('adminDashboard.users.modal.btnSuspend')}
                 </Button>
               </div>
             </div>
           )}
         </Modal>
 
-        {/* Service Detail Modal */}
         <Modal
           isOpen={showServiceModal}
           onClose={() => setShowServiceModal(false)}
-          title="مراجعة الخدمة"
+          title={t('adminDashboard.services.modal.title')}
           size="lg"
         >
           {selectedService && (
             <div className="space-y-6">
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">تفاصيل الخدمة</h4>
+                <h4 className="font-medium text-gray-900 mb-2">{t('adminDashboard.services.modal.details')}</h4>
                 <div className="space-y-2 text-sm">
-                  <p><strong>العنوان:</strong> {selectedService.title_ar}</p>
-                  <p><strong>مقدم الخدمة:</strong> {selectedService.owner.full_name}</p>
-                  <p><strong>السعر:</strong> {selectedService.price} ج.م</p>
-                  <p><strong>الصور:</strong> {selectedService.images_count}</p>
-                  <p><strong>تاريخ الإنشاء:</strong> {new Date(selectedService.created_at).toLocaleDateString('ar-EG')}</p>
+                  <p><strong>{t('adminDashboard.services.modal.serviceTitle')}:</strong> {selectedService.title_ar}</p>
+                  <p><strong>{t('adminDashboard.services.modal.provider')}:</strong> {selectedService.owner.full_name}</p>
+                  <p><strong>{t('adminDashboard.services.modal.price')}:</strong> {selectedService.price} {t('adminDashboard.services.currency')}</p>
+                  <p><strong>{t('adminDashboard.services.modal.images')}:</strong> {selectedService.images_count}</p>
+                  <p><strong>{t('adminDashboard.services.modal.createdAt')}:</strong> {new Date(selectedService.created_at).toLocaleDateString('ar-EG')}</p>
                 </div>
               </div>
 
@@ -754,14 +766,14 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => handleServiceStatusUpdate(selectedService.id, 'approve')}
                   leftIcon={<CheckCircle className="w-4 h-4" />}
                 >
-                  موافقة
+                  {t('adminDashboard.services.modal.btnApprove')}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleServiceStatusUpdate(selectedService.id, 'reject', 'محتوى غير مناسب')}
+                  onClick={() => handleServiceStatusUpdate(selectedService.id, 'reject', t('adminDashboard.services.modal.rejectReason'))}
                   leftIcon={<XCircle className="w-4 h-4" />}
                 >
-                  رفض
+                  {t('adminDashboard.services.modal.btnReject')}
                 </Button>
               </div>
             </div>

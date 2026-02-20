@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { 
-  MessageCircle, 
-  Send, 
-  Paperclip, 
+import {
+  MessageCircle,
+  Send,
+  Paperclip,
   MoreVertical,
   Search,
   Archive,
@@ -17,6 +17,7 @@ import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { useDirection } from '../hooks/useDirection';
 import { useSearchParams } from "react-router-dom";
+import { messagesService } from '../services/django';
 interface Conversation {
   id: string;
   service: {
@@ -63,8 +64,6 @@ const MessagesPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-   const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   useEffect(() => {
     loadConversations();
     if (providerId) {
@@ -80,22 +79,12 @@ const MessagesPage: React.FC = () => {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/messages/conversations/', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        
-        setConversations(data.results);
-        return;
+      const { data, error } = await messagesService.getConversations();
+      if (data) {
+        setConversations(data.results ?? data);
+      } else {
+        console.error('Failed to load conversations:', error?.message);
       }
-      
-      console.error('Failed to load conversations:', response.statusText);
-      
     } catch (error) {
       console.error('Failed to load conversations:', error);
     }
@@ -104,21 +93,12 @@ const MessagesPage: React.FC = () => {
   const loadMessages = async (conversationId: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/v1/messages/conversations/${conversationId}/messages/`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        setMessages(data.results);
-        return;
+      const { data, error } = await messagesService.getMessages(conversationId);
+      if (data) {
+        setMessages(data.results ?? data);
+      } else {
+        console.error('Failed to load messages:', error?.message);
       }
-      
-      console.error('Failed to load messages:', response.statusText);
-      
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {
@@ -130,25 +110,17 @@ const MessagesPage: React.FC = () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      // API call to send message
-      const response = await fetch(`/api/v1/messages/messages/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          conversation: selectedConversation.id,
-          content: newMessage,
-          message_type: 'text',
-        }),
+      const { data, error } = await messagesService.sendMessage({
+        conversation: selectedConversation.id,
+        content: newMessage,
+        message_type: 'text',
       });
-      
-      
-      if (response.ok) {
-        setNewMessage('');
 
-        loadMessages(selectedConversation.id); // Refresh messages
+      if (data) {
+        setNewMessage('');
+        loadMessages(selectedConversation.id);
+      } else {
+        console.error('Failed to send message:', error?.message);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -193,11 +165,10 @@ const MessagesPage: React.FC = () => {
                       <button
                         key={conversation.id}
                         onClick={() => setSelectedConversation(conversation)}
-                        className={`w-full p-4 text-right rounded-lg transition-colors ${
-                          selectedConversation?.id === conversation.id
-                            ? 'bg-primary-50 border-primary-200'
-                            : 'hover:bg-gray-50'
-                        }`}
+                        className={`w-full p-4 text-right rounded-lg transition-colors ${selectedConversation?.id === conversation.id
+                          ? 'bg-primary-50 border-primary-200'
+                          : 'hover:bg-gray-50'
+                          }`}
                       >
                         <div className="flex items-center space-x-3 rtl:space-x-reverse">
                           <div className="relative">
@@ -218,7 +189,7 @@ const MessagesPage: React.FC = () => {
                               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                             )}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-medium text-gray-900 truncate">
@@ -276,7 +247,7 @@ const MessagesPage: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2 rtl:space-x-reverse">
                       <Button variant="ghost" size="sm">
                         <Archive className="w-4 h-4" />
@@ -299,7 +270,7 @@ const MessagesPage: React.FC = () => {
                     </div>
                   ) : (
                     messages.map((message) => {
-                      const isOwnMessage = message.sender.id === user?.id;
+                      const isOwnMessage = message.sender.id === String(user?.id);
                       return (
                         <div
                           key={message.id}
@@ -307,11 +278,10 @@ const MessagesPage: React.FC = () => {
                         >
                           <div className={`max-w-xs lg:max-w-md ${isOwnMessage ? 'order-2' : 'order-1'}`}>
                             <div
-                              className={`px-4 py-2 rounded-lg ${
-                                isOwnMessage
-                                  ? 'bg-primary-600 text-white'
-                                  : 'bg-gray-100 text-gray-900'
-                              }`}
+                              className={`px-4 py-2 rounded-lg ${isOwnMessage
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-900'
+                                }`}
                             >
                               <p className="text-sm">{message.content}</p>
                             </div>
@@ -322,7 +292,7 @@ const MessagesPage: React.FC = () => {
                               })}
                             </p>
                           </div>
-                          
+
                           {!isOwnMessage && (
                             <div className="order-1 mr-2 rtl:mr-0 rtl:ml-2">
                               {message.sender.avatar ? (
@@ -352,7 +322,7 @@ const MessagesPage: React.FC = () => {
                     <Button variant="ghost" size="sm">
                       <Paperclip className="w-5 h-5" />
                     </Button>
-                    
+
                     <div className="flex-1">
                       <Input
                         placeholder={t('messages.typeMessage')}
@@ -366,7 +336,7 @@ const MessagesPage: React.FC = () => {
                         }}
                       />
                     </div>
-                    
+
                     <Button
                       onClick={sendMessage}
                       disabled={!newMessage.trim()}

@@ -20,12 +20,6 @@ interface Service {
   created_at: string;
 }
 
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
 
 export const djangoServicesService = {
   async getServices(filters?: {
@@ -51,8 +45,8 @@ export const djangoServicesService = {
       if (filters?.limit) params.limit = filters.limit;
 
       const response = await apiClient.get('/services/services/', { params });
-  
-      
+
+
       const results = response.data.results
       const count = response.data.count || results.length;
       const page = filters?.page || 1;
@@ -77,12 +71,24 @@ export const djangoServicesService = {
     }
   },
 
+  async getServiceById(id: string) {
+    try {
+      const response = await apiClient.get(`/services/services/${id}/`);
+      return { data: response.data, error: null };
+    } catch (error: any) {
+      return {
+        data: null,
+        error: { message: error.response?.data?.message || 'Failed to fetch service' },
+      };
+    }
+  },
+
   async getServiceBySlug(slug: string) {
     try {
       const response = await apiClient.get(`/services/services/${slug}/`);
       const service = response.data;
 
-      await apiClient.post(`/services/${slug}/increment_views/`).catch(() => {});
+      await apiClient.post(`/services/services/${slug}/increment_views/`).catch(() => { });
 
       return { data: service, error: null };
     } catch (error: any) {
@@ -119,14 +125,14 @@ export const djangoServicesService = {
 
   async createService(service: Partial<Service>) {
     try {
-      const response = await apiClient.post('/services/', service);
+      const response = await apiClient.post('/services/services/', service);
 
       toast.success('تم إضافة الخدمة بنجاح وهي قيد المراجعة');
       return { data: response.data, error: null };
     } catch (error: any) {
       const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل إضافة الخدمة';
+        error.response?.data?.message ||
+        'فشل إضافة الخدمة';
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -134,14 +140,14 @@ export const djangoServicesService = {
 
   async updateService(slug: string, updates: Partial<Service>) {
     try {
-      const response = await apiClient.patch(`/services/${slug}/`, updates);
+      const response = await apiClient.patch(`/services/services/${slug}/`, updates);
 
       toast.success('تم تحديث الخدمة بنجاح');
       return { data: response.data, error: null };
     } catch (error: any) {
       const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل تحديث الخدمة';
+        error.response?.data?.message ||
+        'فشل تحديث الخدمة';
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -149,14 +155,14 @@ export const djangoServicesService = {
 
   async deleteService(slug: string) {
     try {
-      await apiClient.delete(`/services/${slug}/`);
+      await apiClient.delete(`/services/services/${slug}/`);
 
       toast.success('تم حذف الخدمة بنجاح');
       return { error: null };
     } catch (error: any) {
       const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل حذف الخدمة';
+        error.response?.data?.message ||
+        'فشل حذف الخدمة';
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
@@ -167,7 +173,7 @@ export const djangoServicesService = {
       const formData = new FormData();
       formData.append('images', file);
 
-      const response = await apiClient.post(`/services/${slug}/upload_images/`, formData, {
+      const response = await apiClient.post(`/services/services/${slug}/upload_images/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -176,8 +182,8 @@ export const djangoServicesService = {
       return { data: response.data.images[0], error: null };
     } catch (error: any) {
       const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل رفع الصورة';
+        error.response?.data?.message ||
+        'فشل رفع الصورة';
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -185,7 +191,7 @@ export const djangoServicesService = {
 
   async deleteServiceImage(slug: string, imageId: string) {
     try {
-      await apiClient.delete(`/services/${slug}/delete_image/`, {
+      await apiClient.delete(`/services/services/${slug}/delete_image/`, {
         data: { image_id: imageId },
       });
 
@@ -193,8 +199,8 @@ export const djangoServicesService = {
       return { error: null };
     } catch (error: any) {
       const errorMessage = error.response?.data?.error ||
-                          error.response?.data?.message ||
-                          'فشل حذف الصورة';
+        error.response?.data?.message ||
+        'فشل حذف الصورة';
       toast.error(errorMessage);
       return { error: { message: errorMessage } };
     }
@@ -202,7 +208,7 @@ export const djangoServicesService = {
 
   async getMyServices() {
     try {
-      const response = await apiClient.get('/services/my_services/');
+      const response = await apiClient.get('/services/services/my_services/');
       return { data: response.data, error: null };
     } catch (error: any) {
       return {

@@ -6,6 +6,7 @@ export interface User {
   last_name: string;
   full_name: string;
   user_type: 'customer' | 'provider' | 'admin';
+  role?: string;
   avatar?: string;
   bio?: string;
   province?: {

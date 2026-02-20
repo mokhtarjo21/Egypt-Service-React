@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Bell, 
-  Check, 
-  X, 
-  MessageCircle, 
-  Star, 
+import {
+  Bell,
+  Check,
+  X,
+  MessageCircle,
+  Star,
   CreditCard,
   Shield,
   Settings
@@ -13,6 +13,7 @@ import {
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { notificationsService } from '../services/django';
 
 interface Notification {
   id: string;
@@ -32,27 +33,18 @@ const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
- const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
   useEffect(() => {
     loadNotifications();
   }, []);
 
   const loadNotifications = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/notifications/notifications/', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.results);
-        return;
+      const { data, error } = await notificationsService.getNotifications();
+      if (data) {
+        setNotifications(data.results ?? data);
+      } else {
+        console.error('Failed to load notifications:', error?.message);
       }
-      
-      console.error('Failed to load notifications:', response.statusText);
     } catch (error) {
       console.error('Failed to load notifications:', error);
     }
@@ -60,14 +52,8 @@ const NotificationsPage: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/v1/notifications/notifications/${notificationId}/mark_read/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
+      const { error } = await notificationsService.markAsRead(notificationId);
+      if (!error) {
         setNotifications(prev =>
           prev.map(notif =>
             notif.id === notificationId ? { ...notif, is_read: true } : notif
@@ -81,14 +67,8 @@ const NotificationsPage: React.FC = () => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('/api/v1/notifications/notifications/mark_all_read/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-
-      if (response.ok) {
+      const { error } = await notificationsService.markAllAsRead();
+      if (!error) {
         setNotifications(prev =>
           prev.map(notif => ({ ...notif, is_read: true }))
         );
@@ -146,7 +126,7 @@ const NotificationsPage: React.FC = () => {
               {unreadCount > 0 ? `لديك ${unreadCount} إشعار غير مقروء` : 'جميع الإشعارات مقروءة'}
             </p>
           </div>
-          
+
           <div className="flex space-x-4 rtl:space-x-reverse">
             <Button
               variant="outline"
@@ -168,21 +148,19 @@ const NotificationsPage: React.FC = () => {
             <nav className="flex space-x-8 rtl:space-x-reverse">
               <button
                 onClick={() => setFilter('all')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  filter === 'all'
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === 'all'
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 جميع الإشعارات ({notifications.length})
               </button>
               <button
                 onClick={() => setFilter('unread')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  filter === 'unread'
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === 'unread'
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 غير مقروءة ({unreadCount})
               </button>
@@ -206,15 +184,14 @@ const NotificationsPage: React.FC = () => {
             filteredNotifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`transition-all duration-200 ${
-                  !notification.is_read ? 'border-primary-200 bg-primary-50' : ''
-                }`}
+                className={`transition-all duration-200 ${!notification.is_read ? 'border-primary-200 bg-primary-50' : ''
+                  }`}
               >
                 <div className="flex items-start space-x-4 rtl:space-x-reverse">
                   <div className={`p-2 rounded-lg ${getNotificationColor(notification.type)}`}>
                     {getNotificationIcon(notification.type)}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
@@ -234,7 +211,7 @@ const NotificationsPage: React.FC = () => {
                           })}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2 rtl:space-x-reverse">
                         {!notification.is_read && (
                           <Button

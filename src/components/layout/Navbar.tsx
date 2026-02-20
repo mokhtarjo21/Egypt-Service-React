@@ -16,7 +16,7 @@ import {
   Shield,
 } from "lucide-react";
 
-import { RootState } from "../../store/store";
+import { RootState, AppDispatch } from "../../store/store";
 import { logoutUser } from "../../store/slices/authSlice";
 import { setMobileMenuOpen } from "../../store/slices/uiSlice";
 import { Button } from "../ui/Button";
@@ -27,7 +27,7 @@ export const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
@@ -76,20 +76,21 @@ export const Navbar: React.FC = () => {
 
   const userMenuItems = isAuthenticated
     ? [
-        { href: "/dashboard", label: t("navigation.dashboard"), icon: Home },
-        { href: "/profile", label: t("navigation.profile"), icon: User },
-        { href: "/add-service", label: t("navbar.addService"), icon: Plus },
-        { href: "/messages", label: t("navigation.messages"), icon: null },
-        {
-          href: "/notifications",
-          label: t("navigation.notifications"),
-          icon: Bell,
-        },
-        { href: "/settings", label: t("navigation.settings"), icon: Settings },
-        ...(user?.role === "admin"
-          ? [{ href: "/admin", label: t("navbar.adminPanel"), icon: Shield }]
-          : []),
-      ]
+      { href: "/dashboard", label: t("navigation.dashboard"), icon: Home },
+      { href: "/bookings", label: t("navigation.bookings") || "حجوزاتي", icon: Briefcase },
+      { href: "/profile", label: t("navigation.profile"), icon: User },
+      { href: "/add-service", label: t("navbar.addService"), icon: Plus },
+      { href: "/messages", label: t("navigation.messages"), icon: null },
+      {
+        href: "/notifications",
+        label: t("navigation.notifications"),
+        icon: Bell,
+      },
+      { href: "/settings", label: t("navigation.settings"), icon: Settings },
+      ...(user?.user_type === "admin"
+        ? [{ href: "/admin", label: t("navbar.adminPanel"), icon: Shield }]
+        : []),
+    ]
     : [];
 
   return (
@@ -286,9 +287,8 @@ export const Navbar: React.FC = () => {
             onClick={() => dispatch(setMobileMenuOpen(false))}
           />
 
-          {/* Sidebar */}
           <div
-            className={`fixed h-full w-80 bg-white shadow-xl transform transition-transform`}
+            className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-80 bg-white shadow-xl transform transition-transform flex flex-col`}
           >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -341,7 +341,7 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* Navigation Links */}
-            <nav className="flex-1 px-6 py-6">
+            <nav className="flex-1 px-6 py-6 overflow-y-auto">
               <div className="space-y-2">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;

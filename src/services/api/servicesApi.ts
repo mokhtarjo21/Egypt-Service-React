@@ -1,23 +1,23 @@
 import { apiClient } from './client';
-import type { 
-  Service, 
-  ServiceCategory, 
-  ServiceSubcategory, 
+import type {
+  Service,
+  ServiceCategory,
+  ServiceSubcategory,
   ServiceFilters,
-  PaginatedResponse 
+  PaginatedResponse
 } from '../../types/services';
 
 export const servicesApi = {
-  async getServices(params?: { 
-    page?: number; 
-    filters?: ServiceFilters 
+  async getServices(params?: {
+    page?: number;
+    filters?: ServiceFilters
   }): Promise<PaginatedResponse<Service>> {
     const searchParams = new URLSearchParams();
-    
+
     if (params?.page) {
       searchParams.append('page', params.page.toString());
     }
-    
+
     if (params?.filters) {
       Object.entries(params.filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {

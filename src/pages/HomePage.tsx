@@ -62,12 +62,12 @@ const HomePage: React.FC = () => {
             </p>
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-12 animate-slide-up">
-              <div className="flex flex-col sm:flex-row gap-4 bg-white/10 backdrop-blur-sm p-6 rounded-2xl">
+              <div className="flex flex-col sm:flex-row gap-4 bg-white/10 backdrop-blur-sm p-4 sm:p-6 rounded-2xl">
                 <Input
                   placeholder={t("hero.searchPlaceholder")}
-                  className="flex-1 bg-white text-gray-900 border-none"
+                  className="w-full sm:flex-1 bg-white text-gray-900 border-none"
                 />
-                <select className="px-4 py-3 rounded-lg bg-white text-gray-900 border-none">
+                <select className="w-full sm:w-auto px-4 py-3 rounded-lg bg-white text-gray-900 border-none">
                   <option>{t("hero.allCategories")}</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
                 </select>
                 <Button
                   size="lg"
-                  className="bg-white text-primary-600 hover:bg-gray-100"
+                  className="w-full sm:w-auto bg-white text-primary-600 hover:bg-gray-100"
                 >
                   <Search className="w-5 h-5 mr-2" />
                   {t("hero.searchButton")}
@@ -100,7 +100,7 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
             {categories.map((category) => (
               <Link
                 key={category.id}
@@ -108,21 +108,21 @@ const HomePage: React.FC = () => {
               >
                 <Card
                   hoverable
-                  className="text-center group shadow-lg hover:shadow-xl transition-transform duration-300"
+                  className="text-center group shadow-lg hover:shadow-xl transition-transform duration-300 p-4 sm:p-6"
                 >
                   <div
-                    className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
                     style={{ backgroundColor: `${category.color}20` }}
                   >
                     <div
-                      className="w-8 h-8 rounded-full"
+                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full"
                       style={{ backgroundColor: category.color }}
                     />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">
+                  <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-xs sm:text-sm line-clamp-1">
                     {isRTL ? category.name_ar : category.name_en}
                   </h3>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-gray-500 text-[10px] sm:text-xs">
                     {t("categories.servicesCount", {
                       count: category.services_count,
                     })}
@@ -132,9 +132,9 @@ const HomePage: React.FC = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-10 sm:mt-12">
             <Link to="/services">
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 {t("categories.viewAll")}
               </Button>
             </Link>
@@ -143,18 +143,18 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Services */}
-      <section className="py-20">
+      <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-10 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               {t("featuredServices.title")}
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
               {t("featuredServices.subtitle")}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {featuredServices.map((service) => (
               <Card key={service.id} hoverable className="overflow-hidden !p-0">
                 <div className="aspect-w-16 aspect-h-10">

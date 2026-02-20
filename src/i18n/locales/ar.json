@@ -163,7 +163,6 @@
       "remove_content": "حذف المحتوى"
     }
   },
-
   "policy": {
     "title": "السياسات",
     "effectiveDate": "نافذ من",
@@ -206,7 +205,7 @@
     "menu": "القائمة"
   },
   "auth": {
-     "login_required": "يرجى تسجيل الدخول لعرض لوحة التحكم",
+    "login_required": "يرجى تسجيل الدخول لعرض لوحة التحكم",
     "login": {
       "title": "مرحباً بعودتك",
       "subtitle": "سجل دخولك للوصول إلى حسابك",
@@ -395,37 +394,29 @@
   "dashboard": {
     "welcome": "مرحباً",
     "subtitle": "نظرة عامة على أداء حسابك",
-
     "last_7_days": "آخر 7 أيام",
     "last_30_days": "آخر 30 يوم",
     "last_90_days": "آخر 90 يوم",
-
     "total_profile_views": "مشاهدات الملف الشخصي",
     "total_service_views": "مشاهدات الخدمات",
     "total_messages": "الرسائل",
     "total_bookings": "الحجوزات",
     "total_revenue": "إجمالي الإيرادات",
     "avg_rating": "متوسط التقييم",
-
     "conversion_rate": "معدل التحويل",
     "avg_response_time": "متوسط زمن الاستجابة",
-
     "daily_performance": "الأداء اليومي",
     "no_data": "لا توجد بيانات لعرضها",
-
     "top_services": "أفضل الخدمات",
     "views": "مشاهدة",
-
     "pending_reports": "بلاغات قيد الانتظار",
     "assigned_reports": "بلاغات مخصصة",
     "overdue_reports": "بلاغات متأخرة",
     "pending_appeals": "طعون قيد الانتظار",
     "overdue_appeals": "طعون متأخرة",
-
     "moderator_workload": "عبء عمل المشرفين",
     "active_reports": "بلاغ نشط",
     "title": "لوحة التحكم",
-    
     "overview": "نظرة عامة",
     "statistics": "الإحصائيات",
     "recentActivity": "النشاط الأخير",
@@ -1122,6 +1113,466 @@
       "description": "فريق الدعم لدينا جاهز لمساعدتك في أي وقت. تواصل معنا عبر البريد الإلكتروني أو الهاتف.",
       "emailUs": "راسلنا",
       "callUs": "اتصل بنا"
+    }
+  },
+  "subscription_page": {
+    "couponApplied": "تم تطبيق الكوبون بنجاح",
+    "invalidCoupon": "كوبون غير صالح",
+    "couponError": "حدث خطأ في التحقق من الكوبون",
+    "cardError": "حدث خطأ في معالجة البطاقة",
+    "confirmError": "فشل في تأكيد الدفع",
+    "subscriptionSuccess": "تم الاشتراك بنجاح!",
+    "subscriptionFailed": "فشل في إنشاء الاشتراك",
+    "processingError": "حدث خطأ في معالجة الاشتراك",
+    "summary": "ملخص الاشتراك",
+    "plan": "الخطة:",
+    "duration": "المدة:",
+    "monthly": "شهري",
+    "annual": "سنوي",
+    "basePrice": "السعر الأساسي:",
+    "discount": "الخصم:",
+    "total": "الإجمالي:",
+    "couponCode": "كود الخصم",
+    "apply": "تطبيق",
+    "cardInfo": "معلومات البطاقة",
+    "cancel": "إلغاء",
+    "subscribeNow": "اشترك الآن",
+    "subscriptionCancelled": "تم إلغاء الاشتراك بنجاح",
+    "cancelFailed": "فشل في إلغاء الاشتراك",
+    "title": "خطط الاشتراك",
+    "subtitle": "اختر الخطة المناسبة لاحتياجاتك وابدأ في تنمية أعمالك",
+    "currentSubscription": "اشتراكك الحالي",
+    "planEndsIn": "خطة {{name}} - ينتهي خلال {{days}} يوم",
+    "services": "الخدمات: {{count}}/{{max}}",
+    "teamMembers": "أعضاء الفريق: {{count}}/{{max}}",
+    "featuredCredits": "رصيد الترويج: {{credits}}",
+    "manageSubscription": "إدارة الاشتراك",
+    "cancelSubscription": "إلغاء الاشتراك",
+    "save20": "وفر 20%",
+    "mostPopular": "الأكثر شعبية",
+    "free": "مجاني",
+    "month": "شهر",
+    "year": "سنة",
+    "startFree": "ابدأ مجاناً",
+    "viewFullDetails": "عرض التفاصيل الكاملة",
+    "comparePlans": "مقارنة الخطط",
+    "features": "المميزات",
+    "freePlan": "مجاني",
+    "proPlan": "احترافي",
+    "businessPlan": "أعمال",
+    "numberOfServices": "عدد الخدمات",
+    "unlimited": "غير محدود",
+    "advancedAnalytics": "التحليلات المتقدمة",
+    "advancedSupport": "الدعم الفني المتقدم",
+    "monthlyCredits": "{{credits}} شهرياً",
+    "faq": "الأسئلة الشائعة",
+    "faq1Q": "هل يمكنني تغيير خطتي لاحقاً؟",
+    "faq1A": "نعم، يمكنك الترقية أو التراجع في أي وقت. سيتم احتساب الفرق بالتناسب.",
+    "faq2Q": "ما هو رصيد الترويج؟",
+    "faq2A": "رصيد يمكن استخدامه لترويج خدماتك في أعلى نتائج البحث لزيادة الظهور.",
+    "faq3Q": "هل توجد رسوم إضافية؟",
+    "faq3A": "لا توجد رسوم خفية. جميع الأسعار شاملة الضرائب المطبقة.",
+    "faq4Q": "كيف يتم الدفع؟",
+    "faq4A": "نقبل جميع البطاقات الائتمانية والمحافظ الإلكترونية المصرية.",
+    "subscribeToPlan": "الاشتراك في خطة {{name}}"
+  },
+  "adminLocations": {
+    "title": "إدارة المناطق الجغرافية",
+    "governorates": "المحافظات",
+    "citiesCenters": "المدن / المراكز",
+    "add": "إضافة",
+    "save": "حفظ",
+    "nameAr": "الاسم (عربي)",
+    "nameEn": "الاسم (إنجليزي)",
+    "code": "الكود",
+    "selectGovToViewCities": "اختر محافظة لعرض مدنها",
+    "noCitiesRegistered": "لا توجد مدن مسجلة",
+    "editGov": "تعديل المحافظة",
+    "addGov": "إضافة محافظة جديدة",
+    "editCity": "تعديل المدينة",
+    "addCity": "إضافة مدينة جديدة",
+    "govLoadFailed": "فشل تحميل المحافظات",
+    "cityLoadFailed": "فشل تحميل المدن",
+    "govUpdated": "تم تحديث المحافظة",
+    "govAdded": "تم إضافة المحافظة",
+    "govSaveError": "خطأ في حفظ المحافظة",
+    "govDeleteConfirm": "حذف المحافظة سيحذف جميع المدن التابعة لها. هل أنت متأكد؟",
+    "govDeleted": "تم حذف المحافظة",
+    "govDeleteFailed": "فشل حذف المحافظة",
+    "cityUpdated": "تم تحديث المدينة",
+    "cityAdded": "تم إضافة المدينة",
+    "citySaveError": "خطأ في حفظ المدينة",
+    "cityDeleteConfirm": "هل أنت متأكد من حذف هذه المدينة؟",
+    "cityDeleted": "تم حذف المدينة",
+    "cityDeleteFailed": "فشل حذف المدينة"
+  },
+  "adminCategories": {
+    "title": "إدارة التصنيفات",
+    "addCategory": "إضافة تصنيف",
+    "nameAr": "الاسم (عربي)",
+    "nameEn": "الاسم (إنجليزي)",
+    "services": "الخدمات",
+    "actions": "الإجراءات",
+    "editCategory": "تعديل التصنيف",
+    "addNewCategory": "إضافة تصنيف جديد",
+    "descAr": "الوصف (عربي)",
+    "descEn": "الوصف (إنجليزي)",
+    "colorHex": "اللون (Hex)",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التعديلات",
+    "create": "إنشاء",
+    "loadFailed": "فشل تحميل التصنيفات",
+    "updateSuccess": "تم تحديث التصنيف بنجاح",
+    "createSuccess": "تم إنشاء التصنيف بنجاح",
+    "saveError": "حدث خطأ أثناء حفظ التصنيف",
+    "deleteConfirm": "هل أنت متأكد من حذف هذا التصنيف؟",
+    "deleteSuccess": "تم حذف التصنيف بنجاح",
+    "deleteFailed": "فشل حذف التصنيف",
+    "nameArRequired": "الاسم بالعربية مطلوب",
+    "nameEnRequired": "الاسم بالإنجليزية مطلوب"
+  },
+  "adminDashboard": {
+    "unauthorized": "غير مصرح",
+    "noAccess": "ليس لديك صلاحية للوصول إلى لوحة الإدارة",
+    "title": "لوحة الإدارة",
+    "subtitle": "إدارة المستخدمين والخدمات والمحتوى",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "users": "المستخدمون",
+      "services": "الخدمات",
+      "reports": "البلاغات",
+      "safety": "الأمان والثقة",
+      "categories": "إدارة التصنيفات",
+      "locations": "إدارة المناطق"
+    },
+    "overview": {
+      "title": "نظرة عامة على المنصة",
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوم",
+      "last90Days": "آخر 90 يوم",
+      "export": "تصدير",
+      "totalUsers": "إجمالي المستخدمين",
+      "pendingUsers": "معلق",
+      "totalServices": "إجمالي الخدمات",
+      "pendingServices": "معلق",
+      "reports": "البلاغات",
+      "pendingReports": "معلق",
+      "userGrowth": "نمو المستخدمين",
+      "verifiedUsers": "المستخدمون الموثقون",
+      "govPerformance": "الأداء حسب المحافظة",
+      "retentionRateTitle": "معدل الاحتفاظ بالمستخدمين",
+      "retentionRate": "معدل الاحتفاظ %",
+      "quickActions": "إجراءات سريعة",
+      "reviewUsers": "مراجعة المستخدمين",
+      "reviewServices": "مراجعة الخدمات",
+      "reviewReports": "مراجعة البلاغات",
+      "manageReports": "التقارير"
+    },
+    "users": {
+      "title": "إدارة المستخدمين",
+      "allStatuses": "جميع الحالات",
+      "pending": "معلق",
+      "verified": "موثق",
+      "rejected": "مرفوض",
+      "suspended": "معلق",
+      "tableHead": {
+        "user": "المستخدم",
+        "status": "الحالة",
+        "services": "الخدمات",
+        "joinDate": "تاريخ التسجيل",
+        "actions": "الإجراءات"
+      },
+      "view": "عرض",
+      "servicesCount": "خدمة",
+      "modal": {
+        "title": "تفاصيل المستخدم",
+        "basicInfo": "المعلومات الأساسية",
+        "name": "الاسم",
+        "phone": "الهاتف",
+        "status": "الحالة",
+        "services": "الخدمات",
+        "stats": "الإحصائيات",
+        "joinDate": "تاريخ التسجيل",
+        "documents": "المستندات",
+        "verification": "التحقق",
+        "verified": "مُحقق",
+        "notVerified": "غير مُحقق",
+        "btnVerify": "توثيق",
+        "btnReject": "رفض",
+        "btnSuspend": "تعليق",
+        "rejectReason": "مستندات غير واضحة"
+      }
+    },
+    "services": {
+      "title": "إدارة الخدمات",
+      "allStatuses": "جميع الحالات",
+      "pending": "معلق",
+      "approved": "مُوافق عليه",
+      "rejected": "مرفوض",
+      "tableHead": {
+        "service": "الخدمة",
+        "provider": "مقدم الخدمة",
+        "status": "الحالة",
+        "price": "السعر",
+        "actions": "الإجراءات"
+      },
+      "imagesCount": "صورة",
+      "currency": "ج.م",
+      "review": "مراجعة",
+      "modal": {
+        "title": "مراجعة الخدمة",
+        "details": "تفاصيل الخدمة",
+        "serviceTitle": "العنوان",
+        "provider": "مقدم الخدمة",
+        "price": "السعر",
+        "images": "الصور",
+        "createdAt": "تاريخ الإنشاء",
+        "btnApprove": "موافقة",
+        "btnReject": "رفض",
+        "rejectReason": "محتوى غير مناسب"
+      }
+    }
+  },
+  "safetyDashboard": {
+    "unauthorized": "غير مصرح",
+    "noAccess": "ليس لديك صلاحية للوصول إلى لوحة الأمان",
+    "title": "لوحة الأمان والثقة",
+    "subtitle": "إدارة البلاغات والسياسات وإجراءات الإشراف",
+    "exportReports": "تصدير التقارير",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "reports": "البلاغات",
+      "appeals": "الاستئنافات",
+      "policies": "السياسات"
+    },
+    "overview": {
+      "pendingReports": "بلاغات معلقة",
+      "assignedReports": "بلاغات مُعينة",
+      "overdueReports": "متأخرة عن SLA",
+      "pendingAppeals": "استئنافات معلقة",
+      "overdueAppeals": "استئنافات متأخرة",
+      "quickActions": "إجراءات سريعة",
+      "reviewReports": "مراجعة البلاغات",
+      "reviewAppeals": "مراجعة الاستئنافات",
+      "managePolicies": "إدارة السياسات",
+      "safetyReports": "تقارير الأمان",
+      "slaPerformance": "أداء SLA (آخر 30 يوم)",
+      "reportsOnTime": "البلاغات في الوقت المحدد",
+      "avgResponseTime": "متوسط وقت الاستجابة",
+      "appealsOnTime": "الاستئنافات في الوقت المحدد"
+    },
+    "reports": {
+      "title": "إدارة البلاغات",
+      "allStatuses": "جميع الحالات",
+      "pending": "معلق",
+      "assigned": "مُعين",
+      "investigating": "قيد التحقيق",
+      "resolved": "محلول",
+      "allSeverities": "جميع الأولويات",
+      "critical": "حرج",
+      "high": "عالي",
+      "medium": "متوسط",
+      "low": "منخفض",
+      "tableHead": {
+        "report": "البلاغ",
+        "severity": "الأولوية",
+        "status": "الحالة",
+        "assignee": "المُعين إليه",
+        "sla": "SLA",
+        "actions": "الإجراءات"
+      },
+      "unassigned": "غير مُعين",
+      "overdue": "متأخر",
+      "review": "مراجعة",
+      "modal": {
+        "title": "مراجعة البلاغ",
+        "details": "تفاصيل البلاغ",
+        "reporter": "المُبلغ",
+        "reason": "السبب",
+        "severity": "الأولوية",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "summary": "الوصف",
+        "moderationActions": "إجراءات الإشراف",
+        "warn": "تحذير",
+        "hideContent": "إخفاء المحتوى",
+        "suspend": "تعليق مؤقت",
+        "block": "حظر دائم",
+        "dismiss": "استبعاد البلاغ"
+      }
+    },
+    "appeals": {
+      "title": "إدارة الاستئنافات",
+      "from": "استئناف من",
+      "overdue": "متأخر",
+      "sentAt": "تم الإرسال:",
+      "review": "مراجعة",
+      "modal": {
+        "title": "مراجعة الاستئناف",
+        "details": "تفاصيل الاستئناف",
+        "appellant": "المُستأنف",
+        "status": "الحالة",
+        "sentDate": "تاريخ الإرسال",
+        "appealText": "نص الاستئناف",
+        "approve": "قبول الاستئناف",
+        "reject": "رفض الاستئناف"
+      }
+    },
+    "severity": {
+      "critical": "حرج",
+      "high": "عالي",
+      "medium": "متوسط",
+      "low": "منخفض"
+    },
+    "reportStatus": {
+      "pending": "معلق",
+      "assigned": "مُعين",
+      "investigating": "قيد التحقيق",
+      "resolved": "محلول",
+      "dismissed": "مستبعد",
+      "escalated": "مصعد"
+    }
+  },
+  "subscriptionManagement": {
+    "title": "إدارة الاشتراكات",
+    "subtitle": "إدارة الخطط والاشتراكات والإيرادات",
+    "exportData": "تصدير البيانات",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "subscriptions": "الاشتراكات",
+      "coupons": "كوبونات الخصم",
+      "plans": "إدارة الخطط"
+    },
+    "overview": {
+      "totalSubscriptions": "إجمالي الاشتراكات",
+      "active": "نشط",
+      "monthlyRevenue": "الإيرادات الشهرية",
+      "currency": "ج.م",
+      "fromLastMonth": "من الشهر الماضي",
+      "avgRevenue": "متوسط الإيراد لكل مستخدم",
+      "churnRate": "معدل الإلغاء",
+      "planDistribution": "توزيع الخطط",
+      "plans": {
+        "free": "مجاني",
+        "pro": "احترافي",
+        "business": "أعمال"
+      }
+    },
+    "status": {
+      "active": "نشط",
+      "pastDue": "متأخر",
+      "canceled": "ملغي",
+      "trialing": "تجريبي",
+      "allStatuses": "جميع الحالات"
+    },
+    "subscriptions": {
+      "title": "إدارة الاشتراكات",
+      "tableHead": {
+        "user": "المستخدم",
+        "plan": "الخطة",
+        "status": "الحالة",
+        "services": "الخدمات",
+        "periodEnd": "انتهاء الفترة",
+        "actions": "الإجراءات"
+      },
+      "currency": "ج.م",
+      "view": "عرض"
+    },
+    "coupons": {
+      "title": "إدارة كوبونات الخصم",
+      "addCoupon": "إضافة كوبون",
+      "code": "كود:",
+      "discountType": {
+        "percentage": "خصم",
+        "fixed": "ج.م خصم"
+      },
+      "used": "استخدم",
+      "of": "من",
+      "unlimited": "∞",
+      "expiresAt": "ينتهي:",
+      "valid": "نشط",
+      "expired": "منتهي",
+      "modal": {
+        "title": "إنشاء كوبون خصم جديد",
+        "name": "اسم الكوبون",
+        "code": "كود الكوبون",
+        "type": "نوع الخصم",
+        "types": {
+          "percentage": "نسبة مئوية",
+          "fixed": "مبلغ ثابت"
+        },
+        "value": "قيمة الخصم",
+        "startDate": "تاريخ البداية",
+        "endDate": "تاريخ الانتهاء",
+        "maxUses": "عدد الاستخدامات (اختياري)",
+        "cancel": "إلغاء",
+        "create": "إنشاء الكوبون"
+      }
+    }
+  },
+  "serviceDetail": {
+    "toasts": {
+      "loginToBook": "يرجى تسجيل الدخول لطلب هذه الخدمة",
+      "loginToContact": "يرجى تسجيل الدخول للتواصل مع مقدم الخدمة"
+    },
+    "notFound": {
+      "title": "الخدمة غير موجودة",
+      "description": "الخدمة التي تبحث عنها غير متاحة أو تم حذفها",
+      "browse": "تصفح الخدمات"
+    },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "services": "الخدمات"
+    },
+    "noImages": "لا توجد صور",
+    "minutes": "دقيقة",
+    "locationTypes": {
+      "both": "خدمة منزلية وعبر الإنترنت",
+      "onSite": "خدمة منزلية",
+      "online": "عبر الإنترنت"
+    },
+    "upToParticipants": "حتى {{count}} شخص",
+    "views": "مشاهدة",
+    "features": "مميزات الخدمة",
+    "actions": {
+      "writeReview": "كتابة تقييم",
+      "report": "إبلاغ"
+    },
+    "reviews": {
+      "title": "التقييمات والمراجعات",
+      "ratings": "تقييم",
+      "verifiedPurchase": "شراء مُحقق",
+      "ago": "منذ {{time}}",
+      "helpful": "مفيد ({{count}})",
+      "report": "الإبلاغ",
+      "noReviews": "لا توجد تقييمات حتى الآن"
+    },
+    "similarServices": "خدمات مشابهة",
+    "pricingTypes": {
+      "fixed": "سعر ثابت",
+      "hourly": "بالساعة",
+      "package": "باقة",
+      "negotiable": "قابل للتفاوض"
+    },
+    "sidebar": {
+      "bookNow": "طلب الخدمة",
+      "loginToBook": "سجل دخولك لطلب الخدمة",
+      "contactProvider": "تواصل مع مقدم الخدمة",
+      "providerInfo": "مقدم الخدمة",
+      "evaluations": "تقييم",
+      "stats": {
+        "views": "المشاهدات",
+        "inquiries": "الاستفسارات",
+        "memberSince": "عضو منذ"
+      },
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "safetyTips": {
+      "title": "نصائح الأمان",
+      "tip1": "تأكد من هوية مقدم الخدمة",
+      "tip2": "لا تدفع مقدماً قبل إنجاز الخدمة",
+      "tip3": "احتفظ بإيصال الدفع",
+      "tip4": "استخدم منصة المراسلة للتواصل"
     }
   }
 }

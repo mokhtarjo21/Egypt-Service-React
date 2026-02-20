@@ -19,13 +19,13 @@ const ServicesPage: React.FC = () => {
   const { isRTL } = useDirection();
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  const { 
-    services, 
-    categories, 
-    isLoading, 
-    pagination, 
-    filters 
+
+  const {
+    services,
+    categories,
+    isLoading,
+    pagination,
+    filters
   } = useSelector((state: RootState) => state.services);
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -48,16 +48,16 @@ const ServicesPage: React.FC = () => {
       ...localFilters,
       page: parseInt(searchParams.get('page') || '1'),
     };
-    
+
     // Remove empty values
     const cleanParams = Object.fromEntries(
       Object.entries(params).filter(([_, value]) => value !== '' && value !== 0)
     );
-    
+
     dispatch(setFilters(cleanParams) as any);
     dispatch(fetchServices({ filters: cleanParams, page: cleanParams.page }) as any);
-   
-    
+
+
   }, [searchQuery, localFilters, searchParams, dispatch]);
 
   const handleSearch = (query: string) => {
@@ -73,7 +73,7 @@ const ServicesPage: React.FC = () => {
 
   const updateURL = (params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
         newParams.set(key, value);
@@ -81,7 +81,7 @@ const ServicesPage: React.FC = () => {
         newParams.delete(key);
       }
     });
-    
+
     setSearchParams(newParams);
   };
 
@@ -112,7 +112,7 @@ const ServicesPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             {t('services.title')}
           </h1>
-          
+
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
@@ -123,8 +123,8 @@ const ServicesPage: React.FC = () => {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               leftIcon={<Filter className="w-5 h-5" />}
               onClick={() => setShowMobileFilters(true)}
               className="lg:hidden"
@@ -173,7 +173,7 @@ const ServicesPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('services.category')}
                   </label>
-                  <select 
+                  <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     value={localFilters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -186,7 +186,7 @@ const ServicesPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('services.priceRange')}
@@ -208,37 +208,37 @@ const ServicesPage: React.FC = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('services.serviceType')}
                   </label>
                   <div className="space-y-2">
                     <label className="flex items-center">
-                      <input 
-                        type="radio" 
-                        name="service_type" 
+                      <input
+                        type="radio"
+                        name="service_type"
                         value="online"
                         checked={localFilters.service_type === 'online'}
                         onChange={(e) => handleFilterChange('service_type', e.target.value)}
-                        className="mr-2" 
+                        className="mr-2"
                       />
                       {t('services.online')}
                     </label>
                     <label className="flex items-center">
-                      <input 
-                        type="radio" 
-                        name="service_type" 
+                      <input
+                        type="radio"
+                        name="service_type"
                         value="onsite"
                         checked={localFilters.service_type === 'onsite'}
                         onChange={(e) => handleFilterChange('service_type', e.target.value)}
-                        className="mr-2" 
+                        className="mr-2"
                       />
                       {t('services.onSite')}
                     </label>
                   </div>
                 </div>
-                
+
                 <Button variant="outline" className="w-full" onClick={clearFilters}>
                   {t('services.clearFilters')}
                 </Button>
@@ -281,7 +281,7 @@ const ServicesPage: React.FC = () => {
               </Card>
             ) : (
               /* Services Grid */
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {services.map((service) => (
                   <Card key={service.id} hoverable className="overflow-hidden !p-0">
                     <div className="aspect-w-16 aspect-h-10">
@@ -348,9 +348,9 @@ const ServicesPage: React.FC = () => {
                       </Button>
                     );
                   })}
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     disabled={pagination.currentPage === pagination.totalPages}
                     onClick={() => handlePageChange(pagination.currentPage + 1)}
@@ -378,14 +378,14 @@ const ServicesPage: React.FC = () => {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              
+
               {/* Mobile filter content - same as desktop */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('services.category')}
                   </label>
-                  <select 
+                  <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     value={localFilters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -398,7 +398,7 @@ const ServicesPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="flex gap-4 pt-6">
                   <Button variant="outline" className="flex-1" onClick={clearFilters}>
                     {t('services.clearFilters')}

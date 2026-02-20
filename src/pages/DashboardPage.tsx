@@ -21,10 +21,8 @@ import {
 
 import { RootState } from "../store/store";
 import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { apiClient } from "../services/api/client";
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
@@ -44,25 +42,12 @@ const DashboardPage: React.FC = () => {
     setLoading(true);
     try {
       const [analyticsRes, activityRes] = await Promise.all([
-        fetch(`${API_BASE}/api/v1/analytics/provider/?days=${days}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }),
-        fetch(`${API_BASE}/api/v1/moderation/dashboard`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }),
+        apiClient.get(`/analytics/provider/?days=${days}`),
+        apiClient.get(`/moderation/dashboard`),
       ]);
 
-      if (analyticsRes.ok) {
-        setAnalytics(await analyticsRes.json());
-      }
-
-      if (activityRes.ok) {
-        setActivity(await activityRes.json());
-      }
+      setAnalytics(analyticsRes.data);
+      setActivity(activityRes.data);
     } catch (e) {
       console.error(e);
     } finally {

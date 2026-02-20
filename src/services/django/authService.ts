@@ -96,7 +96,7 @@ export const djangoAuthService = {
 
   async signIn(phoneNumber: string, password: string) {
     try {
-      console.log(phoneNumber,password);
+     
       
       const response = await apiClient.post<AuthResponse>(
         API_BASE + "/accounts/auth/login/",

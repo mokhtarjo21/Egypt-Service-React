@@ -15,6 +15,8 @@ const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
 const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 const AdminDashboard = React.lazy(() => import('../pages/admin/AdminDashboard'));
+const AdminCategoriesPage = React.lazy(() => import('../pages/admin/AdminCategoriesPage'));
+const AdminLocationsPage = React.lazy(() => import('../pages/admin/AdminLocationsPage'));
 const MessagesPage = React.lazy(() => import('../pages/MessagesPage'));
 const NotificationsPage = React.lazy(() => import('../pages/NotificationsPage'));
 const SecurityPage = React.lazy(() => import('../pages/SecurityPage'));
@@ -30,6 +32,9 @@ const HelpPage = React.lazy(() => import('../pages/HelpPage'));
 const SettingsPage = React.lazy(() => import('../pages/SettingsPage'));
 const VerifyAccountPage = React.lazy(() => import('../pages/auth/VerifyAccountPage'));
 const ForgotPasswordPage = React.lazy(() => import('../pages/auth/ForgotPasswordPage'));
+const MyBookingsPage = React.lazy(() => import('../pages/bookings/MyBookingsPage'));
+const BookServicePage = React.lazy(() => import('../pages/bookings/BookServicePage'));
+const BookingDetailPage = React.lazy(() => import('../pages/bookings/BookingDetailPage'));
 
 const AppRoutes: React.FC = () => {
   return (
@@ -52,62 +57,62 @@ const AppRoutes: React.FC = () => {
         <Route path="/policies/:policyType" element={<PolicyPage />} />
         <Route path="/terms" element={<Navigate to="/policies/terms" replace />} />
         <Route path="/privacy" element={<Navigate to="/policies/privacy" replace />} />
-        
+
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-phone" element={<OTPVerificationPage />} />
         <Route path="/verify-account" element={<VerifyAccountPage />} />
-        
+
         {/* Protected Routes */}
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <ProfilePage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/add-service" 
+        <Route
+          path="/add-service"
           element={
             <ProtectedRoute >
               <AddServicePage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/messages" 
+        <Route
+          path="/messages"
           element={
             <ProtectedRoute>
               <MessagesPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/notifications" 
+        <Route
+          path="/notifications"
           element={
             <ProtectedRoute>
               <NotificationsPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/security" 
+        <Route
+          path="/security"
           element={
             // <ProtectedRoute>
-              <SecurityPage />
+            <SecurityPage />
             // </ProtectedRoute>
-          } 
+          }
         />
         <Route
           path="/subscription"
@@ -126,32 +131,74 @@ const AppRoutes: React.FC = () => {
           }
         />
 
+        {/* Booking Routes */}
+        <Route
+          path="/bookings"
+          element={
+            <ProtectedRoute>
+              <MyBookingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bookings/:id"
+          element={
+            <ProtectedRoute>
+              <BookingDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/:id/book"
+          element={
+            <ProtectedRoute>
+              <BookServicePage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Admin Routes */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
             <ProtectedRoute requireRole="admin">
               <AdminDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/subscriptions" 
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute requireRole="admin">
+              <AdminCategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/locations"
+          element={
+            <ProtectedRoute requireRole="admin">
+              <AdminLocationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/subscriptions"
           element={
             <ProtectedRoute requireRole="admin">
               <SubscriptionManagement />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/safety" 
+        <Route
+          path="/admin/safety"
           element={
             <ProtectedRoute requireRole="admin">
               <SafetyDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         {/* Appeal Routes */}
         <Route
           path="/appeal/:actionId"
@@ -161,7 +208,7 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
+
         {/* 404 Page */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -3,13 +3,13 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { 
-  Crown, 
-  Check, 
-  X, 
-  Star, 
-  Users, 
-  BarChart3, 
+import {
+  Crown,
+  Check,
+  X,
+  Star,
+  Users,
+  BarChart3,
   Headphones,
   CreditCard,
   Download,
@@ -63,6 +63,7 @@ const CheckoutForm: React.FC<{
   onSuccess: () => void;
   onCancel: () => void;
 }> = ({ plan, onSuccess, onCancel }) => {
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
@@ -71,9 +72,9 @@ const CheckoutForm: React.FC<{
 
   const validateCoupon = async () => {
     if (!couponCode.trim()) return;
-    
+
     try {
-      const response = await fetch(API_BASE+'/api/v1/subscriptions/validate-coupon/', {
+      const response = await fetch(API_BASE + '/api/v1/subscriptions/validate-coupon/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,24 +89,24 @@ const CheckoutForm: React.FC<{
       if (response.ok) {
         const data = await response.json();
         setDiscount(data);
-        toast.success('تم تطبيق الكوبون بنجاح');
+        toast.success(t('subscription_page.couponApplied'));
       } else {
         const error = await response.json();
-        toast.error(error.error || 'كوبون غير صالح');
+        toast.error(error.error || t('subscription_page.invalidCoupon'));
         setDiscount(null);
       }
     } catch (error) {
-      toast.error('حدث خطأ في التحقق من الكوبون');
+      toast.error(t('subscription_page.couponError'));
     }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!stripe || !elements) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) return;
@@ -117,12 +118,12 @@ const CheckoutForm: React.FC<{
       });
 
       if (error) {
-        toast.error(error.message || 'حدث خطأ في معالجة البطاقة');
+        toast.error(error.message || t('subscription_page.cardError'));
         return;
       }
 
       // Create subscription
-      const response = await fetch(API_BASE+'/api/v1/subscriptions/subscriptions/', {
+      const response = await fetch(API_BASE + '/api/v1/subscriptions/subscriptions/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,25 +138,25 @@ const CheckoutForm: React.FC<{
 
       if (response.ok) {
         const data = await response.json();
-        
+
         if (data.client_secret) {
           // Confirm payment if needed
           const { error: confirmError } = await stripe.confirmCardPayment(data.client_secret);
-          
+
           if (confirmError) {
-            toast.error(confirmError.message || 'فشل في تأكيد الدفع');
+            toast.error(confirmError.message || t('subscription_page.confirmError'));
             return;
           }
         }
-        
-        toast.success('تم الاشتراك بنجاح!');
+
+        toast.success(t('subscription_page.subscriptionSuccess'));
         onSuccess();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || 'فشل في إنشاء الاشتراك');
+        toast.error(errorData.error || t('subscription_page.subscriptionFailed'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في معالجة الاشتراك');
+      toast.error(t('subscription_page.processingError'));
     } finally {
       setIsLoading(false);
     }
@@ -166,28 +167,28 @@ const CheckoutForm: React.FC<{
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h3 className="font-medium text-gray-900 mb-2">ملخص الاشتراك</h3>
+        <h3 className="font-medium text-gray-900 mb-2">{t('subscription_page.summary')}</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>الخطة:</span>
+            <span>{t('subscription_page.plan')}</span>
             <span>{plan.name_ar}</span>
           </div>
           <div className="flex justify-between">
-            <span>المدة:</span>
-            <span>{plan.billing_period === 'monthly' ? 'شهري' : 'سنوي'}</span>
+            <span>{t('subscription_page.duration')}</span>
+            <span>{plan.billing_period === 'monthly' ? t('subscription_page.monthly') : t('subscription_page.annual')}</span>
           </div>
           <div className="flex justify-between">
-            <span>السعر الأساسي:</span>
+            <span>{t('subscription_page.basePrice')}</span>
             <span>{plan.price} {plan.currency}</span>
           </div>
           {discount && (
             <div className="flex justify-between text-green-600">
-              <span>الخصم:</span>
+              <span>{t('subscription_page.discount')}</span>
               <span>-{discount.discount_amount} {plan.currency}</span>
             </div>
           )}
           <div className="flex justify-between font-medium text-lg border-t pt-2">
-            <span>الإجمالي:</span>
+            <span>{t('subscription_page.total')}</span>
             <span>{finalPrice} {plan.currency}</span>
           </div>
         </div>
@@ -195,19 +196,19 @@ const CheckoutForm: React.FC<{
 
       <div className="flex gap-2">
         <Input
-          placeholder="كود الخصم"
+          placeholder={t('subscription_page.couponCode')}
           value={couponCode}
           onChange={(e) => setCouponCode(e.target.value)}
           className="flex-1"
         />
         <Button type="button" variant="outline" onClick={validateCoupon}>
-          تطبيق
+          {t('subscription_page.apply')}
         </Button>
       </div>
 
       <div className="border border-gray-300 rounded-lg p-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          معلومات البطاقة
+          {t('subscription_page.cardInfo')}
         </label>
         <CardElement
           options={{
@@ -231,7 +232,7 @@ const CheckoutForm: React.FC<{
           onClick={onCancel}
           className="flex-1"
         >
-          إلغاء
+          {t('subscription_page.cancel')}
         </Button>
         <Button
           type="submit"
@@ -239,7 +240,7 @@ const CheckoutForm: React.FC<{
           disabled={!stripe}
           className="flex-1"
         >
-          اشترك الآن
+          {t('subscription_page.subscribeNow')}
         </Button>
       </div>
     </form>
@@ -250,7 +251,7 @@ const SubscriptionPage: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const { user } = useSelector((state: RootState) => state.auth);
-  
+
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscription | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
@@ -265,7 +266,7 @@ const SubscriptionPage: React.FC = () => {
 
   const loadPlans = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/subscriptions/plans/');
+      const response = await fetch(API_BASE + '/api/v1/subscriptions/plans/');
       if (response.ok) {
         const data = await response.json();
         setPlans(data);
@@ -277,12 +278,12 @@ const SubscriptionPage: React.FC = () => {
 
   const loadCurrentSubscription = async () => {
     try {
-      const response = await fetch(API_BASE+'/api/v1/subscriptions/subscriptions/', {
+      const response = await fetch(API_BASE + '/api/v1/subscriptions/subscriptions/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.length > 0) {
@@ -309,7 +310,7 @@ const SubscriptionPage: React.FC = () => {
 
   const cancelSubscription = async () => {
     if (!currentSubscription) return;
-    
+
     try {
       const response = await fetch(`/api/v1/subscriptions/subscriptions/${currentSubscription.id}/cancel/`, {
         method: 'POST',
@@ -319,11 +320,11 @@ const SubscriptionPage: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success('تم إلغاء الاشتراك بنجاح');
+        toast.success(t('subscription_page.subscriptionCancelled'));
         loadCurrentSubscription();
       }
     } catch (error) {
-      toast.error('فشل في إلغاء الاشتراك');
+      toast.error(t('subscription_page.cancelFailed'));
     }
   };
 
@@ -361,10 +362,10 @@ const SubscriptionPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            خطط الاشتراك
+            {t('subscription_page.title')}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            اختر الخطة المناسبة لاحتياجاتك وابدأ في تنمية أعمالك
+            {t('subscription_page.subtitle')}
           </p>
         </div>
 
@@ -374,23 +375,23 @@ const SubscriptionPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  اشتراكك الحالي
+                  {t('subscription_page.currentSubscription')}
                 </h3>
                 <p className="text-gray-600">
-                  خطة {currentSubscription.plan.name_ar} - ينتهي خلال {currentSubscription.days_until_renewal} يوم
+                  {t('subscription_page.planEndsIn', { name: currentSubscription.plan.name_ar, days: currentSubscription.days_until_renewal })}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span>الخدمات: {currentSubscription.services_count}/{currentSubscription.plan.max_services}</span>
-                  <span>أعضاء الفريق: {currentSubscription.team_members_count}/{currentSubscription.plan.max_team_members}</span>
-                  <span>رصيد الترويج: {currentSubscription.plan.featured_credits_included - currentSubscription.featured_credits_used}</span>
+                  <span>{t('subscription_page.services', { count: currentSubscription.services_count, max: currentSubscription.plan.max_services })}</span>
+                  <span>{t('subscription_page.teamMembers', { count: currentSubscription.team_members_count, max: currentSubscription.plan.max_team_members })}</span>
+                  <span>{t('subscription_page.featuredCredits', { credits: currentSubscription.plan.featured_credits_included - currentSubscription.featured_credits_used })}</span>
                 </div>
               </div>
               <div className="flex space-x-2 rtl:space-x-reverse">
                 <Button variant="outline" size="sm">
-                  إدارة الاشتراك
+                  {t('subscription_page.manageSubscription')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={cancelSubscription}>
-                  إلغاء الاشتراك
+                  {t('subscription_page.cancelSubscription')}
                 </Button>
               </div>
             </div>
@@ -402,25 +403,23 @@ const SubscriptionPage: React.FC = () => {
           <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200">
             <button
               onClick={() => setBillingPeriod('monthly')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                billingPeriod === 'monthly'
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${billingPeriod === 'monthly'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
-              شهري
+              {t('subscription_page.monthly')}
             </button>
             <button
               onClick={() => setBillingPeriod('annual')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                billingPeriod === 'annual'
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${billingPeriod === 'annual'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
-              سنوي
+              {t('subscription_page.annual')}
               <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-2">
-                وفر 20%
+                {t('subscription_page.save20')}
               </span>
             </button>
           </div>
@@ -432,22 +431,21 @@ const SubscriptionPage: React.FC = () => {
             const features = planFeatures[plan.plan_type];
             const Icon = features.icon;
             const isCurrentPlan = currentSubscription?.plan.id === plan.id;
-            
+
             return (
               <Card
                 key={plan.id}
-                className={`relative ${
-                  plan.is_popular ? 'ring-2 ring-primary-500 shadow-lg' : ''
-                } ${isCurrentPlan ? 'bg-primary-50 border-primary-200' : ''}`}
+                className={`relative ${plan.is_popular ? 'ring-2 ring-primary-500 shadow-lg' : ''
+                  } ${isCurrentPlan ? 'bg-primary-50 border-primary-200' : ''}`}
               >
                 {plan.is_popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <span className="bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      الأكثر شعبية
+                      {t('subscription_page.mostPopular')}
                     </span>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-6">
                   <div className={`w-16 h-16 ${features.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
                     <Icon className={`w-8 h-8 ${features.color}`} />
@@ -456,14 +454,14 @@ const SubscriptionPage: React.FC = () => {
                     {plan.name_ar}
                   </h3>
                   <div className="text-4xl font-bold text-gray-900 mb-1">
-                    {plan.price === 0 ? 'مجاني' : `${plan.price} ج.م`}
+                    {plan.price === 0 ? t('subscription_page.free') : `${plan.price} ${t('common.currency')}`}
                   </div>
                   {plan.price > 0 && (
                     <p className="text-gray-600">
-                      /{plan.billing_period === 'monthly' ? 'شهر' : 'سنة'}
+                      /{plan.billing_period === 'monthly' ? t('subscription_page.month') : t('subscription_page.year')}
                       {plan.billing_period === 'annual' && (
                         <span className="block text-sm text-green-600">
-                          ({plan.monthly_price.toFixed(0)} ج.م/شهر)
+                          ({plan.monthly_price.toFixed(0)} {t('common.currency')}/{t('subscription_page.month')})
                         </span>
                       )}
                     </p>
@@ -482,7 +480,7 @@ const SubscriptionPage: React.FC = () => {
                 <div className="space-y-3">
                   {isCurrentPlan ? (
                     <Button variant="outline" className="w-full" disabled>
-                      الخطة الحالية
+                      {t('subscription_page.currentPlan')}
                     </Button>
                   ) : (
                     <Button
@@ -490,13 +488,13 @@ const SubscriptionPage: React.FC = () => {
                       className="w-full"
                       variant={plan.is_popular ? 'primary' : 'outline'}
                     >
-                      {plan.price === 0 ? 'ابدأ مجاناً' : 'اشترك الآن'}
+                      {plan.price === 0 ? t('subscription_page.startFree') : t('subscription_page.subscribeNow')}
                     </Button>
                   )}
-                  
+
                   <div className="text-center">
                     <button className="text-sm text-primary-600 hover:text-primary-500">
-                      عرض التفاصيل الكاملة
+                      {t('subscription_page.viewFullDetails')}
                     </button>
                   </div>
                 </div>
@@ -508,49 +506,49 @@ const SubscriptionPage: React.FC = () => {
         {/* Feature Comparison */}
         <Card>
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            مقارنة الخطط
+            {t('subscription_page.comparePlans')}
           </h3>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-right py-4 px-6 font-medium text-gray-900">المميزات</th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-900">مجاني</th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-900">احترافي</th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-900">أعمال</th>
+                  <th className="text-right py-4 px-6 font-medium text-gray-900">{t('subscription_page.features')}</th>
+                  <th className="text-center py-4 px-6 font-medium text-gray-900">{t('subscription_page.freePlan')}</th>
+                  <th className="text-center py-4 px-6 font-medium text-gray-900">{t('subscription_page.proPlan')}</th>
+                  <th className="text-center py-4 px-6 font-medium text-gray-900">{t('subscription_page.businessPlan')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 <tr>
-                  <td className="py-4 px-6 font-medium text-gray-900">عدد الخدمات</td>
+                  <td className="py-4 px-6 font-medium text-gray-900">{t('subscription_page.numberOfServices')}</td>
                   <td className="py-4 px-6 text-center">3</td>
                   <td className="py-4 px-6 text-center">20</td>
-                  <td className="py-4 px-6 text-center">غير محدود</td>
+                  <td className="py-4 px-6 text-center">{t('subscription_page.unlimited')}</td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-6 font-medium text-gray-900">أعضاء الفريق</td>
+                  <td className="py-4 px-6 font-medium text-gray-900">{t('subscription_page.teamMembers')}</td>
                   <td className="py-4 px-6 text-center">1</td>
                   <td className="py-4 px-6 text-center">5</td>
-                  <td className="py-4 px-6 text-center">غير محدود</td>
+                  <td className="py-4 px-6 text-center">{t('subscription_page.unlimited')}</td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-6 font-medium text-gray-900">التحليلات المتقدمة</td>
+                  <td className="py-4 px-6 font-medium text-gray-900">{t('subscription_page.advancedAnalytics')}</td>
                   <td className="py-4 px-6 text-center"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
                   <td className="py-4 px-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
                   <td className="py-4 px-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-6 font-medium text-gray-900">الدعم الفني المتقدم</td>
+                  <td className="py-4 px-6 font-medium text-gray-900">{t('subscription_page.advancedSupport')}</td>
                   <td className="py-4 px-6 text-center"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
                   <td className="py-4 px-6 text-center"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
                   <td className="py-4 px-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-6 font-medium text-gray-900">رصيد الترويج</td>
+                  <td className="py-4 px-6 font-medium text-gray-900">{t('subscription_page.featuredCredits')}</td>
                   <td className="py-4 px-6 text-center">0</td>
-                  <td className="py-4 px-6 text-center">5 شهرياً</td>
-                  <td className="py-4 px-6 text-center">20 شهرياً</td>
+                  <td className="py-4 px-6 text-center">{t('subscription_page.monthlyCredits', { credits: 5 })}</td>
+                  <td className="py-4 px-6 text-center">{t('subscription_page.monthlyCredits', { credits: 20 })}</td>
                 </tr>
               </tbody>
             </table>
@@ -560,46 +558,46 @@ const SubscriptionPage: React.FC = () => {
         {/* FAQ */}
         <div className="mt-16">
           <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-            الأسئلة الشائعة
+            {t('subscription_page.faq')}
           </h3>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
-                  هل يمكنني تغيير خطتي لاحقاً؟
+                  {t('subscription_page.faq1Q')}
                 </h4>
                 <p className="text-gray-600 text-sm">
-                  نعم، يمكنك الترقية أو التراجع في أي وقت. سيتم احتساب الفرق بالتناسب.
+                  {t('subscription_page.faq1A')}
                 </p>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
-                  ما هو رصيد الترويج؟
+                  {t('subscription_page.faq2Q')}
                 </h4>
                 <p className="text-gray-600 text-sm">
-                  رصيد يمكن استخدامه لترويج خدماتك في أعلى نتائج البحث لزيادة الظهور.
+                  {t('subscription_page.faq2A')}
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-6">
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
-                  هل توجد رسوم إضافية؟
+                  {t('subscription_page.faq3Q')}
                 </h4>
                 <p className="text-gray-600 text-sm">
-                  لا توجد رسوم خفية. جميع الأسعار شاملة الضرائب المطبقة.
+                  {t('subscription_page.faq3A')}
                 </p>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
-                  كيف يتم الدفع؟
+                  {t('subscription_page.faq4Q')}
                 </h4>
                 <p className="text-gray-600 text-sm">
-                  نقبل جميع البطاقات الائتمانية والمحافظ الإلكترونية المصرية.
+                  {t('subscription_page.faq4A')}
                 </p>
               </div>
             </div>
@@ -611,7 +609,7 @@ const SubscriptionPage: React.FC = () => {
       <Modal
         isOpen={showCheckout}
         onClose={() => setShowCheckout(false)}
-        title={`الاشتراك في خطة ${selectedPlan?.name_ar}`}
+        title={t('subscription_page.subscribeToPlan', { name: selectedPlan?.name_ar })}
         size="md"
       >
         {selectedPlan && (

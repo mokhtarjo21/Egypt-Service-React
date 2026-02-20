@@ -24,7 +24,7 @@ const SettingsPage: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      console.log('Settings saved:', settings);
+     
       // Save settings to API or local storage
       localStorage.setItem('userSettings', JSON.stringify(settings));
     } catch (error) {
