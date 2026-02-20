@@ -58,18 +58,42 @@ const MessagesPage: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [searchParams] = useSearchParams();
   const providerId = searchParams.get("provider") || null;
+  const serviceId = searchParams.get("service") || null;
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
     loadConversations();
-    if (providerId) {
-      loadMessages(providerId);
-    }
-  }, []);
+
+    const initConversation = async () => {
+      if (providerId && serviceId) {
+        try {
+          const { data, error } = await messagesService.createConversation({
+            provider: providerId,
+            service: serviceId
+          });
+
+          if (data && data.id) {
+            setSelectedConversation({
+              ...data,
+              other_user: data.customer?.id === String(user?.id) ? data.provider : data.customer
+            });
+            loadConversations();
+          } else {
+            console.error('Failed to init conversation:', error);
+          }
+        } catch (err) {
+          console.error('Error init conversation:', err);
+        }
+      }
+    };
+
+    initConversation();
+  }, [providerId, serviceId]);
 
   useEffect(() => {
     if (selectedConversation) {
@@ -81,7 +105,11 @@ const MessagesPage: React.FC = () => {
     try {
       const { data, error } = await messagesService.getConversations();
       if (data) {
-        setConversations(data.results ?? data);
+        const results = data.results ?? data;
+        setConversations(results.map((c: any) => ({
+          ...c,
+          other_user: c.customer?.id === String(user?.id) ? c.provider : c.customer
+        })));
       } else {
         console.error('Failed to load conversations:', error?.message);
       }
@@ -205,7 +233,7 @@ const MessagesPage: React.FC = () => {
                               {conversation.service.title_ar}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                              {conversation.last_message.content}
+                              {conversation.last_message?.content || t('messages.noMessagesYet')}
                             </p>
                           </div>
                         </div>

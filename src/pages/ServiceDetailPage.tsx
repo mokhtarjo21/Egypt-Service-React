@@ -169,8 +169,8 @@ const ServiceDetailPage: React.FC = () => {
       navigate('/login');
       return;
     }
-    // Navigate to messages page with provider
-    navigate(`/messages?provider=${service.owner.id}`);
+    // Navigate to messages page with provider and service
+    navigate(`/messages?provider=${service.owner.id}&service=${service.id}`);
   };
 
   const handleViewProviderProfile = () => {
