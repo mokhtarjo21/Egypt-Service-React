@@ -9,11 +9,6 @@ import {
   X,
   Star,
   Users,
-  BarChart3,
-  Headphones,
-  CreditCard,
-  Download,
-  Gift
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -62,13 +57,15 @@ const CheckoutForm: React.FC<{
   plan: SubscriptionPlan;
   onSuccess: () => void;
   onCancel: () => void;
-}> = ({ plan, onSuccess, onCancel }) => {
+  method: 'card' | 'vodafone_cash';
+}> = ({ plan, onSuccess, onCancel, method }) => {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState<any>(null);
+  const [mobileNumber, setMobileNumber] = useState('');
 
   const validateCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -102,63 +99,91 @@ const CheckoutForm: React.FC<{
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (method === 'card') {
+      if (!stripe || !elements) return;
+      setIsLoading(true);
 
-    if (!stripe || !elements) return;
+      try {
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) return;
 
-    setIsLoading(true);
+        const { error, paymentMethod } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+        });
 
-    try {
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) return;
-
-      // Create payment method
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-      if (error) {
-        toast.error(error.message || t('subscription_page.cardError'));
-        return;
-      }
-
-      // Create subscription
-      const response = await fetch(API_BASE + '/api/v1/subscriptions/subscriptions/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          plan_id: plan.id,
-          payment_method_id: paymentMethod.id,
-          coupon_code: couponCode || undefined,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data.client_secret) {
-          // Confirm payment if needed
-          const { error: confirmError } = await stripe.confirmCardPayment(data.client_secret);
-
-          if (confirmError) {
-            toast.error(confirmError.message || t('subscription_page.confirmError'));
-            return;
-          }
+        if (error) {
+          toast.error(error.message || t('subscription_page.cardError'));
+          return;
         }
 
-        toast.success(t('subscription_page.subscriptionSuccess'));
-        onSuccess();
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || t('subscription_page.subscriptionFailed'));
+        const response = await fetch(API_BASE + '/api/v1/subscriptions/subscriptions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            payment_method_id: paymentMethod.id,
+            coupon_code: couponCode || undefined,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.client_secret) {
+            const { error: confirmError } = await stripe.confirmCardPayment(data.client_secret);
+            if (confirmError) {
+              toast.error(confirmError.message || t('subscription_page.confirmError'));
+              return;
+            }
+          }
+          toast.success(t('subscription_page.subscriptionSuccess'));
+          onSuccess();
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.error || t('subscription_page.subscriptionFailed'));
+        }
+      } catch (error) {
+        toast.error(t('subscription_page.processingError'));
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      toast.error(t('subscription_page.processingError'));
-    } finally {
-      setIsLoading(false);
+    } else {
+      // Vodafone Cash (Paymob)
+      if (!mobileNumber) {
+        toast.error(t('booking.enterMobile'));
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const response = await fetch(API_BASE + '/api/v1/payments/checkout/subscription/paymob/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            mobile_number: mobileNumber,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+          }
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.detail || t('subscription_page.subscriptionFailed'));
+        }
+      } catch (error) {
+        toast.error(t('subscription_page.processingError'));
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -206,24 +231,39 @@ const CheckoutForm: React.FC<{
         </Button>
       </div>
 
-      <div className="border border-gray-300 rounded-lg p-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t('subscription_page.cardInfo')}
-        </label>
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                  color: '#aab7c4',
+      {method === 'card' ? (
+        <div className="border border-gray-300 rounded-lg p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('subscription_page.cardInfo')}
+          </label>
+          <CardElement
+            options={{
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: '#424770',
+                  '::placeholder': {
+                    color: '#aab7c4',
+                  },
                 },
               },
-            },
-          }}
-        />
-      </div>
+            }}
+          />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            {t('booking.payWithVodafone')}
+          </p>
+          <Input
+            label={t('booking.mobileNumber')}
+            placeholder="01xxxxxxxxx"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            required
+          />
+        </div>
+      )}
 
       <div className="flex space-x-4 rtl:space-x-reverse">
         <Button
@@ -237,7 +277,7 @@ const CheckoutForm: React.FC<{
         <Button
           type="submit"
           isLoading={isLoading}
-          disabled={!stripe}
+          disabled={method === 'card' && !stripe}
           className="flex-1"
         >
           {t('subscription_page.subscribeNow')}
@@ -256,6 +296,7 @@ const SubscriptionPage: React.FC = () => {
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscription | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'vodafone_cash'>('vodafone_cash');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -269,10 +310,12 @@ const SubscriptionPage: React.FC = () => {
       const response = await fetch(API_BASE + '/api/v1/subscriptions/plans/');
       if (response.ok) {
         const data = await response.json();
-        setPlans(data);
+        setPlans(Array.isArray(data) ? data : data.results || []);
       }
     } catch (error) {
       console.error('Failed to load plans:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -286,14 +329,13 @@ const SubscriptionPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.length > 0) {
-          setCurrentSubscription(data[0]);
+        const sub = Array.isArray(data) ? data[0] : (data.results && data.results.length > 0 ? data.results[0] : null);
+        if (sub) {
+          setCurrentSubscription(sub);
         }
       }
     } catch (error) {
       console.error('Failed to load subscription:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -328,7 +370,7 @@ const SubscriptionPage: React.FC = () => {
     }
   };
 
-  const filteredPlans = plans.filter(plan => plan.billing_period === billingPeriod);
+  const filteredPlans = (plans || []).filter(plan => plan.billing_period === billingPeriod);
 
   const planFeatures = {
     free: {
@@ -427,80 +469,82 @@ const SubscriptionPage: React.FC = () => {
 
         {/* Plans Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {filteredPlans.map((plan) => {
-            const features = planFeatures[plan.plan_type];
-            const Icon = features.icon;
-            const isCurrentPlan = currentSubscription?.plan.id === plan.id;
+          {filteredPlans.length === 0 ? (
+            <div className="col-span-3 text-center py-16 text-gray-500">
+              <Crown className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium">{t('subscription_page.noPlansAvailable', 'لا توجد خطط متاحة حالياً')}</p>
+              <p className="text-sm mt-2">{t('subscription_page.tryOtherPeriod', 'جرّب تبديل فترة الفوترة أو عد لاحقاً')}</p>
+            </div>
+          ) : (
+            filteredPlans.map((plan) => {
+              const features = planFeatures[plan.plan_type] || planFeatures.free;
+              const Icon = features.icon;
+              const isCurrentPlan = currentSubscription?.plan.id === plan.id;
 
-            return (
-              <Card
-                key={plan.id}
-                className={`relative ${plan.is_popular ? 'ring-2 ring-primary-500 shadow-lg' : ''
-                  } ${isCurrentPlan ? 'bg-primary-50 border-primary-200' : ''}`}
-              >
-                {plan.is_popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      {t('subscription_page.mostPopular')}
-                    </span>
-                  </div>
-                )}
-
-                <div className="text-center mb-6">
-                  <div className={`w-16 h-16 ${features.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                    <Icon className={`w-8 h-8 ${features.color}`} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    {plan.name_ar}
-                  </h3>
-                  <div className="text-4xl font-bold text-gray-900 mb-1">
-                    {plan.price === 0 ? t('subscription_page.free') : `${plan.price} ${t('common.currency')}`}
-                  </div>
-                  {plan.price > 0 && (
-                    <p className="text-gray-600">
-                      /{plan.billing_period === 'monthly' ? t('subscription_page.month') : t('subscription_page.year')}
-                      {plan.billing_period === 'annual' && (
-                        <span className="block text-sm text-green-600">
-                          ({plan.monthly_price.toFixed(0)} {t('common.currency')}/{t('subscription_page.month')})
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {(isRTL ? plan.features_ar : plan.features_en).map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="space-y-3">
-                  {isCurrentPlan ? (
-                    <Button variant="outline" className="w-full" disabled>
-                      {t('subscription_page.currentPlan')}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => handlePlanSelect(plan)}
-                      className="w-full"
-                      variant={plan.is_popular ? 'primary' : 'outline'}
-                    >
-                      {plan.price === 0 ? t('subscription_page.startFree') : t('subscription_page.subscribeNow')}
-                    </Button>
+              return (
+                <Card
+                  key={plan.id}
+                  className={`relative ${plan.is_popular ? 'ring-2 ring-primary-500 shadow-lg' : ''
+                    } ${isCurrentPlan ? 'bg-primary-50 border-primary-200' : ''}`}
+                >
+                  {plan.is_popular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                        {t('subscription_page.mostPopular')}
+                      </span>
+                    </div>
                   )}
 
-                  <div className="text-center">
-                    <button className="text-sm text-primary-600 hover:text-primary-500">
-                      {t('subscription_page.viewFullDetails')}
-                    </button>
+                  <div className="text-center mb-6">
+                    <div className={`w-16 h-16 ${features.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                      <Icon className={`w-8 h-8 ${features.color}`} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {isRTL ? plan.name_ar : plan.name_en}
+                    </h3>
+                    <div className="text-4xl font-bold text-gray-900 mb-1">
+                      {plan.price === 0 ? t('subscription_page.free') : `${plan.price} ${t('common.currency', 'ج.م')}`}
+                    </div>
+                    {plan.price > 0 && (
+                      <p className="text-gray-600">
+                        /{plan.billing_period === 'monthly' ? t('subscription_page.month') : t('subscription_page.year')}
+                        {plan.billing_period === 'annual' && (
+                          <span className="block text-sm text-green-600">
+                            ({plan.monthly_price.toFixed(0)} {t('common.currency', 'ج.م')}/{t('subscription_page.month')})
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
-                </div>
-              </Card>
-            );
-          })}
+
+                  <ul className="space-y-3 mb-8">
+                    {((isRTL ? plan.features_ar : plan.features_en) || []).map((feature, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="space-y-3">
+                    {isCurrentPlan ? (
+                      <Button variant="outline" className="w-full" disabled>
+                        {t('subscription_page.currentPlan')}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handlePlanSelect(plan)}
+                        className="w-full"
+                        variant={plan.is_popular ? 'primary' : 'outline'}
+                      >
+                        {plan.price === 0 ? t('subscription_page.startFree') : t('subscription_page.subscribeNow')}
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
 
         {/* Feature Comparison */}
@@ -613,13 +657,33 @@ const SubscriptionPage: React.FC = () => {
         size="md"
       >
         {selectedPlan && (
-          <Elements stripe={stripePromise}>
-            <CheckoutForm
-              plan={selectedPlan}
-              onSuccess={handleSubscriptionSuccess}
-              onCancel={() => setShowCheckout(false)}
-            />
-          </Elements>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <Button
+                variant={paymentMethod === 'vodafone_cash' ? 'primary' : 'outline'}
+                onClick={() => setPaymentMethod('vodafone_cash')}
+                className="flex-1"
+              >
+                فودافون كاش
+              </Button>
+              <Button
+                variant={paymentMethod === 'card' ? 'primary' : 'outline'}
+                onClick={() => setPaymentMethod('card')}
+                className="flex-1"
+              >
+                بطاقة بنكية
+              </Button>
+            </div>
+
+            <Elements stripe={stripePromise}>
+              <CheckoutForm
+                plan={selectedPlan}
+                onSuccess={handleSubscriptionSuccess}
+                onCancel={() => setShowCheckout(false)}
+                method={paymentMethod}
+              />
+            </Elements>
+          </div>
         )}
       </Modal>
     </div>

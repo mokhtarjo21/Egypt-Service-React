@@ -68,7 +68,7 @@ const VerifyAccountPage: React.FC = () => {
 
   const handleVerifyEmail = async () => {
     if (!emailCode || emailCode.length !== 6) {
-      toast.error('أدخل رمز التحقق الصحيح');
+      toast.error(t('auth.verification.invalidCodeInput'));
       return;
     }
 
@@ -88,13 +88,13 @@ const VerifyAccountPage: React.FC = () => {
       if (response.ok) {
         setIsVerified((prev) => ({ ...prev, email: true }));
         setEmailCode('');
-        toast.success('تم التحقق من البريد الإلكتروني بنجاح');
+        toast.success(t('auth.verification.emailVerified'));
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || errorData.detail || 'رمز التحقق غير صحيح');
+        toast.error(errorData.error || errorData.detail || t('auth.verification.invalidCode'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في التحقق من البريد الإلكتروني');
+      toast.error(t('auth.verification.emailVerifyError'));
     } finally {
       setLoading((prev) => ({ ...prev, email: false }));
     }
@@ -102,7 +102,7 @@ const VerifyAccountPage: React.FC = () => {
 
   const handleVerifyPhone = async () => {
     if (!phoneCode || phoneCode.length !== 6) {
-      toast.error('أدخل رمز التحقق الصحيح');
+      toast.error(t('auth.verification.invalidCodeInput'));
       return;
     }
 
@@ -123,13 +123,13 @@ const VerifyAccountPage: React.FC = () => {
       if (response.ok) {
         setIsVerified((prev) => ({ ...prev, phone: true }));
         setPhoneCode('');
-        toast.success('تم التحقق من رقم الهاتف بنجاح');
+        toast.success(t('auth.verification.phoneVerified'));
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || errorData.detail || 'رمز التحقق غير صحيح');
+        toast.error(errorData.error || errorData.detail || t('auth.verification.invalidCode'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في التحقق من رقم الهاتف');
+      toast.error(t('auth.verification.verifyError'));
     } finally {
       setLoading((prev) => ({ ...prev, phone: false }));
     }
@@ -152,14 +152,14 @@ const VerifyAccountPage: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success('تم إرسال رمز التحقق إلى بريدك الإلكتروني');
+        toast.success(t('auth.verification.emailCodeSent'));
       } else {
-        toast.error('فشل في إرسال الرمز');
+        toast.error(t('auth.verification.resendFailed'));
         setCanResend((prev) => ({ ...prev, email: true }));
         setResendCountdown((prev) => ({ ...prev, email: 0 }));
       }
     } catch (error) {
-      toast.error('حدث خطأ في إرسال الرمز');
+      toast.error(t('auth.verification.resendError'));
       setCanResend((prev) => ({ ...prev, email: true }));
       setResendCountdown((prev) => ({ ...prev, email: 0 }));
     }
@@ -182,14 +182,14 @@ const VerifyAccountPage: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success('تم إرسال رمز التحقق إلى هاتفك');
+        toast.success(t('auth.verification.phoneCodeSent'));
       } else {
-        toast.error('فشل في إرسال الرمز');
+        toast.error(t('auth.verification.resendFailed'));
         setCanResend((prev) => ({ ...prev, phone: true }));
         setResendCountdown((prev) => ({ ...prev, phone: 0 }));
       }
     } catch (error) {
-      toast.error('حدث خطأ في إرسال الرمز');
+      toast.error(t('auth.verification.resendError'));
       setCanResend((prev) => ({ ...prev, phone: true }));
       setResendCountdown((prev) => ({ ...prev, phone: 0 }));
     }
@@ -198,7 +198,7 @@ const VerifyAccountPage: React.FC = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">يرجى تسجيل الدخول أولاً</p>
+        <p className="text-gray-600">{t('auth.verification.loginFirst')}</p>
       </div>
     );
   }
@@ -208,10 +208,10 @@ const VerifyAccountPage: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">
-            تحقق من حسابك
+            {t('auth.verification.verifyAccountTitle')}
           </h1>
           <p className="text-white/90 text-lg">
-            تحقق من بريدك الإلكتروني ورقم هاتفك لتفعيل جميع الميزات
+            {t('auth.verification.verifyAccountSubtitle')}
           </p>
         </div>
 
@@ -224,7 +224,7 @@ const VerifyAccountPage: React.FC = () => {
                   <Mail className="w-6 h-6 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">
-                  التحقق من البريد الإلكتروني
+                  {t('auth.verification.emailVerification')}
                 </h3>
               </div>
               {isVerified.email && (
@@ -236,7 +236,7 @@ const VerifyAccountPage: React.FC = () => {
               <div className="text-center py-6">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
                 <p className="text-green-700 font-medium">
-                  تم التحقق من البريد الإلكتروني!
+                  {t('auth.verification.emailVerified')}
                 </p>
                 <p className="text-gray-600 text-sm mt-1">
                   {user.email}
@@ -245,7 +245,7 @@ const VerifyAccountPage: React.FC = () => {
             ) : (
               <div>
                 <p className="text-gray-600 mb-2">
-                  تم إرسال رمز التحقق إلى بريدك الإلكتروني
+                  {t('auth.verification.emailCodeSent')}
                 </p>
                 <p className="text-gray-600 mb-4 text-sm">
                   {user.email}
@@ -253,7 +253,7 @@ const VerifyAccountPage: React.FC = () => {
                 <div className="space-y-4">
                   <Input
                     type="text"
-                    placeholder="أدخل رمز التحقق"
+                    placeholder={t('auth.verification.enterCode')}
                     value={emailCode}
                     onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     maxLength={6}
@@ -265,7 +265,7 @@ const VerifyAccountPage: React.FC = () => {
                     className="w-full"
                     isLoading={loading.email}
                   >
-                    التحقق من البريد
+                    {t('auth.verification.verifyEmailBtn')}
                   </Button>
                   {canResend.email ? (
                     <Button
@@ -274,11 +274,11 @@ const VerifyAccountPage: React.FC = () => {
                       className="w-full"
                       leftIcon={<RefreshCw className="w-4 h-4" />}
                     >
-                      إعادة إرسال الرمز
+                      {t('auth.verification.resend')}
                     </Button>
                   ) : (
                     <p className="text-center text-gray-500 text-sm">
-                      يمكنك إعادة الإرسال خلال {resendCountdown.email} ثانية
+                      {t('auth.verification.resendIn', { countdown: resendCountdown.email })}
                     </p>
                   )}
                 </div>
@@ -294,7 +294,7 @@ const VerifyAccountPage: React.FC = () => {
                   <Phone className="w-6 h-6 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">
-                  التحقق من رقم الهاتف
+                  {t('auth.verification.phoneVerification')}
                 </h3>
               </div>
               {isVerified.phone && (
@@ -306,7 +306,7 @@ const VerifyAccountPage: React.FC = () => {
               <div className="text-center py-6">
                 <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
                 <p className="text-green-700 font-medium">
-                  تم التحقق من رقم الهاتف!
+                  {t('auth.verification.phoneVerified')}
                 </p>
                 <p className="text-gray-600 text-sm mt-1">
                   {user.phone_number}
@@ -315,7 +315,7 @@ const VerifyAccountPage: React.FC = () => {
             ) : (
               <div>
                 <p className="text-gray-600 mb-2">
-                  تم إرسال رمز التحقق برسالة نصية إلى هاتفك
+                  {t('auth.verification.phoneCodeSent')}
                 </p>
                 <p className="text-gray-600 mb-4 text-sm">
                   {user.phone_number}
@@ -323,7 +323,7 @@ const VerifyAccountPage: React.FC = () => {
                 <div className="space-y-4">
                   <Input
                     type="text"
-                    placeholder="أدخل رمز التحقق"
+                    placeholder={t('auth.verification.enterCode')}
                     value={phoneCode}
                     onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     maxLength={6}
@@ -335,7 +335,7 @@ const VerifyAccountPage: React.FC = () => {
                     className="w-full"
                     isLoading={loading.phone}
                   >
-                    التحقق من الهاتف
+                    {t('auth.verification.verifyPhoneBtn')}
                   </Button>
                   {canResend.phone ? (
                     <Button
@@ -344,11 +344,11 @@ const VerifyAccountPage: React.FC = () => {
                       className="w-full"
                       leftIcon={<RefreshCw className="w-4 h-4" />}
                     >
-                      إعادة إرسال الرمز
+                      {t('auth.verification.resend')}
                     </Button>
                   ) : (
                     <p className="text-center text-gray-500 text-sm">
-                      يمكنك إعادة الإرسال خلال {resendCountdown.phone} ثانية
+                      {t('auth.verification.resendIn', { countdown: resendCountdown.phone })}
                     </p>
                   )}
                 </div>
@@ -362,13 +362,13 @@ const VerifyAccountPage: React.FC = () => {
             <Clock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">
-                لماذا التحقق من حسابك؟
+                {t('auth.verification.whyVerify')}
               </h3>
               <ul className="text-sm text-gray-700 space-y-1">
-                <li>• أمان حسابك محسّن</li>
-                <li>• فتح الميزات المتقدمة</li>
-                <li>• تفعيل خدمات الحجز</li>
-                <li>• تلقي الإشعارات المهمة</li>
+                <li>• {t('auth.verification.why1')}</li>
+                <li>• {t('auth.verification.why2')}</li>
+                <li>• {t('auth.verification.why3')}</li>
+                <li>• {t('auth.verification.why4')}</li>
               </ul>
             </div>
           </div>

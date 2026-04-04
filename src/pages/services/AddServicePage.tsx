@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Upload, X, Plus, MapPin, DollarSign } from 'lucide-react';
@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { useDirection } from '../../hooks/useDirection';
+import { apiClient } from '../../services/api/client';
 
 interface ServiceFormData {
   title_ar: string;
@@ -52,6 +53,10 @@ const AddServicePage: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editSlug = searchParams.get('edit');
+  const isEditMode = !!editSlug;
+
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -59,8 +64,9 @@ const AddServicePage: React.FC = () => {
   const [centers, setCenters] = useState<Center[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
- const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const API_BASE =
+    (import.meta.env?.VITE_API_BASE || 'http://localhost:8000');
   const {
     register,
     handleSubmit,
@@ -78,6 +84,13 @@ const AddServicePage: React.FC = () => {
     loadGovernorates();
   }, []);
 
+  // Load service data for editing
+  useEffect(() => {
+    if (editSlug) {
+      loadServiceForEdit(editSlug);
+    }
+  }, [editSlug]);
+
   // Load subcategories when category changes
   useEffect(() => {
     if (selectedCategory) {
@@ -91,6 +104,53 @@ const AddServicePage: React.FC = () => {
       loadCenters(selectedGovernorate);
     }
   }, [selectedGovernorate]);
+
+  const loadServiceForEdit = async (slug: string) => {
+    try {
+      const response = await apiClient.get(`/services/services/${slug}/`);
+      const service = response.data;
+
+      setValue('title_ar', service.title_ar || service.title || '');
+      setValue('title_en', service.title_en || '');
+      setValue('description_ar', service.description_ar || service.description || '');
+      setValue('description_en', service.description_en || '');
+      setValue('pricing_type', service.pricing_type || 'fixed');
+      setValue('price', service.price || 0);
+
+      // Set category so subcategories can load, then set subcategory
+      if (service.category?.id || service.category) {
+        const catId = service.category?.id || service.category;
+        setValue('category', String(catId));
+        // subcategories will load via useEffect, set after slight delay
+        setTimeout(() => {
+          if (service.subcategory?.id || service.subcategory) {
+            setValue('subcategory', String(service.subcategory?.id || service.subcategory));
+          }
+        }, 500);
+      }
+
+      // Set governorate so centers can load, then set center
+      if (service.governorate?.id || service.governorate) {
+        const govId = service.governorate?.id || service.governorate;
+        setValue('governorate', String(govId));
+        setTimeout(() => {
+          if (service.center?.id || service.center) {
+            setValue('center', String(service.center?.id || service.center));
+          }
+        }, 500);
+      }
+
+      // Load existing image previews
+      if (service.images?.length > 0) {
+        setExistingImages(service.images.map((img: any) => img.image || img.url || img));
+      } else if (service.cover_image) {
+        setExistingImages([service.cover_image]);
+      }
+    } catch (error) {
+      console.error('Failed to load service for editing:', error);
+      toast.error('فشل تحميل بيانات الخدمة');
+    }
+  };
 
   const loadCategories = async () => {
     try {
@@ -175,27 +235,39 @@ const AddServicePage: React.FC = () => {
   const onSubmit = async (data: ServiceFormData) => {
     setIsLoading(true);
     try {
-      // Create service
-      const serviceResponse = await fetch(API_BASE+'/api/v1/services/services/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify(data),
-      });
+      let service;
 
-      if (!serviceResponse.ok) {
-        throw new Error('Failed to create service');
+      if (isEditMode && editSlug) {
+        // Update existing service
+        const updateResponse = await apiClient.patch(
+          `/services/services/${editSlug}/`,
+          data
+        );
+        service = updateResponse.data;
+        toast.success('تم تحديث الخدمة بنجاح!');
+      } else {
+        // Create new service
+        const serviceResponse = await fetch(API_BASE + '/api/v1/services/services/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!serviceResponse.ok) {
+          throw new Error('Failed to create service');
+        }
+
+        service = await serviceResponse.json();
+        toast.success('تم إضافة الخدمة بنجاح! ستتم مراجعتها خلال 24-48 ساعة.');
       }
 
-      const service = await serviceResponse.json();
-      
-      
-      // Upload images if any
+      // Upload new images if any
       if (selectedImages.length > 0) {
         const formData = new FormData();
-        selectedImages.forEach((image, index) => {
+        selectedImages.forEach((image) => {
           formData.append('images', image);
         });
 
@@ -208,10 +280,9 @@ const AddServicePage: React.FC = () => {
         });
       }
 
-      toast.success('تم إضافة الخدمة بنجاح! ستتم مراجعتها خلال 24-48 ساعة.');
       navigate('/dashboard');
     } catch (error) {
-      toast.error('حدث خطأ في إضافة الخدمة');
+      toast.error(isEditMode ? 'حدث خطأ في تحديث الخدمة' : 'حدث خطأ في إضافة الخدمة');
     } finally {
       setIsLoading(false);
     }
@@ -223,10 +294,10 @@ const AddServicePage: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            إضافة خدمة جديدة
+            {isEditMode ? 'تعديل الخدمة' : 'إضافة خدمة جديدة'}
           </h1>
           <p className="text-gray-600">
-            أضف خدمتك واحصل على عملاء جدد
+            {isEditMode ? 'قم بتعديل بيانات خدمتك' : 'أضف خدمتك واحصل على عملاء جدد'}
           </p>
         </div>
 
@@ -457,6 +528,29 @@ const AddServicePage: React.FC = () => {
                 </p>
               </div>
 
+              {/* Existing Images (Edit Mode) */}
+              {existingImages.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">الصور الحالية:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {existingImages.map((imgUrl, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={imgUrl}
+                          alt={`Existing ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                        />
+                        {index === 0 && (
+                          <div className="absolute bottom-1 left-1 bg-primary-600 text-white text-xs px-2 py-1 rounded">
+                            رئيسية
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -498,9 +592,9 @@ const AddServicePage: React.FC = () => {
             <Button
               type="submit"
               isLoading={isLoading}
-              leftIcon={<Plus className="w-5 h-5" />}
+              leftIcon={isEditMode ? undefined : <Plus className="w-5 h-5" />}
             >
-              إضافة الخدمة
+              {isEditMode ? 'حفظ التعديلات' : 'إضافة الخدمة'}
             </Button>
           </div>
 

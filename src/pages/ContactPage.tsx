@@ -45,7 +45,7 @@ const ContactPage: React.FC = () => {
     {
       icon: Phone,
       titleKey: 'contactPage.info.phone.title',
-      value: '+20 100 000 0000',
+      value: '+20 1122411136',
       color: 'text-secondary-600',
       bgColor: 'bg-secondary-100',
     },

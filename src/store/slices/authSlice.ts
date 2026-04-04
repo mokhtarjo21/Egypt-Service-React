@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { User, LoginCredentials, RegisterData } from "../../types/auth";
 import { authService, profileService } from "../../services/django";
+import { authApi } from "../../services/api/authApi";
 
 interface AuthState {
   user: User | null;
@@ -76,16 +77,48 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const googleLoginUser = createAsyncThunk(
+  "auth/googleLogin",
+  async ({ idToken, role }: { idToken: string, role?: string }, { rejectWithValue }) => {
+    try {
+      const response = await authApi.googleLogin(idToken, role);
+
+      if (!response.tokens) {
+        return rejectWithValue("فشل تسجيل الدخول باستخدام Google");
+      }
+
+      return {
+        user: response.user,
+        session: {
+          access_token: response.tokens.access,
+          refresh_token: response.tokens.refresh,
+        },
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.error || "فشل تسجيل الدخول");
+    }
+  }
+);
+
 export const logoutUser = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
-      const { error } = await authService.signOut();
-      if (error) {
-        return rejectWithValue(error.message || "فشل تسجيل الخروج");
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (refreshToken) {
+        await authApi.logout(refreshToken);
       }
+      
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
+      
+      return null;
     } catch (error: any) {
-      return rejectWithValue(error.message || "فشل تسجيل الخروج");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
+      return rejectWithValue(error.response?.data?.error || "فشل تسجيل الخروج");
     }
   }
 );
@@ -115,9 +148,15 @@ export const authSlice = createSlice({
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        // تحديث localStorage أيضاً
         localStorage.setItem("user", JSON.stringify(state.user));
       }
+    },
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+      state.error = null;
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -149,6 +188,31 @@ export const authSlice = createSlice({
           );
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.error = action.payload as string;
+      })
+
+      // Google Login
+      .addCase(googleLoginUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(googleLoginUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.session?.access_token || null;
+        state.refreshToken = action.payload.session?.refresh_token || null;
+        state.error = null;
+
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
+        if (action.payload.session?.access_token)
+          localStorage.setItem("access_token", action.payload.session.access_token);
+        if (action.payload.session?.refresh_token)
+          localStorage.setItem("refresh_token", action.payload.session.refresh_token);
+      })
+      .addCase(googleLoginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = false;
         state.error = action.payload as string;
@@ -208,6 +272,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { clearError, updateUser } = authSlice.actions;
+export const { clearError, updateUser, setUser } = authSlice.actions;
 
 export default authSlice.reducer;

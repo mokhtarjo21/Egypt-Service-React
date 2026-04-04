@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { Helmet } from 'react-helmet-async';
 import { Star, MapPin, Clock, Users, Shield, MessageCircle, Flag, Heart, ChevronLeft, ChevronRight, Eye, ThumbsUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -160,7 +161,14 @@ const ServiceDetailPage: React.FC = () => {
       navigate('/login');
       return;
     }
-    navigate(`/services/${service.slug}/book`);
+    
+    // Prevent booking own service
+    if ((user as any).id === service?.owner?.id) {
+      toast.error('لا يمكنك حجز الخدمة الخاصة بك');
+      return;
+    }
+
+    navigate(`/services/${service?.slug}/book`);
   };
 
   const handleContactProvider = () => {
@@ -169,8 +177,15 @@ const ServiceDetailPage: React.FC = () => {
       navigate('/login');
       return;
     }
+    
+    // Prevent messaging self
+    if ((user as any).id === service?.owner?.id) {
+      toast.error('لا يمكنك مراسلة نفسك');
+      return;
+    }
+
     // Navigate to messages page with provider and service
-    navigate(`/messages?provider=${service.owner.id}&service=${service.id}`);
+    navigate(`/messages?provider=${service?.owner?.id}&service=${service?.id}`);
   };
 
   const handleViewProviderProfile = () => {
@@ -226,6 +241,75 @@ const ServiceDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* ============================
+          SEO: Meta Tags + JSON-LD
+      ============================*/}
+      <Helmet>
+        <title>{isRTL ? service.title_ar : service.title_en || service.title_ar} | منصة الخدمات المصرية</title>
+        <meta
+          name="description"
+          content={(isRTL ? service.description_ar : service.description_en || service.description_ar).slice(0, 160)}
+        />
+        <link rel="canonical" href={`${window.location.origin}/services/${service.slug}`} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={isRTL ? service.title_ar : service.title_en || service.title_ar} />
+        <meta
+          property="og:description"
+          content={(isRTL ? service.description_ar : service.description_en || service.description_ar).slice(0, 200)}
+        />
+        <meta property="og:url" content={`${window.location.origin}/services/${service.slug}`} />
+        {service.images?.[0]?.image && (
+          <meta property="og:image" content={service.images[0].image} />
+        )}
+        <meta property="og:locale" content={isRTL ? 'ar_EG' : 'en_US'} />
+        <meta property="og:site_name" content="منصة الخدمات المصرية" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={isRTL ? service.title_ar : service.title_en || service.title_ar} />
+        <meta
+          name="twitter:description"
+          content={(isRTL ? service.description_ar : service.description_en || service.description_ar).slice(0, 160)}
+        />
+        {service.images?.[0]?.image && (
+          <meta name="twitter:image" content={service.images[0].image} />
+        )}
+
+        {/* JSON-LD Structured Data — Service Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: isRTL ? service.title_ar : service.title_en || service.title_ar,
+            description: isRTL ? service.description_ar : service.description_en || service.description_ar,
+            url: `${window.location.origin}/services/${service.slug}`,
+            image: service.images?.[0]?.image || undefined,
+            provider: {
+              '@type': 'Person',
+              name: service.owner?.full_name,
+            },
+            areaServed: {
+              '@type': 'State',
+              name: service.governorate?.name_ar || 'مصر',
+            },
+            offers: {
+              '@type': 'Offer',
+              price: service.price,
+              priceCurrency: service.currency || 'EGP',
+              availability: 'https://schema.org/InStock',
+            },
+            aggregateRating: avgRating > 0
+              ? {
+                  '@type': 'AggregateRating',
+                  ratingValue: avgRating.toFixed(1),
+                  reviewCount: getTotalReviews(),
+                }
+              : undefined,
+          })}
+        </script>
+      </Helmet>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
@@ -308,7 +392,7 @@ const ServiceDetailPage: React.FC = () => {
 
                   {/* Service Badges */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {service.owner.is_verified && <Badge type="verified" />}
+                    {!!service.owner.is_verified && <Badge type="verified" />}
                     {(service.owner.rating || 0) >= 4.8 && <Badge type="top_rated" />}
                     <Badge type="responsive" />
                     <Badge type="featured" />
@@ -574,6 +658,7 @@ const ServiceDetailPage: React.FC = () => {
                   className="w-full"
                   size="lg"
                   onClick={handleBookNow}
+                  disabled={user && (user as any).id === service?.owner?.id}
                 >
                   {user ? t('serviceDetail.sidebar.bookNow') : t('serviceDetail.sidebar.loginToBook')}
                 </Button>
@@ -582,6 +667,7 @@ const ServiceDetailPage: React.FC = () => {
                   className="w-full"
                   leftIcon={<MessageCircle className="w-5 h-5" />}
                   onClick={handleContactProvider}
+                  disabled={user && (user as any).id === service?.owner?.id}
                 >
                   {t('serviceDetail.sidebar.contactProvider')}
                 </Button>
@@ -626,7 +712,7 @@ const ServiceDetailPage: React.FC = () => {
 
               {/* Provider Badges */}
               <div className="flex flex-wrap gap-1 mb-4">
-                {service.owner.is_verified && <Badge type="verified" size="sm" />}
+                {!!service.owner.is_verified && <Badge type="verified" size="sm" />}
                 {(service.owner.rating || 0) >= 4.8 && <Badge type="top_rated" size="sm" />}
                 <Badge type="responsive" size="sm" />
               </div>

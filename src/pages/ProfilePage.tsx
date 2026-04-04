@@ -3,737 +3,600 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Edit,
-  Shield,
-  Users,
-  Upload,
-  X,
+  User, Mail, Phone, MapPin, Calendar, Edit2, Upload, Shield,
+  CheckCircle, AlertCircle, Wallet, CreditCard, FileText, RefreshCw,
+  Star, Briefcase, TrendingUp, Lock, ChevronRight, Check, Camera,
+  BadgeCheck, Clock, Eye, BookOpen,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { RootState } from '../store/store';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
-import { SentimentBar } from '../components/ui/SentimentBar';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Input } from '../components/ui/Input';
 import djangoProfileService from '../services/django/profileService';
 import { fetchUserProfile } from '../store/slices/authSlice';
+import { apiClient } from '../services/api/client';
 
-const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:8000';
+/* ─── helpers ────────────────────────────────── */
+const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000';
 
-interface Badge {
-  id: string;
-  type: string;
-  earned_at: string;
-}
+const getImageUrl = (path?: string | null) => {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
-interface SentimentData {
-  positive: number;
-  neutral: number;
-  negative: number;
-  total?: number;
-}
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const map: Record<string, { label: string; cls: string }> = {
+    verified:  { label: 'موثّق',         cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+    pending:   { label: 'قيد المراجعة', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+    rejected:  { label: 'مرفوض',         cls: 'bg-red-100 text-red-700 border-red-200' },
+    suspended: { label: 'موقوف',          cls: 'bg-gray-100 text-gray-600 border-gray-200' },
+  };
+  const s = map[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600 border-gray-200' };
+  return (
+    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${s.cls}`}>
+      {status === 'verified' && <CheckCircle className="w-3 h-3" />}
+      {status === 'pending'  && <Clock className="w-3 h-3" />}
+      {status === 'rejected' && <AlertCircle className="w-3 h-3" />}
+      {s.label}
+    </span>
+  );
+};
 
-interface ProviderStats {
-  services: number;
-  rating: number;
-  reviews: number;
-  completion_rate: number;
-}
+/* ─── quick-link button ─────────────────────── */
+const QuickLink: React.FC<{ icon: React.ReactNode; label: string; sub?: string; onClick: () => void; badge?: string }> = ({
+  icon, label, sub, onClick, badge,
+}) => (
+  <button
+    onClick={onClick}
+    className="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors text-start group"
+  >
+    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors shrink-0">
+      {icon}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-gray-900">{label}</p>
+      {sub && <p className="text-xs text-gray-500 truncate">{sub}</p>}
+    </div>
+    {badge && (
+      <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5 font-semibold">{badge}</span>
+    )}
+    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0 rtl:rotate-180" />
+  </button>
+);
 
-interface Organization {
-  id: string;
-  name: string;
-  description: string;
-}
+/* ─── stat mini card ───────────────────────── */
+const MiniStat: React.FC<{ label: string; value: string | number; icon: React.ReactNode; color: string }> = ({
+  label, value, icon, color,
+}) => (
+  <div className={`flex flex-col items-center justify-center p-4 rounded-2xl ${color} text-center gap-1`}>
+    {icon}
+    <p className="text-xl font-bold text-gray-900 leading-none">{value}</p>
+    <p className="text-xs text-gray-600 leading-tight">{label}</p>
+  </div>
+);
 
-interface OrganizationMember {
-  id: string;
-  user?: { full_name: string };
-  role: string;
-}
+/* ─── file drop zone ────────────────────────── */
+const DropZone: React.FC<{
+  label: string; required?: boolean; file: File | null; onSelect: (f: File) => void;
+}> = ({ label, required, file, onSelect }) => (
+  <div>
+    <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+      <FileText className="w-4 h-4 text-gray-400" /> {label}
+      {required && <span className="text-red-500">*</span>}
+    </p>
+    <label className={`flex flex-col items-center gap-2 border-2 border-dashed rounded-xl p-5 cursor-pointer transition-all ${
+      file ? 'border-emerald-400 bg-emerald-50' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+    }`}>
+      <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); }} />
+      {file ? (
+        <>
+          <Check className="w-7 h-7 text-emerald-500" />
+          <span className="text-sm text-emerald-700 font-medium text-center break-all">{file.name}</span>
+        </>
+      ) : (
+        <>
+          <Upload className="w-7 h-7 text-gray-400" />
+          <span className="text-sm text-gray-500">اختر ملفاً أو اسحبه هنا</span>
+          <span className="text-xs text-gray-400">PNG، JPG، PDF – حتى 10 MB</span>
+        </>
+      )}
+    </label>
+  </div>
+);
 
+/* ═══════════════════════════════════════════ */
+/*                MAIN COMPONENT               */
+/* ═══════════════════════════════════════════ */
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  // State for profile data
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [sentiment, setSentiment] = useState<SentimentData | null>(null);
-  const [providerStats, setProviderStats] = useState<ProviderStats | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([]);
+  const [providerStats, setProviderStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats]   = useState(false);
 
-  // State for modals
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showTeamModal, setShowTeamModal] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  /* modals */
+  const [showEditModal,   setShowEditModal]   = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showDocModal,    setShowDocModal]    = useState(false);
 
-  // State for forms
-  const [editFormData, setEditFormData] = useState({
-    full_name: user?.full_name || '',
-    email: user?.email || '',
-    bio: user?.bio || '',
-  });
+  /* edit form */
+  const [editForm, setEditForm] = useState({ full_name: '', email: '', bio_ar: '' });
+  const [editLoading, setEditLoading] = useState(false);
 
-  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-  const [uploadPreview, setUploadPreview] = useState<string>('');
+  /* avatar */
+  const [avatarFile,    setAvatarFile]    = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarLoading, setAvatarLoading] = useState(false);
 
-  // Loading states
-  const [loading, setLoading] = useState({
-    initial: true,
-    editSubmit: false,
-    imageUpload: false,
-  });
+  /* documents */
+  const [docFront,   setDocFront]   = useState<File | null>(null);
+  const [docBack,    setDocBack]    = useState<File | null>(null);
+  const [docLoading, setDocLoading] = useState(false);
 
+  /* ── load provider stats ── */
   useEffect(() => {
-    const loadProfileData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, initial: true }));
+    const u = user as any;
+    if (!u || !(u.role === 'provider' || u.user_type === 'provider')) return;
+    setLoadingStats(true);
+    apiClient.get('/analytics/provider/?days=30')
+      .then(r => setProviderStats(r.data))
+      .catch(() => {})
+      .finally(() => setLoadingStats(false));
+  }, [user]);
 
-        // Fetch badges
-        try {
-          const badgesRes = await fetch(`${API_BASE}/api/v1/trust/user-badges/`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          });
-          if (badgesRes.ok) {
-            const badgesData = await badgesRes.json();
-            setBadges(Array.isArray(badgesData) ? badgesData : badgesData.results || []);
-          }
-        } catch (error) {
-          console.error('Failed to load badges:', error);
-        }
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size="lg" />
+    </div>
+  );
 
-        // Fetch sentiment (provider only)
-        if (user?.user_type === 'provider' && user?.id) {
-          try {
-            const sentimentRes = await fetch(
-              `${API_BASE}/api/v1/recommendations/sentiment/${user.id}/`,
-              {
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
-              }
-            );
-            if (sentimentRes.ok) {
-              const sentimentData = await sentimentRes.json();
-              setSentiment({
-                positive: sentimentData.positive || 0,
-                neutral: sentimentData.neutral || 0,
-                negative: sentimentData.negative || 0,
-                total:
-                  (sentimentData.positive || 0) +
-                  (sentimentData.neutral || 0) +
-                  (sentimentData.negative || 0),
-              });
-            }
-          } catch (error) {
-            console.error('Failed to load sentiment:', error);
-          }
-        }
+  const u = user as any;
+  const avatarUrl   = getImageUrl(u.avatar);
+  const isProvider  = u.role === 'provider' || u.user_type === 'provider';
+  const isRejected  = u.status === 'rejected';
+  const isPending   = u.status === 'pending';
+  const isVerified  = u.status === 'verified';
+  const hasSub      = !!u.active_subscription;
+  const location    = [u.center?.name_ar, u.governorate?.name_ar].filter(Boolean).join('، ');
+  const joinDate    = u.date_joined ? new Date(u.date_joined).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' }) : '';
+  const stats       = providerStats?.current_totals;
 
-        // Fetch provider analytics (provider only)
-        if (user?.user_type === 'provider') {
-          try {
-            const analyticsRes = await fetch(`${API_BASE}/api/v1/analytics/provider/?days=30`, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-              },
-            });
-            if (analyticsRes.ok) {
-              const analyticsData = await analyticsRes.json();
-              setProviderStats({
-                services: analyticsData.current_totals?.services_count || 0,
-                rating: analyticsData.current_totals?.average_rating || 0,
-                reviews: analyticsData.current_totals?.reviews_count || 0,
-                completion_rate: analyticsData.current_totals?.completion_rate || 0,
-              });
-            }
-          } catch (error) {
-            console.error('Failed to load analytics:', error);
-          }
-        }
+  const initials = (u.full_name || 'U').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
-        // Fetch organizations
-        try {
-          const orgsRes = await fetch(`${API_BASE}/api/v1/teams/organizations/`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          });
-          if (orgsRes.ok) {
-            const orgsData = await orgsRes.json();
-            const orgsArray = Array.isArray(orgsData) ? orgsData : orgsData.results || [];
-            setOrganizations(orgsArray);
-
-            // Fetch members for first organization
-            if (orgsArray.length > 0) {
-              try {
-                const membersRes = await fetch(
-                  `${API_BASE}/api/v1/teams/members/?organization=${orgsArray[0].id}`,
-                  {
-                    headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                  }
-                );
-                if (membersRes.ok) {
-                  const membersData = await membersRes.json();
-                  setOrganizationMembers(
-                    Array.isArray(membersData) ? membersData : membersData.results || []
-                  );
-                }
-              } catch (error) {
-                console.error('Failed to load organization members:', error);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Failed to load organizations:', error);
-        }
-      } finally {
-        setLoading((prev) => ({ ...prev, initial: false }));
-      }
-    };
-
-    if (user) {
-      loadProfileData();
-    }
-  }, [user?.id, user?.user_type]);
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setShowUploadModal(true);
-    }
+  /* ── handlers ── */
+  const openEdit = () => {
+    setEditForm({ full_name: u.full_name || '', email: u.email || '', bio_ar: u.bio_ar || u.bio || '' });
+    setShowEditModal(true);
   };
 
-  const handleImageUpload = async () => {
-    if (!uploadedImage) return;
-
-    setLoading((prev) => ({ ...prev, imageUpload: true }));
+  const handleEdit = async () => {
+    if (!editForm.full_name.trim()) { toast.error('الاسم مطلوب'); return; }
+    setEditLoading(true);
     try {
-      const result = await djangoProfileService.uploadProfileImage(uploadedImage);
-      if (result.data) {
-        setUploadedImage(null);
-        setUploadPreview('');
-        setShowUploadModal(false);
-        dispatch(fetchUserProfile() as any);
-        toast.success('تم تحديث صورة الملف الشخصي بنجاح');
-      }
-    } catch (error) {
-      toast.error('فشل في رفع الصورة');
-    } finally {
-      setLoading((prev) => ({ ...prev, imageUpload: false }));
-    }
+      const r = await djangoProfileService.updateProfile(editForm as any);
+      if (r.data) { setShowEditModal(false); dispatch(fetchUserProfile() as any); }
+    } finally { setEditLoading(false); }
   };
 
-  const handleEditSubmit = async () => {
-    if (!editFormData.full_name || !editFormData.email) {
-      toast.error('الرجاء ملء جميع الحقول المطلوبة');
-      return;
-    }
+  const onAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setAvatarFile(f);
+    const reader = new FileReader();
+    reader.onloadend = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(f);
+    setShowAvatarModal(true);
+  };
 
-    setLoading((prev) => ({ ...prev, editSubmit: true }));
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return;
+    setAvatarLoading(true);
     try {
-      const result = await djangoProfileService.updateProfile({
-        full_name: editFormData.full_name,
-        email: editFormData.email,
-        bio_ar: editFormData.bio,
-      });
+      const r = await djangoProfileService.uploadProfileImage(avatarFile);
+      if (r.data) { setShowAvatarModal(false); setAvatarFile(null); setAvatarPreview(''); dispatch(fetchUserProfile() as any); }
+    } finally { setAvatarLoading(false); }
+  };
 
-      if (result.data) {
-        setShowEditModal(false);
+  const handleDocReupload = async () => {
+    if (!docFront) { toast.error('يجب إرفاق صورة الوجه الأمامي'); return; }
+    setDocLoading(true);
+    try {
+      const r = await djangoProfileService.uploadIDDocument(docFront, docBack ?? undefined);
+      if (r.data) {
+        toast.success('تم إرسال طلب إعادة المراجعة. سيتم التواصل معك قريباً.');
+        setShowDocModal(false); setDocFront(null); setDocBack(null);
         dispatch(fetchUserProfile() as any);
-        toast.success('تم تحديث الملف الشخصي بنجاح');
       }
-    } catch (error) {
-      toast.error('فشل في تحديث الملف الشخصي');
-    } finally {
-      setLoading((prev) => ({ ...prev, editSubmit: false }));
-    }
+    } finally { setDocLoading(false); }
   };
 
-  const handleVerifyEmail = () => {
-    navigate('/verify-account');
-  };
-
-  const handleVerifyPhone = () => {
-    navigate('/verify-account');
-  };
-
-  const handleChangePassword = () => {
-    navigate('/security');
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>يرجى تسجيل الدخول لعرض الملف الشخصي</p>
-      </div>
-    );
-  }
-
-  if (loading.initial) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
+  /* ════════════════ RENDER ════════════════ */
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Profile Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="text-center">
-              <div className="mb-6 relative group">
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.full_name}
-                    className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <User className="w-12 h-12 text-white" />
-                  </div>
-                )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20" dir="rtl">
 
-                {/* Image Upload Button (Hidden input) */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                  id="avatar-input"
-                />
-                <label
-                  htmlFor="avatar-input"
-                  className="absolute bottom-0 right-1/2 transform translate-x-1/2 bg-primary-600 text-white p-2 rounded-full cursor-pointer hover:bg-primary-700 transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                </label>
-
-                <h2 className="text-2xl font-bold text-gray-900 mb-2 mt-4">
-                  {user.full_name}
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  {user.user_type === 'provider' ? 'مقدم خدمة' : 'عميل'}
-                </p>
-
-                {/* User Badges */}
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  {badges && badges.length > 0 ? (
-                    badges.slice(0, 3).map((badge) => (
-                      <Badge key={badge.id} type={badge.type} size="sm" />
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">لا توجد شارات حتى الآن</p>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                className="w-full"
-                leftIcon={<Edit className="w-4 h-4" />}
-                onClick={() => {
-                  setEditFormData({
-                    full_name: user.full_name,
-                    email: user.email,
-                    bio: user.bio || '',
-                  });
-                  setShowEditModal(true);
-                }}
-              >
-                تعديل الملف الشخصي
-              </Button>
-            </Card>
-
-            {/* Quick Stats */}
-            {user.user_type === 'provider' && providerStats && (
-              <Card className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  إحصائيات سريعة
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">الخدمات</span>
-                    <span className="font-medium">{providerStats.services}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">التقييم</span>
-                    <span className="font-medium">{providerStats.rating.toFixed(1)} ⭐</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">المراجعات</span>
-                    <span className="font-medium">{providerStats.reviews}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">معدل الإنجاز</span>
-                    <span className="font-medium">{Math.round(providerStats.completion_rate)}%</span>
-                  </div>
-                </div>
-
-                {/* Sentiment Analysis */}
-                {sentiment && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <SentimentBar
-                      positive={sentiment.positive}
-                      neutral={sentiment.neutral}
-                      negative={sentiment.negative}
-                      total={sentiment.total || 0}
-                    />
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* Organization Membership */}
-            {organizations.length > 0 && (
-              <Card className="mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    الفريق
-                  </h3>
-                  <Button variant="outline" size="sm" onClick={() => setShowTeamModal(true)}>
-                    <Users className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">المؤسسة</span>
-                    <span className="font-medium text-sm">{organizations[0]?.name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">أعضاء الفريق</span>
-                    <span className="font-medium">{organizationMembers.length}</span>
-                  </div>
-                </div>
-
-                <Button variant="outline" className="w-full mt-4" onClick={() => setShowTeamModal(true)}>
-                  إدارة الفريق
-                </Button>
-              </Card>
-            )}
+      {/* ── floating Rejection Banner ── */}
+      {isRejected && (
+        <div className="sticky top-0 z-20 bg-red-600 text-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 shadow-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="font-semibold">تم رفض حسابك{u.rejection_reason ? `:  ${u.rejection_reason}` : ''}</span>
           </div>
+          <button
+            onClick={() => setShowDocModal(true)}
+            className="flex items-center gap-1.5 bg-white text-red-600 text-sm font-bold px-4 py-1.5 rounded-full hover:bg-red-50 transition-colors shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            طلب إعادة مراجعة
+          </button>
+        </div>
+      )}
 
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
-            <Card>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  المعلومات الشخصية
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<Edit className="w-4 h-4" />}
-                  onClick={() => {
-                    setEditFormData({
-                      full_name: user.full_name,
-                      email: user.email,
-                      bio: user.bio || '',
-                    });
-                    setShowEditModal(true);
-                  }}
-                >
-                  تعديل
-                </Button>
-              </div>
+      {/* ── Pending notice ── */}
+      {isPending && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 flex items-center justify-center gap-2 text-amber-800 text-sm">
+          <Clock className="w-4 h-4" />
+          حسابك قيد المراجعة من فريقنا. سيتم إخطارك بالنتيجة قريباً.
+        </div>
+      )}
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="flex items-center">
-                  <Mail className="w-5 h-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-600">البريد الإلكتروني</p>
-                    <p className="font-medium text-gray-900">{user.email}</p>
-                  </div>
-                </div>
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-4">
 
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-600">رقم الهاتف</p>
-                    <p className="font-medium text-gray-900">{user.phone_number}</p>
-                  </div>
-                </div>
+        {/* ═══ HERO CARD ═══ */}
+        <div className="relative rounded-2xl overflow-hidden shadow-sm">
+          {/* gradient cover */}
+          <div className="h-28 sm:h-36 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
 
-                {user.province && (
-                  <div className="flex items-center">
-                    <MapPin className="w-5 h-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">الموقع</p>
-                      <p className="font-medium text-gray-900">
-                        {user.city?.name_ar}, {user.province.name_ar}
-                      </p>
-                    </div>
+          <div className="bg-white px-4 sm:px-6 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-10">
+
+              {/* avatar */}
+              <div className="relative self-center sm:self-auto">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={u.full_name} className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-white shadow-md" />
+                ) : (
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white shadow-md bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">{initials}</span>
                   </div>
                 )}
-
-                <div className="flex items-center">
-                  <Calendar className="w-5 h-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-600">تاريخ الانضمام</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(user.date_joined).toLocaleDateString('ar-EG')}
-                    </p>
+                {/* camera btn */}
+                <label className="absolute -bottom-1 -left-1 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors">
+                  <Camera className="w-4 h-4 text-white" />
+                  <input type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
+                </label>
+                {isVerified && (
+                  <div className="absolute -top-1 -right-1 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center shadow border-2 border-white">
+                    <Check className="w-3.5 h-3.5 text-white" />
                   </div>
-                </div>
+                )}
               </div>
 
-              {user.bio && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <p className="text-sm text-gray-600 mb-2">نبذة شخصية</p>
-                  <p className="text-gray-900">{user.bio}</p>
+              {/* name + status */}
+              <div className="flex-1 text-center sm:text-start pt-1 sm:pb-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{u.full_name || '—'}</h1>
+                  <StatusBadge status={u.status || 'pending'} />
                 </div>
-              )}
-            </Card>
-
-            {/* Account Security */}
-            <Card>
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                أمان الحساب
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">التحقق من البريد الإلكتروني</p>
-                    <p className="text-sm text-gray-600">
-                      {user.email_verified ? 'تم التحقق' : 'لم يتم التحقق'}
-                    </p>
-                  </div>
-                  {!user.email_verified && (
-                    <Button variant="outline" size="sm" onClick={handleVerifyEmail}>
-                      تحقق الآن
-                    </Button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">التحقق من رقم الهاتف</p>
-                    <p className="text-sm text-gray-600">
-                      {user.phone_verified ? 'تم التحقق' : 'لم يتم التحقق'}
-                    </p>
-                  </div>
-                  {!user.phone_verified && (
-                    <Button variant="outline" size="sm" onClick={handleVerifyPhone}>
-                      تحقق الآن
-                    </Button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">كلمة المرور</p>
-                    <p className="text-sm text-gray-600">آخر تحديث منذ فترة</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleChangePassword}>
-                    تغيير
-                  </Button>
-                </div>
+                <p className="text-sm text-gray-500">
+                  {isProvider ? '🛠 مزود خدمة' : '👤 عميل'}
+                  {location && <span className="mx-2 text-gray-300">|</span>}
+                  {location && <span><MapPin className="w-3.5 h-3.5 inline text-gray-400 ml-0.5" />{location}</span>}
+                </p>
+                {joinDate && (
+                  <p className="text-xs text-gray-400 mt-0.5"><Calendar className="w-3 h-3 inline ml-1" />انضم في {joinDate}</p>
+                )}
               </div>
-            </Card>
+
+              {/* edit btn */}
+              <button
+                onClick={openEdit}
+                className="self-center sm:self-end flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow transition-colors mb-2"
+              >
+                <Edit2 className="w-4 h-4" />
+                تعديل الملف
+              </button>
+            </div>
+
+            {/* bio */}
+            {(u.bio_ar || u.bio) && (
+              <p className="mt-4 text-sm text-gray-600 bg-gray-50 rounded-xl p-3 leading-relaxed border border-gray-100">
+                {u.bio_ar || u.bio}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* ═══ Provider Stats ═══ */}
+        {isProvider && (
+          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-500" /> إحصائيات الأداء
+              </h2>
+              <span className="text-xs text-gray-400">آخر 30 يوم</span>
+            </div>
+            {loadingStats ? (
+              <div className="flex justify-center py-6"><LoadingSpinner size="md" /></div>
+            ) : stats ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <MiniStat
+                  label="مشاهدات الخدمات"
+                  value={stats.total_service_views ?? 0}
+                  icon={<Eye className="w-5 h-5 text-purple-500" />}
+                  color="bg-purple-50"
+                />
+                <MiniStat
+                  label="إجمالي الحجوزات"
+                  value={stats.total_bookings ?? 0}
+                  icon={<BookOpen className="w-5 h-5 text-blue-500" />}
+                  color="bg-blue-50"
+                />
+                <MiniStat
+                  label="الإيرادات (ج.م)"
+                  value={`${stats.total_revenue ?? 0}`}
+                  icon={<Briefcase className="w-5 h-5 text-emerald-500" />}
+                  color="bg-emerald-50"
+                />
+                <MiniStat
+                  label="متوسط التقييم"
+                  value={stats.avg_rating ? `${stats.avg_rating} ⭐` : '—'}
+                  icon={<Star className="w-5 h-5 text-yellow-500" />}
+                  color="bg-yellow-50"
+                />
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-400 text-sm">لا توجد بيانات بعد</div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ Two-column grid ═══ */}
+        <div className="grid sm:grid-cols-2 gap-4">
+
+          {/* Personal info card */}
+          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+            <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-500" /> معلومات الحساب
+            </h2>
+            <div className="space-y-3">
+              {[
+                { icon: <Mail className="w-4 h-4 text-gray-400" />,    label: 'البريد الإلكتروني', val: u.email       || '—' },
+                { icon: <Phone className="w-4 h-4 text-gray-400" />,   label: 'رقم الهاتف',        val: u.phone_number || '—' },
+                { icon: <MapPin className="w-4 h-4 text-gray-400" />,  label: 'المنطقة',           val: location       || '—' },
+                { icon: <Calendar className="w-4 h-4 text-gray-400" />,label: 'تاريخ الانضمام',   val: joinDate       || '—' },
+              ].map(({ icon, label, val }) => (
+                <div key={label} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div className="mt-0.5 shrink-0">{icon}</div>
+                  <div>
+                    <p className="text-xs text-gray-400">{label}</p>
+                    <p className="text-sm font-medium text-gray-800 break-all">{val}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick links card */}
+          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-500" /> الإعدادات والأمان
+            </h2>
+            <div className="divide-y divide-gray-50">
+              <QuickLink
+                icon={<Shield className="w-4 h-4" />}
+                label="الأمان وكلمة المرور"
+                sub="تعديل كلمة المرور والمصادقة الثنائية"
+                onClick={() => navigate('/security')}
+              />
+              {(isProvider || hasSub) && (
+                <QuickLink
+                  icon={<Wallet className="w-4 h-4" />}
+                  label="محفظتي"
+                  sub="عرض الرصيد والمعاملات"
+                  onClick={() => navigate('/wallet')}
+                />
+              )}
+              <QuickLink
+                icon={<CreditCard className="w-4 h-4" />}
+                label={hasSub ? 'إدارة اشتراكي' : 'خطط الاشتراك'}
+                sub={hasSub
+                  ? `نشط: ${u.active_subscription?.plan_name_ar}`
+                  : 'ترقية حسابك للاستمتاع بمزيد من المزايا'}
+                onClick={() => navigate('/plans')}
+                badge={hasSub ? '✓' : undefined}
+              />
+              <QuickLink
+                icon={<BookOpen className="w-4 h-4" />}
+                label="حجوزاتي"
+                sub="عرض وإدارة جميع الحجوزات"
+                onClick={() => navigate('/bookings')}
+              />
+              {isProvider && (
+                <QuickLink
+                  icon={<Briefcase className="w-4 h-4" />}
+                  label="خدماتي"
+                  sub="إدارة الخدمات المقدمة"
+                  onClick={() => navigate('/dashboard')}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ Verification Status ═══ */}
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+          <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <BadgeCheck className="w-5 h-5 text-blue-500" /> حالة التحقق
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+
+            {/* phone */}
+            <div className={`flex items-center gap-3 p-3.5 rounded-xl border ${u.is_phone_verified ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 ${u.is_phone_verified ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                <Phone className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">رقم الهاتف</p>
+                <p className="text-xs text-gray-500">{u.is_phone_verified ? 'تم التحقق' : 'غير محقق'}</p>
+              </div>
+              {!u.is_phone_verified && (
+                <button onClick={() => navigate('/verify-account')} className="text-xs text-blue-600 font-semibold hover:underline">
+                  تحقق الآن
+                </button>
+              )}
+              {u.is_phone_verified && <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />}
+            </div>
+
+            {/* email */}
+            {u.email && (
+              <div className={`flex items-center gap-3 p-3.5 rounded-xl border ${u.email_verified ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 ${u.email_verified ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-900">البريد الإلكتروني</p>
+                  <p className="text-xs text-gray-500">{u.email_verified ? 'تم التحقق' : 'غير محقق'}</p>
+                </div>
+                {!u.email_verified && (
+                  <button onClick={() => navigate('/verify-account')} className="text-xs text-blue-600 font-semibold hover:underline">
+                    تحقق الآن
+                  </button>
+                )}
+                {u.email_verified && <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />}
+              </div>
+            )}
+
+            {/* account status */}
+            <div className={`flex items-center gap-3 p-3.5 rounded-xl border ${isVerified ? 'bg-emerald-50 border-emerald-200' : isRejected ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 ${isVerified ? 'bg-emerald-500' : isRejected ? 'bg-red-500' : 'bg-amber-400'}`}>
+                <Shield className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">التحقق من الهوية</p>
+                <p className="text-xs text-gray-600">
+                  {isVerified ? 'حسابك موثّق بالكامل' : isRejected ? 'تم رفض المستندات' : 'قيد المراجعة'}
+                </p>
+              </div>
+              {isRejected && (
+                <button onClick={() => setShowDocModal(true)} className="text-xs text-red-600 font-semibold hover:underline shrink-0">
+                  إعادة رفع
+                </button>
+              )}
+              {isVerified && <BadgeCheck className="w-5 h-5 text-emerald-500 shrink-0" />}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ Subscription card (if active) ═══ */}
+        {hasSub && (
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 sm:p-5 text-white shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-200 text-xs mb-1">الاشتراك الحالي</p>
+                <h3 className="text-lg font-bold">{u.active_subscription.plan_name_ar}</h3>
+                <p className="text-sm text-blue-200 mt-0.5">
+                  ينتهي في {u.active_subscription.current_period_end
+                    ? new Date(u.active_subscription.current_period_end).toLocaleDateString('ar-EG')
+                    : '—'}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/plans')}
+                className="bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors border border-white/20"
+              >
+                إدارة
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* Edit Profile Modal */}
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title="تعديل الملف الشخصي"
-        size="md"
-      >
+      {/* ═══ MODALS ═══ */}
+
+      {/* Edit Profile */}
+      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="تعديل الملف الشخصي" size="md">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              الاسم الكامل
-            </label>
-            <Input
-              type="text"
-              value={editFormData.full_name}
-              onChange={(e) =>
-                setEditFormData((prev) => ({ ...prev, full_name: e.target.value }))
-              }
-              placeholder="الاسم الكامل"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل *</label>
+            <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} placeholder="الاسم الكامل" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              البريد الإلكتروني
-            </label>
-            <Input
-              type="email"
-              value={editFormData.email}
-              onChange={(e) =>
-                setEditFormData((prev) => ({ ...prev, email: e.target.value }))
-              }
-              placeholder="البريد الإلكتروني"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+            <Input type="email" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="example@mail.com" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              نبذة شخصية
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">نبذة تعريفية</label>
             <textarea
-              value={editFormData.bio}
-              onChange={(e) =>
-                setEditFormData((prev) => ({ ...prev, bio: e.target.value }))
-              }
-              placeholder="نبذة شخصية اختيارية"
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              value={editForm.bio_ar}
+              onChange={e => setEditForm(p => ({ ...p, bio_ar: e.target.value }))}
+              placeholder="اكتب نبذة مختصرة عنك..."
+              rows={3}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
             />
           </div>
-
-          <div className="flex space-x-4 rtl:space-x-reverse">
-            <Button
-              variant="outline"
-              onClick={() => setShowEditModal(false)}
-              className="flex-1"
+          <div className="flex gap-3 pt-2">
+            <button onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">إلغاء</button>
+            <button
+              onClick={handleEdit}
+              disabled={editLoading}
+              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              إلغاء
-            </Button>
-            <Button
-              onClick={handleEditSubmit}
-              isLoading={loading.editSubmit}
-              className="flex-1"
-            >
+              {editLoading ? <LoadingSpinner size="sm" /> : null}
               حفظ التغييرات
-            </Button>
+            </button>
           </div>
         </div>
       </Modal>
 
-      {/* Team Management Modal */}
-      <Modal
-        isOpen={showTeamModal}
-        onClose={() => setShowTeamModal(false)}
-        title="إدارة الفريق"
-        size="md"
-      >
+      {/* Avatar Upload */}
+      <Modal isOpen={showAvatarModal} onClose={() => { setShowAvatarModal(false); setAvatarFile(null); setAvatarPreview(''); }} title="تحديث الصورة الشخصية" size="sm">
         <div className="space-y-4">
-          {organizations.length > 0 && (
-            <>
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3">
-                  {organizations[0]?.name}
-                </h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  {organizations[0]?.description}
-                </p>
-              </div>
-
-              <div>
-                <h5 className="font-medium text-gray-900 mb-3">أعضاء الفريق</h5>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {organizationMembers.length > 0 ? (
-                    organizationMembers.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {member.user?.full_name || 'عضو غير معروف'}
-                          </p>
-                          <p className="text-sm text-gray-600">{member.role}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">لا يوجد أعضاء في الفريق</p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-
-          <Button
-            variant="outline"
-            onClick={() => setShowTeamModal(false)}
-            className="w-full"
-          >
-            إغلاق
-          </Button>
-        </div>
-      </Modal>
-
-      {/* Image Upload Modal */}
-      <Modal
-        isOpen={showUploadModal}
-        onClose={() => {
-          setShowUploadModal(false);
-          setUploadedImage(null);
-          setUploadPreview('');
-        }}
-        title="تحديث صورة الملف الشخصي"
-        size="md"
-      >
-        <div className="space-y-4">
-          {uploadPreview && (
+          {avatarPreview && (
             <div className="flex justify-center">
-              <img
-                src={uploadPreview}
-                alt="Preview"
-                className="w-32 h-32 rounded-full object-cover"
-              />
+              <img src={avatarPreview} alt="preview" className="w-32 h-32 rounded-2xl object-cover border-4 border-blue-100 shadow" />
             </div>
           )}
-
-          <p className="text-sm text-gray-600 text-center">
-            تأكد من أن الصورة واضحة ومناسبة
-          </p>
-
-          <div className="flex space-x-4 rtl:space-x-reverse">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowUploadModal(false);
-                setUploadedImage(null);
-                setUploadPreview('');
-              }}
-              className="flex-1"
+          <p className="text-sm text-gray-500 text-center">هل تريد تعيين هذه الصورة كصورة ملفك الشخصي؟</p>
+          <div className="flex gap-3">
+            <button onClick={() => { setShowAvatarModal(false); setAvatarFile(null); setAvatarPreview(''); }} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">إلغاء</button>
+            <button
+              onClick={handleAvatarUpload}
+              disabled={avatarLoading}
+              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              إلغاء
-            </Button>
-            <Button
-              onClick={handleImageUpload}
-              isLoading={loading.imageUpload}
-              className="flex-1"
-            >
-              تحديث الصورة
-            </Button>
+              {avatarLoading ? <LoadingSpinner size="sm" /> : <Upload className="w-4 h-4" />}
+              رفع الصورة
+            </button>
           </div>
         </div>
       </Modal>
+
+      {/* Document Re-Upload */}
+      <Modal isOpen={showDocModal} onClose={() => { setShowDocModal(false); setDocFront(null); setDocBack(null); }} title="رفع مستندات جديدة" size="md">
+        <div className="space-y-5">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-sm text-blue-700">
+            قم بإرفاق صورة واضحة لبطاقة الهوية الوطنية. تأكد أن الصورة غير مشوّهة وأن جميع البيانات مقروءة.
+          </div>
+          <DropZone label="الوجه الأمامي للبطاقة" required file={docFront} onSelect={setDocFront} />
+          <DropZone label="الوجه الخلفي للبطاقة (اختياري)" file={docBack} onSelect={setDocBack} />
+          <div className="flex gap-3 pt-1">
+            <button onClick={() => { setShowDocModal(false); setDocFront(null); setDocBack(null); }} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">إلغاء</button>
+            <button
+              onClick={handleDocReupload}
+              disabled={!docFront || docLoading}
+              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              {docLoading ? <LoadingSpinner size="sm" /> : <RefreshCw className="w-4 h-4" />}
+              إرسال طلب المراجعة
+            </button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };

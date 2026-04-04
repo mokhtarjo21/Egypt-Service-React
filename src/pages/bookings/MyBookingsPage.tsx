@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
-import { Calendar, MapPin, DollarSign, User, AlertCircle, ShoppingBag } from 'lucide-react';
+import { Calendar, DollarSign, User, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { Card } from '../../components/ui/Card';
@@ -40,7 +39,7 @@ interface Booking {
 }
 
 const MyBookingsPage: React.FC = () => {
-    const { t, i18n } = useTranslation();
+    // t and i18n from useTranslation not currently used in this component
     const { isRTL } = useDirection();
     const [activeTab, setActiveTab] = useState<'customer' | 'provider'>('customer');
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -173,13 +172,13 @@ const MyBookingsPage: React.FC = () => {
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                         <img
-                                            src={booking.service.primary_image?.image || 'https://via.placeholder.com/150'}
-                                            alt={booking.service.title_ar}
+                                            src={booking.service?.primary_image?.image || 'https://via.placeholder.com/150'}
+                                            alt={booking.service?.title_ar || 'Service'}
                                             className="w-12 h-12 rounded-lg object-cover"
                                         />
                                         <div>
                                             <h3 className="font-semibold text-gray-900 line-clamp-1">
-                                                {isRTL ? booking.service.title_ar : booking.service.title_en}
+                                                {isRTL ? booking.service?.title_ar : booking.service?.title_en}
                                             </h3>
                                             <p className="text-xs text-gray-500">#{booking.booking_number}</p>
                                         </div>
@@ -203,8 +202,8 @@ const MyBookingsPage: React.FC = () => {
                                         <User className="w-4 h-4 ml-2" />
                                         <span>
                                             {activeTab === 'customer'
-                                                ? `مقدم الخدمة: ${booking.provider.first_name} ${booking.provider.last_name}`
-                                                : `العميل: ${booking.customer.first_name} ${booking.customer.last_name}`
+                                                ? `مقدم الخدمة: ${booking.provider?.first_name || ''} ${booking.provider?.last_name || ''}`
+                                                : `العميل: ${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`
                                             }
                                         </span>
                                     </div>

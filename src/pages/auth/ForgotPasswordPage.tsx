@@ -84,17 +84,17 @@ const ForgotPasswordPage: React.FC = () => {
         setStep(2);
         setCountdown(60);
         setCanResend(false);
-        toast.success('تم إرسال رمز التحقق إلى هاتفك');
+        toast.success(t('auth.forgotPassword.codeSentSuccess'));
       } else {
         const errorData = await response.json();
         toast.error(
           errorData.error ||
             errorData.detail ||
-            'فشل في إرسال رمز التحقق. تأكد من رقم الهاتف'
+            t('auth.forgotPassword.sendCodeFailed')
         );
       }
     } catch (error) {
-      toast.error('حدث خطأ في الاتصال بالخادم');
+      toast.error(t('auth.forgotPassword.serverError'));
     } finally {
       setIsLoading(false);
     }
@@ -112,20 +112,21 @@ const ForgotPasswordPage: React.FC = () => {
           phone_number: phoneNumber,
           code: data.code,
           new_password: data.new_password,
+          new_password_confirm: data.new_password_confirm,
         }),
       });
 
       if (response.ok) {
-        toast.success('تم تحديث كلمة المرور بنجاح');
+        toast.success(t('auth.forgotPassword.updateSuccess'));
         navigate('/login');
       } else {
         const errorData = await response.json();
         toast.error(
-          errorData.error || errorData.detail || 'فشل في تحديث كلمة المرور'
+          errorData.error || errorData.detail || t('auth.forgotPassword.updateFailed')
         );
       }
     } catch (error) {
-      toast.error('حدث خطأ في الاتصال بالخادم');
+      toast.error(t('auth.forgotPassword.serverError'));
     } finally {
       setIsLoading(false);
     }
@@ -146,14 +147,14 @@ const ForgotPasswordPage: React.FC = () => {
       });
 
       if (response.ok) {
-        toast.success('تم إرسال رمز التحقق مرة أخرى');
+        toast.success(t('auth.forgotPassword.resendSuccess'));
         setCountdown(60);
         setCanResend(false);
       } else {
-        toast.error('فشل في إعادة إرسال الرمز');
+        toast.error(t('auth.forgotPassword.resendFailed'));
       }
     } catch (error) {
-      toast.error('حدث خطأ في إعادة الإرسال');
+      toast.error(t('auth.forgotPassword.resendFailed'));
     } finally {
       setIsResending(false);
     }
@@ -168,12 +169,12 @@ const ForgotPasswordPage: React.FC = () => {
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            استعادة كلمة المرور
+            {t('auth.forgotPassword.title')}
           </h2>
           <p className="text-gray-600">
             {step === 1
-              ? 'أدخل رقم الهاتف المرتبط بحسابك'
-              : 'أدخل رمز التحقق وكلمة المرور الجديدة'}
+              ? t('auth.forgotPassword.subtitleStep1')
+              : t('auth.forgotPassword.subtitleStep2')}
           </p>
         </div>
 
@@ -181,16 +182,16 @@ const ForgotPasswordPage: React.FC = () => {
           {step === 1 ? (
             <form onSubmit={handleSubmitStep1(onSubmitStep1)} className="space-y-6">
               <Input
-                label="رقم الهاتف"
+                label={t('auth.forgotPassword.phone')}
                 type="tel"
                 placeholder="+201234567890"
                 leftIcon={<Phone className="w-5 h-5" />}
                 error={errorsStep1.phone_number?.message}
                 {...registerStep1('phone_number', {
-                  required: 'رقم الهاتف مطلوب',
+                  required: t('auth.validation.phoneRequired'),
                   pattern: {
                     value: /^\+20[0-9]{10}$/,
-                    message: 'رقم الهاتف يجب أن يكون بصيغة +201234567890',
+                    message: t('auth.validation.phoneInvalid'),
                   },
                 })}
               />
@@ -201,35 +202,35 @@ const ForgotPasswordPage: React.FC = () => {
                 size="lg"
                 isLoading={isLoading}
               >
-                إرسال رمز التحقق
+                {t('auth.forgotPassword.sendCode')}
               </Button>
             </form>
           ) : (
             <form onSubmit={handleSubmitStep2(onSubmitStep2)} className="space-y-6">
               <div>
                 <p className="text-sm text-gray-600 mb-2">
-                  تم إرسال الرمز إلى: <span className="font-semibold">{phoneNumber}</span>
+                  {t('auth.forgotPassword.codeSentTo')} <span className="font-semibold">{phoneNumber}</span>
                 </p>
               </div>
 
               <Input
-                label="رمز التحقق"
+                label={t('auth.forgotPassword.verificationCode')}
                 type="text"
                 placeholder="123456"
                 maxLength={6}
                 className="text-center text-2xl tracking-widest"
                 error={errorsStep2.code?.message}
                 {...registerStep2('code', {
-                  required: 'رمز التحقق مطلوب',
+                  required: t('auth.validation.codeRequired'),
                   pattern: {
                     value: /^\d{6}$/,
-                    message: 'رمز التحقق يجب أن يكون 6 أرقام',
+                    message: t('auth.validation.codeInvalid'),
                   },
                 })}
               />
 
               <Input
-                label="كلمة المرور الجديدة"
+                label={t('auth.forgotPassword.newPassword')}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••"
                 leftIcon={<Lock className="w-5 h-5" />}
@@ -244,16 +245,16 @@ const ForgotPasswordPage: React.FC = () => {
                 }
                 error={errorsStep2.new_password?.message}
                 {...registerStep2('new_password', {
-                  required: 'كلمة المرور مطلوبة',
+                  required: t('auth.validation.passwordRequired'),
                   minLength: {
                     value: 8,
-                    message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+                    message: t('auth.validation.passwordMinLength'),
                   },
                 })}
               />
 
               <Input
-                label="تأكيد كلمة المرور"
+                label={t('auth.forgotPassword.confirmPassword')}
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="••••••"
                 leftIcon={<Lock className="w-5 h-5" />}
@@ -272,9 +273,9 @@ const ForgotPasswordPage: React.FC = () => {
                 }
                 error={errorsStep2.new_password_confirm?.message}
                 {...registerStep2('new_password_confirm', {
-                  required: 'تأكيد كلمة المرور مطلوب',
+                  required: t('auth.validation.passwordRequired'),
                   validate: (value) =>
-                    value === passwordValue || 'كلمات المرور غير متطابقة',
+                    value === passwordValue || t('auth.validation.passwordMismatch'),
                 })}
               />
 
@@ -284,10 +285,9 @@ const ForgotPasswordPage: React.FC = () => {
                 size="lg"
                 isLoading={isLoading}
               >
-                تحديث كلمة المرور
+                {t('auth.forgotPassword.updatePassword')}
               </Button>
 
-              {/* Resend OTP */}
               <div className="text-center">
                 {canResend ? (
                   <Button
@@ -297,11 +297,11 @@ const ForgotPasswordPage: React.FC = () => {
                     isLoading={isResending}
                     leftIcon={<RefreshCw className="w-4 h-4" />}
                   >
-                    إعادة إرسال الرمز
+                    {t('auth.forgotPassword.resendCode')}
                   </Button>
                 ) : (
                   <p className="text-gray-500 text-sm">
-                    يمكنك إعادة الإرسال خلال {countdown} ثانية
+                    {t('auth.forgotPassword.resendIn', { countdown })}
                   </p>
                 )}
               </div>
@@ -315,7 +315,7 @@ const ForgotPasswordPage: React.FC = () => {
             to="/login"
             className="text-sm text-primary-600 hover:text-primary-500"
           >
-            العودة إلى تسجيل الدخول
+            {t('auth.forgotPassword.backToLogin')}
           </Link>
         </div>
       </div>

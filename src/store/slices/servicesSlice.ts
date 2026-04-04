@@ -9,12 +9,13 @@ interface Service {
   description_ar: string;
   description_en?: string;
   price: number;
-  service_type: string;
+  pricing_type: string;
   status: string;
   category?: any;
   owner?: any;
   governorate?: any;
   images?: any[];
+  primary_image?: any;
   views_count?: number;
 }
 
@@ -29,10 +30,11 @@ interface ServiceCategory {
 interface ServiceFilters {
   category?: string;
   governorate_id?: number;
-  service_type?: string;
+  pricing_type?: string;
   min_price?: number;
   max_price?: number;
   search?: string;
+  ordering?: string;
   [key: string]: any;
 }
 
@@ -68,7 +70,7 @@ const initialState: ServicesState = {
 
 export const fetchServices = createAsyncThunk(
   'services/fetchServices',
-  async (params?: { page?: number; filters?: ServiceFilters }, { rejectWithValue }) => {
+  async (params: { page?: number; filters?: ServiceFilters } = {}, { rejectWithValue }) => {
     try {
       const { data, error, pagination } = await servicesService.getServices({
         ...params?.filters,

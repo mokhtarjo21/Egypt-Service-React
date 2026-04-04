@@ -5,9 +5,9 @@ interface Profile {
   id: string;
   phone_number: string;
   full_name: string;
-  email?: string;
-  profile_image?: string;
-  bio_ar?: string;
+  email?: string | null;
+  avatar?: string | null;
+  bio?: string;
   bio_en?: string;
   address_ar?: string;
   governorate?: any;
@@ -64,13 +64,9 @@ export const djangoProfileService = {
   async uploadProfileImage(file: File) {
     try {
       const formData = new FormData();
-      formData.append('profile_image', file);
+      formData.append('avatar', file);
 
-      const response = await apiClient.patch<Profile>('/accounts/profile/update/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.patch<Profile>('/accounts/profile/update/', formData);
 
       localStorage.setItem('user', JSON.stringify(response.data));
 
@@ -93,11 +89,7 @@ export const djangoProfileService = {
         formData.append('id_document_back', backFile);
       }
 
-      const response = await apiClient.post('/accounts/id-document/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.post('/accounts/id-document/', formData);
 
       toast.success('تم رفع المستندات بنجاح');
       return { data: response.data, error: null };

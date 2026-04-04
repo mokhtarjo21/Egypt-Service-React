@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, X, MapPin, Star, Eye } from 'lucide-react';
+import { Search, Filter, X, MapPin, Star } from 'lucide-react';
 
 import { RootState, AppDispatch } from '../store/store';
 import { fetchServices, fetchCategories, setFilters } from '../store/slices/servicesSlice';
@@ -24,8 +24,7 @@ const ServicesPage: React.FC = () => {
     services,
     categories,
     isLoading,
-    pagination,
-    filters
+    pagination
   } = useSelector((state: RootState) => state.services);
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -35,7 +34,8 @@ const ServicesPage: React.FC = () => {
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
     governorate: searchParams.get('governorate') || '',
-    service_type: searchParams.get('service_type') || '',
+    pricing_type: searchParams.get('pricing_type') || '',
+    ordering: searchParams.get('ordering') || '-created_at',
   });
 
   useEffect(() => {
@@ -91,7 +91,8 @@ const ServicesPage: React.FC = () => {
       min_price: '',
       max_price: '',
       governorate: '',
-      service_type: '',
+      pricing_type: '',
+      ordering: '-created_at',
     });
     setSearchQuery('');
     setSearchParams({});
@@ -101,6 +102,21 @@ const ServicesPage: React.FC = () => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('page', page.toString());
     setSearchParams(newParams);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getPageNumbers = () => {
+    const total = pagination.totalPages;
+    const current = pagination.currentPage;
+    
+    let startPage = Math.max(1, current - 2);
+    let endPage = Math.min(total, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+    
+    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   };
 
 
@@ -211,31 +227,27 @@ const ServicesPage: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('services.serviceType')}
+                    {t('serviceDetail.pricingTypes.title') || 'نوع التسعير'}
                   </label>
                   <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="service_type"
-                        value="online"
-                        checked={localFilters.service_type === 'online'}
-                        onChange={(e) => handleFilterChange('service_type', e.target.value)}
-                        className="mr-2"
-                      />
-                      {t('services.online')}
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="service_type"
-                        value="onsite"
-                        checked={localFilters.service_type === 'onsite'}
-                        onChange={(e) => handleFilterChange('service_type', e.target.value)}
-                        className="mr-2"
-                      />
-                      {t('services.onSite')}
-                    </label>
+                    {[
+                      { value: 'fixed', label: t('serviceDetail.pricingTypes.fixed') || 'سعر ثابت' },
+                      { value: 'hourly', label: t('serviceDetail.pricingTypes.hourly') || 'بالساعة' },
+                      { value: 'package', label: t('serviceDetail.pricingTypes.package') || 'باقة' },
+                      { value: 'negotiable', label: t('serviceDetail.pricingTypes.negotiable') || 'قابل للتفاوض' },
+                    ].map((type) => (
+                      <label key={type.value} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="pricing_type"
+                          value={type.value}
+                          checked={localFilters.pricing_type === type.value}
+                          onChange={(e) => handleFilterChange('pricing_type', e.target.value)}
+                          className="mr-2 rtl:mr-0 rtl:ml-2"
+                        />
+                        {type.label}
+                      </label>
+                    ))}
                   </div>
                 </div>
 
@@ -252,11 +264,15 @@ const ServicesPage: React.FC = () => {
               <p className="text-gray-600">
                 عرض {((pagination.currentPage - 1) * 20) + 1}-{Math.min(pagination.currentPage * 20, pagination.totalCount)} من {pagination.totalCount} خدمة
               </p>
-              <select className="px-3 py-2 border border-gray-300 rounded-md">
-                <option value="newest">{t('services.newest')}</option>
-                <option value="price_asc">{t('services.priceAsc')}</option>
-                <option value="price_desc">{t('services.priceDesc')}</option>
-                <option value="popular">{t('services.popular')}</option>
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md"
+                value={localFilters.ordering}
+                onChange={(e) => handleFilterChange('ordering', e.target.value)}
+              >
+                <option value="-created_at">{t('services.newest')}</option>
+                <option value="price">{t('services.priceAsc')}</option>
+                <option value="-price">{t('services.priceDesc')}</option>
+                <option value="-views_count">{t('services.popular')}</option>
               </select>
             </div>
 
@@ -335,9 +351,7 @@ const ServicesPage: React.FC = () => {
                     {t('common.previous')}
                   </Button>
 
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
+                  {getPageNumbers().map((page) => (
                       <Button
                         key={page}
                         variant={pagination.currentPage === page ? 'primary' : 'outline'}
@@ -346,8 +360,7 @@ const ServicesPage: React.FC = () => {
                       >
                         {page}
                       </Button>
-                    );
-                  })}
+                  ))}
 
                   <Button
                     variant="outline"
@@ -397,6 +410,54 @@ const ServicesPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('services.priceRange')}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="من"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={localFilters.min_price}
+                      onChange={(e) => handleFilterChange('min_price', e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      placeholder="إلى"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={localFilters.max_price}
+                      onChange={(e) => handleFilterChange('max_price', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('serviceDetail.pricingTypes.title') || 'نوع التسعير'}
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'fixed', label: t('serviceDetail.pricingTypes.fixed') || 'سعر ثابت' },
+                      { value: 'hourly', label: t('serviceDetail.pricingTypes.hourly') || 'بالساعة' },
+                      { value: 'package', label: t('serviceDetail.pricingTypes.package') || 'باقة' },
+                      { value: 'negotiable', label: t('serviceDetail.pricingTypes.negotiable') || 'قابل للتفاوض' },
+                    ].map((type) => (
+                      <label key={type.value} className="flex items-center">
+                        <input
+                          type="radio"
+                          name="mobile_pricing_type"
+                          value={type.value}
+                          checked={localFilters.pricing_type === type.value}
+                          onChange={(e) => handleFilterChange('pricing_type', e.target.value)}
+                          className="mr-2 rtl:mr-0 rtl:ml-2"
+                        />
+                        {type.label}
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex gap-4 pt-6">

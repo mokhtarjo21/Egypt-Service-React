@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import {
   Bell,
   Check,
@@ -136,9 +137,11 @@ const NotificationsPage: React.FC = () => {
             >
               {t('notifications.markAllRead')}
             </Button>
-            <Button variant="ghost" size="sm">
-              <Settings className="w-4 h-4" />
-            </Button>
+            <Link to="/settings">
+              <Button variant="ghost" size="sm">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
 

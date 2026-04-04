@@ -54,8 +54,9 @@ export const useSubscription = () => {
       
       if (subResponse.ok) {
         const subData = await subResponse.json();
-        if (subData.length > 0) {
-          setSubscription(subData[0]);
+        const sub = Array.isArray(subData) ? subData[0] : (subData.results && subData.results.length > 0 ? subData.results[0] : null);
+        if (sub) {
+          setSubscription(sub);
         }
       }
 
@@ -67,7 +68,7 @@ export const useSubscription = () => {
       });
       
       if (usageResponse.ok) {
-        const usageData = await usageResponse;
+        const usageData = await usageResponse.json();
         setUsage(usageData);
       }
     } catch (error) {

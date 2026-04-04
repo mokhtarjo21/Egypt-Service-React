@@ -9,12 +9,13 @@ interface Service {
   description_ar: string;
   description_en?: string;
   price: number;
-  service_type: string;
+  pricing_type: string;
   status: string;
   category?: any;
   owner?: any;
   governorate?: any;
   images?: any[];
+  primary_image?: any;
   views_count?: number;
   is_featured?: boolean;
   created_at: string;
@@ -25,10 +26,11 @@ export const djangoServicesService = {
   async getServices(filters?: {
     category?: string;
     governorate_id?: number;
-    service_type?: string;
+    pricing_type?: string;
     min_price?: number;
     max_price?: number;
     search?: string;
+    ordering?: string;
     page?: number;
     limit?: number;
   }) {
@@ -37,12 +39,16 @@ export const djangoServicesService = {
 
       if (filters?.category) params.category = filters.category;
       if (filters?.governorate_id) params.governorate_id = filters.governorate_id;
-      if (filters?.service_type) params.service_type = filters.service_type;
+      if (filters?.pricing_type) params.pricing_type = filters.pricing_type;
       if (filters?.min_price) params.min_price = filters.min_price;
       if (filters?.max_price) params.max_price = filters.max_price;
       if (filters?.search) params.search = filters.search;
+      if (filters?.ordering) params.ordering = filters.ordering;
       if (filters?.page) params.page = filters.page;
       if (filters?.limit) params.limit = filters.limit;
+
+      // Always filter for approved services on the public listings
+      params.status = 'approved';
 
       const response = await apiClient.get('/services/services/', { params });
 

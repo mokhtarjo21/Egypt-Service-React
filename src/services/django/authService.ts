@@ -1,6 +1,5 @@
 import { apiClient } from "../api/client";
-import toast from "react-hot-toast";
-const API_BASE = import.meta.env?.VITE_API_URL ||"";
+const API_BASE = (import.meta as any).env?.VITE_API_URL || "";
 
 interface AuthTokens {
   access: string;
@@ -66,8 +65,7 @@ export const djangoAuthService = {
   ) {
     try {
       const response = await apiClient.post<AuthResponse>(
-
-        API_BASE + "/accounts/auth/verify-otp/",
+        API_BASE + "/accounts/auth/otp/verify/",
         {
           phone_number: phoneNumber,
           code,
@@ -96,15 +94,21 @@ export const djangoAuthService = {
 
   async signIn(phoneNumber: string, password: string) {
     try {
-     
-      
-      const response = await apiClient.post<AuthResponse>(
+      const response = await apiClient.post(
         API_BASE + "/accounts/auth/login/",
         {
           phone_number: phoneNumber,
           password,
         }
       );
+
+      // Check if 2FA is required
+      if (response.data.requires_2fa) {
+        return {
+          data: { requires_2fa: true, temp_token: response.data.temp_token },
+          error: null,
+        };
+      }
 
       const { user, tokens } = response.data;
 
@@ -121,6 +125,26 @@ export const djangoAuthService = {
         error.response?.data?.error ||
         error.response?.data?.message ||
         "فشل تسجيل الدخول";
+      return { data: null, error: { message: errorMessage } };
+    }
+  },
+
+  async verify2FALogin(tempToken: string, code: string) {
+    try {
+      const response = await apiClient.post<AuthResponse>(
+        API_BASE + "/accounts/auth/2fa/login/",
+        { temp_token: tempToken, code }
+      );
+      const { user, tokens } = response.data;
+      localStorage.setItem("access_token", tokens.access);
+      localStorage.setItem("refresh_token", tokens.refresh);
+      localStorage.setItem("user", JSON.stringify(user));
+      return { data: { user, session: { access_token: tokens.access } }, error: null };
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "رمز التحقق غير صحيح";
       return { data: null, error: { message: errorMessage } };
     }
   },
@@ -150,7 +174,7 @@ export const djangoAuthService = {
 
   async resetPassword(phoneNumber: string) {
     try {
-      await apiClient.post(API_BASE + "/accounts/auth/password-reset/", {
+      await apiClient.post(API_BASE + "/accounts/auth/password/forgot/", {
         phone_number: phoneNumber,
       });
 
@@ -171,7 +195,7 @@ export const djangoAuthService = {
   ) {
     try {
       await apiClient.post(
-        API_BASE + "/accounts/auth/password-reset-confirm/",
+        API_BASE + "/accounts/auth/password/reset/confirm/",
         {
           phone_number: phoneNumber,
           code,
@@ -191,7 +215,7 @@ export const djangoAuthService = {
 
   async updatePassword(currentPassword: string, newPassword: string) {
     try {
-      await apiClient.post(API_BASE + "/accounts/auth/change-password/", {
+      await apiClient.post(API_BASE + "/accounts/profile/change-password/", {
         old_password: currentPassword,
         new_password: newPassword,
       });
@@ -267,7 +291,7 @@ export const djangoAuthService = {
 
   async resendOTP(phoneNumber: string, purpose: string = "registration") {
     try {
-      await apiClient.post(API_BASE + "/accounts/auth/send-otp/", {
+      await apiClient.post(API_BASE + "/accounts/auth/otp/send/", {
         phone_number: phoneNumber,
         purpose,
       });

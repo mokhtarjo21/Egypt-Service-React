@@ -14,8 +14,10 @@ import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Modal } from '../../components/ui/Modal';
 import { djangoBookingsService } from '../../services/django/bookingsService';
+import { djangoPaymentsService } from '../../services/django/paymentsService';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuth } from '../../hooks/useAuth';
+import { apiClient } from '../../services/api/client';
 
 const BookingDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,6 +31,10 @@ const BookingDetailPage: React.FC = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [cancelNotes, setCancelNotes] = useState('');
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentMobile, setPaymentMobile] = useState('');
+    const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+    const [providerWallet, setProviderWallet] = useState<any>(null);
 
     useEffect(() => {
         if (id) {
@@ -53,6 +59,21 @@ const BookingDetailPage: React.FC = () => {
             setIsLoading(false);
         }
     };
+
+    const loadProviderWallet = async () => {
+        try {
+            const { data } = await apiClient.get('/payments/wallet/balance/');
+            setProviderWallet(data);
+        } catch (err) {
+            console.error('Failed to fetch provider wallet', err);
+        }
+    };
+
+    useEffect(() => {
+        if (booking && user?.id === booking.provider?.id) {
+            loadProviderWallet();
+        }
+    }, [booking, user]);
 
     const handleAction = async (action: 'confirm' | 'start' | 'complete') => {
         if (!booking) return;
@@ -105,6 +126,39 @@ const BookingDetailPage: React.FC = () => {
         }
     };
 
+    const handlePayment = async () => {
+        if (!booking || !paymentMobile) {
+            toast.error('الرجاء إدخال رقم هاتف محفظة فودافون كاش');
+            return;
+        }
+
+        // Validate basic Egyptian mobile number (11 digits starting with 01)
+        if (!/^01[0125][0-9]{8}$/.test(paymentMobile)) {
+            toast.error('الرجاء إدخال رقم هاتف صحيح');
+            return;
+        }
+
+        setIsPaymentLoading(true);
+        try {
+            const { data, error } = await djangoPaymentsService.checkoutVodafoneCash({
+                booking_id: booking.id,
+                mobile_number: paymentMobile
+            });
+
+            if (error) {
+                toast.error(error.message);
+            } else if (data?.redirect_url) {
+                // Redirect user to Paymob iframe where the mobile USSD is triggered
+                window.location.href = data.redirect_url;
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('حدث خطأ أثناء بدء عملية الدفع');
+        } finally {
+            setIsPaymentLoading(false);
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'confirmed':
@@ -133,12 +187,31 @@ const BookingDetailPage: React.FC = () => {
 
     if (!booking) return null;
 
-    const isProvider = user?.id === booking.provider.id;
-    const isCustomer = user?.id === booking.customer.id;
+    const isProvider = user?.id === booking.provider?.id;
+    const isCustomer = user?.id === booking.customer?.id;
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                {/* Provider Balance Info */}
+                {isProvider && providerWallet && (
+                    <Card className="mb-6 bg-blue-600 text-white border-none shadow-lg py-4 px-6">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-blue-100 text-sm">رصيدك الحالي</p>
+                                <p className="text-2xl font-bold">{providerWallet.balance} {providerWallet.currency}</p>
+                            </div>
+                            <Button 
+                                variant="outline" 
+                                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                onClick={() => navigate('/wallet')}
+                            >
+                                إدارة المحفظة
+                            </Button>
+                        </div>
+                    </Card>
+                )}
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -186,6 +259,17 @@ const BookingDetailPage: React.FC = () => {
                             </Button>
                         )}
 
+                        {/* Actions for Customer (Payment) */}
+                        {isCustomer && (booking.status === 'confirmed' || booking.status === 'pending') && !booking.is_paid && (
+                            <Button
+                                onClick={() => setShowPaymentModal(true)}
+                                className="bg-red-600 hover:bg-red-700 font-bold"
+                                leftIcon={<DollarSign className="w-4 h-4" />}
+                            >
+                                الدفع عبر ڤودافون كاش
+                            </Button>
+                        )}
+
                         {/* Actions for Customer/Provider (Cancel) */}
                         {booking.can_cancel && (
                             <Button
@@ -207,13 +291,13 @@ const BookingDetailPage: React.FC = () => {
                             <h2 className="text-lg font-semibold mb-4 border-b pb-2">تفاصيل الخدمة</h2>
                             <div className="flex gap-4">
                                 <img
-                                    src={booking.service.primary_image?.image || 'https://via.placeholder.com/150'}
-                                    alt={booking.service.title_ar}
+                                    src={booking.service?.primary_image?.image || 'https://via.placeholder.com/150'}
+                                    alt={booking.service?.title_ar || 'Service'}
                                     className="w-24 h-24 rounded-lg object-cover"
                                 />
                                 <div>
-                                    <h3 className="font-bold text-lg mb-1">{booking.service.title_ar}</h3>
-                                    <p className="text-gray-600 text-sm mb-2">{booking.service.category?.name_ar}</p>
+                                    <h3 className="font-bold text-lg mb-1">{booking.service?.title_ar}</h3>
+                                    <p className="text-gray-600 text-sm mb-2">{booking.service?.category?.name_ar}</p>
                                     <div className="flex items-center text-primary-600 font-semibold">
                                         <DollarSign className="w-4 h-4 ml-1" />
                                         {booking.total_amount} {booking.currency}
@@ -301,26 +385,38 @@ const BookingDetailPage: React.FC = () => {
                             <h2 className="text-lg font-semibold mb-4 border-b pb-2">
                                 {isCustomer ? 'معلومات مقدم الخدمة' : 'معلومات العميل'}
                             </h2>
-                            <div className="text-center">
-                                <img
-                                    src={isCustomer ? booking.provider.profile_image : booking.customer.profile_image || 'https://via.placeholder.com/100'}
-                                    alt="Profile"
-                                    className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
-                                />
-                                <h3 className="font-bold text-lg">
-                                    {isCustomer
-                                        ? `${booking.provider.first_name} ${booking.provider.last_name}`
-                                        : `${booking.customer.first_name} ${booking.customer.last_name}`
-                                    }
-                                </h3>
-                                <p className="text-gray-500 text-sm mb-4">
-                                    {isCustomer ? 'مقدّم خدمة موثوق' : 'عميل'}
-                                </p>
-
-                                <Button variant="outline" className="w-full text-sm" leftIcon={<User className="w-4 h-4" />}>
-                                    عرض الملف الشخصي
-                                </Button>
-                            </div>
+                            {(() => {
+                                const person = isCustomer ? booking.provider : booking.customer;
+                                const avatarUrl = person?.avatar
+                                    ? person.avatar
+                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(person?.full_name || 'User')}&background=3B82F6&color=fff&size=100`;
+                                return (
+                                    <div className="text-center">
+                                        <img
+                                            src={avatarUrl}
+                                            alt={person?.full_name || 'Profile'}
+                                            className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-gray-100 shadow"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src =
+                                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(person?.full_name || 'U')}&background=3B82F6&color=fff&size=100`;
+                                            }}
+                                        />
+                                        <h3 className="font-bold text-lg">{person?.full_name || '—'}</h3>
+                                        <p className="text-gray-500 text-sm mb-1">{person?.phone_number || ''}</p>
+                                        <p className="text-gray-400 text-xs mb-4">
+                                            {isCustomer ? 'مقدّم خدمة موثوق' : 'عميل'}
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full text-sm"
+                                            leftIcon={<User className="w-4 h-4" />}
+                                            onClick={() => navigate(`/profile/${person?.id}`)}
+                                        >
+                                            عرض الملف الشخصي
+                                        </Button>
+                                    </div>
+                                );
+                            })()}
                         </Card>
 
                         {/* Safety Tips */}
@@ -394,6 +490,52 @@ const BookingDetailPage: React.FC = () => {
                             disabled={!cancelReason}
                         >
                             تأكيد الإلغاء
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Payment Modal */}
+            <Modal
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                title="الدفع عبر ڤودافون كاش"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                        لإتمام الدفع بقيمة <span className="font-bold text-gray-900">{booking.total_amount} {booking.currency}</span>،
+                        الرجاء إدخال رقم الهاتف المرتبط بمحفظة ڤودافون كاش.
+                    </p>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            رقم الهاتف *
+                        </label>
+                        <input
+                            type="tel"
+                            placeholder="010XXXXXXXX"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-left"
+                            dir="ltr"
+                            value={paymentMobile}
+                            onChange={(e) => setPaymentMobile(e.target.value)}
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
+                            ستصلك رسالة على هذا الرقم لتأكيد عملية الدفع.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-6">
+                        <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+                            إلغاء
+                        </Button>
+                        <Button
+                            onClick={handlePayment}
+                            isLoading={isPaymentLoading}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={!paymentMobile || isPaymentLoading}
+                            leftIcon={<DollarSign className="w-4 h-4" />}
+                        >
+                            تأكيد والدفع
                         </Button>
                     </div>
                 </div>

@@ -10,6 +10,33 @@
     overflow-x: hidden;
     width: 100%;
     position: relative;
+    @apply transition-colors duration-200;
+    /* Mobile app feel */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: pan-y;
+  }
+
+  /* Smooth scrolling everywhere */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Safe area helpers for iOS notch / home indicator */
+  :root {
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top:    env(safe-area-inset-top, 0px);
+    --bottom-nav-height: 60px;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+
+  /* Global dark mode defaults */
+  html.dark body {
+    @apply bg-gray-900 text-white;
   }
 }
 

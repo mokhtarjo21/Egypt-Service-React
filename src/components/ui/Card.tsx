@@ -16,12 +16,12 @@ export const Card: React.FC<CardProps> = ({
   padding = 'md',
   hoverable = false,
 }) => {
-  const baseClasses = 'bg-white rounded-xl transition-all duration-200';
+  const baseClasses = 'bg-white dark:bg-gray-800 dark:text-white rounded-xl transition-all duration-200';
 
   const variantClasses = {
-    default: 'shadow-sm',
-    elevated: 'shadow-lg',
-    outlined: 'border border-gray-200 shadow-sm',
+    default: 'shadow-sm dark:shadow-none',
+    elevated: 'shadow-lg dark:shadow-gray-900',
+    outlined: 'border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-none',
   };
 
   const paddingClasses =

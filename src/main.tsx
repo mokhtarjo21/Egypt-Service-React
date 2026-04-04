@@ -10,6 +10,27 @@ import { store } from './store/store';
 import './index.css';
 import './i18n/config';
 
+// Initialize Dark Mode before React renders
+try {
+  const savedSettings = localStorage.getItem('userSettings');
+  const root = document.documentElement;
+  if (savedSettings) {
+    const { theme } = JSON.parse(savedSettings);
+    if (theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  } else {
+    // Default system preference if no settings
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      root.classList.add('dark');
+    }
+  }
+} catch (e) {
+  console.error('Failed to initialize dark mode', e);
+}
+
 // Create React Query client
 const queryClient = new QueryClient({
   defaultOptions: {

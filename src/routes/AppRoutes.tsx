@@ -12,7 +12,9 @@ const RegisterPage = React.lazy(() => import('../pages/auth/RegisterPage'));
 const OTPVerificationPage = React.lazy(() => import('../pages/auth/OTPVerificationPage'));
 const AddServicePage = React.lazy(() => import('../pages/services/AddServicePage'));
 const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
+const PublicProfilePage = React.lazy(() => import('../pages/PublicProfilePage'));
 const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
+const WalletPage = React.lazy(() => import('../pages/WalletPage'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 const AdminDashboard = React.lazy(() => import('../pages/admin/AdminDashboard'));
 const AdminCategoriesPage = React.lazy(() => import('../pages/admin/AdminCategoriesPage'));
@@ -75,6 +77,12 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/profile/:id"
+          element={
+            <PublicProfilePage />
+          }
+        />
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
@@ -109,9 +117,9 @@ const AppRoutes: React.FC = () => {
         <Route
           path="/security"
           element={
-            // <ProtectedRoute>
-            <SecurityPage />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <SecurityPage />
+            </ProtectedRoute>
           }
         />
         <Route
@@ -119,6 +127,22 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <SubscriptionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/plans"
+          element={
+            <ProtectedRoute>
+              <SubscriptionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wallet"
+          element={
+            <ProtectedRoute>
+              <WalletPage />
             </ProtectedRoute>
           }
         />

@@ -3,15 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
-import { Mail, Lock, User, Phone, Eye, EyeOff, Upload } from "lucide-react";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { RootState } from "../../store/store";
-import { registerUser } from "../../store/slices/authSlice";
+import { registerUser, googleLoginUser } from "../../store/slices/authSlice";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Card } from "../../components/ui/Card";
 import { useDirection } from "../../hooks/useDirection";
+import { GoogleLogin } from '@react-oauth/google';
 const API_BASE = import.meta.env?.VITE_API_BASE || "http://localhost:8000";
 
 interface RegisterFormData {
@@ -34,6 +35,9 @@ const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
+  const [countryCode, setCountryCode] = useState("+20");
+  const [frontIdPreview, setFrontIdPreview] = useState<string | null>(null);
+  const [backIdPreview, setBackIdPreview] = useState<string | null>(null);
 
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
   const [governorates, setGovernorates] = useState([]);
@@ -75,6 +79,8 @@ const RegisterPage: React.FC = () => {
     register,
     handleSubmit,
     watch,
+    trigger,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormData>();
 
@@ -83,7 +89,7 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       const formData = new FormData();
-      formData.append("phone_number", data.phone_number);
+      formData.append("phone_number", `${countryCode}${data.phone_number}`);
       formData.append("full_name", data.full_name);
       formData.append("password", data.password);
       formData.append("password_confirm", data.password_confirm);
@@ -107,23 +113,46 @@ const RegisterPage: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        toast.success("تم إنشاء الحساب بنجاح. يرجى التحقق من رقم هاتفك.");
+        toast.success(t("auth.register.successMsg"));
         navigate("/verify-phone", {
           state: {
-            phone_number: data.phone_number,
+            phone_number: `${countryCode}${data.phone_number}`,
             user_id: result.user_id,
           },
         });
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || "حدث خطأ في إنشاء الحساب");
+        
+        if (errorData.error) {
+          toast.error(errorData.error);
+        } else if (typeof errorData === 'object' && errorData !== null) {
+          Object.values(errorData).forEach((errArray: any) => {
+            if (Array.isArray(errArray)) {
+              errArray.forEach((errMsg) => toast.error(errMsg));
+            } else if (typeof errArray === 'string') {
+               toast.error(errArray);
+            }
+          });
+        } else {
+          toast.error(t("auth.register.errorMsg"));
+        }
       }
     } catch (err) {
-      toast.error("حدث خطأ في إنشاء الحساب");
+      toast.error(t("auth.register.errorMsg"));
     }
   };
 
-  const nextStep = () => setStep(step + 1);
+  const nextStep = async () => {
+    let isValid = false;
+    if (step === 1) {
+      isValid = await trigger(["full_name", "phone_number", "email"]);
+    } else if (step === 2) {
+      isValid = await trigger(["password", "password_confirm", "governorate", "center"]);
+    }
+    if (isValid) {
+      setStep(step + 1);
+    }
+  };
   const prevStep = () => setStep(step - 1);
 
   return (
@@ -156,48 +185,104 @@ const RegisterPage: React.FC = () => {
 
         {/* Form */}
         <Card className="mt-8">
+          {step === 1 && (
+            <div className="mb-6">
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    if (credentialResponse.credential) {
+                      try {
+                        const result = await dispatch(googleLoginUser({ idToken: credentialResponse.credential, role: 'user' }) as any);
+                        if (googleLoginUser.fulfilled.match(result)) {
+                          toast.success(t("auth.register.googleSuccess"));
+                          navigate("/dashboard");
+                        } else {
+                          toast.error((result.payload as string) || t("auth.register.googleError"));
+                        }
+                      } catch (err) {
+                        toast.error(t("auth.register.authError"));
+                      }
+                    }
+                  }}
+                  onError={() => {
+                    toast.error(t("auth.register.googleFailed"));
+                  }}
+                  useOneTap
+                />
+              </div>
+
+              <div className="relative mt-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">{t("auth.register.orRegisterPhone")}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Step 1: Basic Information */}
             {step === 1 && (
               <>
                 <Input
-                  label="الاسم الكامل"
+                  label={t("auth.register.fullName")}
                   type="text"
                   leftIcon={<User className="w-5 h-5" />}
                   error={errors.full_name?.message}
                   {...register("full_name", {
-                    required: "الاسم الكامل مطلوب",
+                    required: t("auth.validation.fullNameRequired"),
                     minLength: {
                       value: 3,
-                      message: "الاسم يجب أن يكون 3 أحرف على الأقل",
+                      message: t("auth.validation.fullNameMinLength"),
                     },
                   })}
                 />
 
-                <Input
-                  label="رقم الهاتف"
-                  type="tel"
-                  leftIcon={<Phone className="w-5 h-5" />}
-                  placeholder="01012345678"
-                  error={errors.phone_number?.message}
-                  {...register("phone_number", {
-                    required: "رقم الهاتف مطلوب",
-                    pattern: {
-                      value: /^(\+20|0)?1[0125]\d{8}$/,
-                      message: "رقم الهاتف غير صحيح",
-                    },
-                  })}
-                />
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.register.phone")}</label>
+                  <div className="flex gap-2" dir="ltr">
+                    <select
+                      className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                    >
+                      <option value="+20">+20</option>
+                      {/* <option value="+966">+966</option>
+                      <option value="+971">+971</option>
+                      <option value="+965">+965</option>
+                      <option value="+974">+974</option>
+                      <option value="+973">+973</option>
+                      <option value="+968">+968</option> */}
+                    </select>
+                    <div className="flex-1">
+                      <Input
+                        type="tel"
+                        leftIcon={<Phone className="w-5 h-5" />}
+                        placeholder="1012345678"
+                        error={errors.phone_number?.message}
+                        {...register("phone_number", {
+                          required: t("auth.validation.phoneRequired"),
+                          pattern: {
+                            value: /^\d{8,15}$/,
+                            message: t("auth.validation.phoneInvalid"),
+                          },
+                        })}
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 <Input
-                  label="البريد الإلكتروني (اختياري)"
+                  label={t("auth.register.emailOptional")}
                   type="email"
                   leftIcon={<Mail className="w-5 h-5" />}
                   error={errors.email?.message}
                   {...register("email", {
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "البريد الإلكتروني غير صحيح",
+                      message: t("auth.validation.emailInvalid"),
                     },
                   })}
                 />
@@ -208,7 +293,7 @@ const RegisterPage: React.FC = () => {
                   className="w-full"
                   size="lg"
                 >
-                  التالي
+                  {t("auth.register.next")}
                 </Button>
               </>
             )}
@@ -217,7 +302,7 @@ const RegisterPage: React.FC = () => {
             {step === 2 && (
               <>
                 <Input
-                  label="كلمة المرور"
+                  label={t("auth.register.password")}
                   type={showPassword ? "text" : "password"}
                   leftIcon={<Lock className="w-5 h-5" />}
                   rightIcon={
@@ -235,16 +320,20 @@ const RegisterPage: React.FC = () => {
                   }
                   error={errors.password?.message}
                   {...register("password", {
-                    required: "كلمة المرور مطلوبة",
+                    required: t("auth.validation.passwordRequired"),
                     minLength: {
                       value: 8,
-                      message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+                      message: t("auth.validation.passwordMinLength"),
                     },
+                    pattern: {
+                      value: /^(?=.*[a-zA-Z])(?=.*\d).+$/,
+                      message: t("auth.validation.passwordFormat"),
+                    }
                   })}
                 />
 
                 <Input
-                  label="تأكيد كلمة المرور"
+                  label={t("auth.register.confirmPassword")}
                   type={showConfirmPassword ? "text" : "password"}
                   leftIcon={<Lock className="w-5 h-5" />}
                   rightIcon={
@@ -264,39 +353,53 @@ const RegisterPage: React.FC = () => {
                   }
                   error={errors.password_confirm?.message}
                   {...register("password_confirm", {
-                    required: "تأكيد كلمة المرور مطلوب",
+                    required: t("auth.validation.passwordRequired"),
                     validate: (value) =>
-                      value === password || "كلمات المرور غير متطابقة",
+                      value === password || t("auth.validation.passwordMismatch"),
                   })}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
-                  <select
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                    {...register("governorate", {
-                      required: "المحافظة مطلوبة",
-                    })}
-                    onChange={(e) => setSelectedGovernorate(e.target.value)}
-                  >
-                    <option value="">اختر المحافظة</option>
-                    {governorates.map((gov: any) => (
-                      <option key={gov.id} value={gov.id}>
-                        {gov.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-1">
+                    <select
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white ${
+                        errors.governorate ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("governorate", {
+                        required: t("auth.validation.governorateRequired"),
+                        onChange: (e) => setSelectedGovernorate(e.target.value)
+                      })}
+                    >
+                      <option value="">{t("auth.register.selectGovernorate")}</option>
+                      {governorates.map((gov: any) => (
+                        <option key={gov.id} value={gov.id}>
+                          {gov.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.governorate && (
+                      <p className="text-xs text-red-600">{errors.governorate.message}</p>
+                    )}
+                  </div>
 
-                  <select
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                    {...register("center", { required: "المركز مطلوب" })}
-                  >
-                    <option value="">اختر المركز</option>
-                    {centers.map((center: any) => (
-                      <option key={center.id} value={center.id}>
-                        {center.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-1">
+                    <select
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white ${
+                        errors.center ? "border-red-500" : "border-gray-300"
+                      }`}
+                      {...register("center", { required: t("auth.validation.centerRequired") })}
+                    >
+                      <option value="">{t("auth.register.selectCenter")}</option>
+                      {centers.map((center: any) => (
+                        <option key={center.id} value={center.id}>
+                          {center.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.center && (
+                      <p className="text-xs text-red-600">{errors.center.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
@@ -306,10 +409,10 @@ const RegisterPage: React.FC = () => {
                     variant="outline"
                     className="flex-1"
                   >
-                    السابق
+                    {t("auth.register.previous")}
                   </Button>
                   <Button type="button" onClick={nextStep} className="flex-1">
-                    التالي
+                    {t("auth.register.next")}
                   </Button>
                 </div>
               </>
@@ -320,58 +423,111 @@ const RegisterPage: React.FC = () => {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    صورة البطاقة الشخصية (الوجه الأمامي)
+                    {t("auth.register.idFront")}
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    {frontIdPreview ? (
+                      <div className="relative inline-block">
+                        <img src={frontIdPreview} alt="Front ID" className="max-h-48 object-contain rounded" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFrontIdPreview(null);
+                            setValue("id_document", undefined as any);
+                          }}
+                          className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <label
+                          htmlFor="id_document"
+                          className="cursor-pointer text-primary-600 hover:text-primary-500"
+                        >
+                          {t("auth.register.chooseFile")}
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t("auth.register.fileFormat")}
+                        </p>
+                      </>
+                    )}
                     <input
                       type="file"
                       accept="image/*,.pdf"
                       className="hidden"
                       id="id_document"
-                      {...register("id_document")}
+                      {...register("id_document", {
+                        onChange: (e) => {
+                          const file = e.target.files?.[0];
+                          if (file && file.type.startsWith("image/")) {
+                            setFrontIdPreview(URL.createObjectURL(file));
+                          } else {
+                            setFrontIdPreview(null);
+                          }
+                        }
+                      })}
                     />
-                    <label
-                      htmlFor="id_document"
-                      className="cursor-pointer text-primary-600 hover:text-primary-500"
-                    >
-                      اختر ملف أو اسحبه هنا
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, PDF حتى 10MB
-                    </p>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    صورة البطاقة الشخصية (الوجه الخلفي) - اختياري
+                    {t("auth.register.idBackOptional")}
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    {backIdPreview ? (
+                      <div className="relative inline-block">
+                        <img src={backIdPreview} alt="Back ID" className="max-h-48 object-contain rounded" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBackIdPreview(null);
+                            setValue("id_document_back", undefined as any);
+                          }}
+                          className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <label
+                          htmlFor="id_document_back"
+                          className="cursor-pointer text-primary-600 hover:text-primary-500"
+                        >
+                          {t("auth.register.chooseFile")}
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t("auth.register.fileFormat")}
+                        </p>
+                      </>
+                    )}
                     <input
                       type="file"
                       accept="image/*,.pdf"
                       className="hidden"
                       id="id_document_back"
-                      {...register("id_document_back")}
+                      {...register("id_document_back", {
+                        onChange: (e) => {
+                          const file = e.target.files?.[0];
+                          if (file && file.type.startsWith("image/")) {
+                            setBackIdPreview(URL.createObjectURL(file));
+                          } else {
+                            setBackIdPreview(null);
+                          }
+                        }
+                      })}
                     />
-                    <label
-                      htmlFor="id_document_back"
-                      className="cursor-pointer text-primary-600 hover:text-primary-500"
-                    >
-                      اختر ملف أو اسحبه هنا
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, PDF حتى 10MB
-                    </p>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    <strong>ملاحظة:</strong> ستتم مراجعة المستندات من قبل فريقنا
-                    خلال 24-48 ساعة. ستحصل على إشعار عند الموافقة على حسابك.
+                    <strong>{t("auth.register.note")}</strong> {t("auth.register.reviewNote")}
                   </p>
                 </div>
 
@@ -382,14 +538,14 @@ const RegisterPage: React.FC = () => {
                     variant="outline"
                     className="flex-1"
                   >
-                    السابق
+                    {t("auth.register.previous")}
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1"
                     isLoading={isLoading}
                   >
-                    إنشاء الحساب
+                    {t("auth.register.registerButton")}
                   </Button>
                 </div>
               </>

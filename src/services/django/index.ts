@@ -5,6 +5,7 @@ export { djangoBookingsService as bookingsService } from './bookingsService';
 export { djangoNotificationsService as notificationsService } from './notificationsService';
 export { djangoReviewsService as reviewsService } from './reviewsService';
 export { djangoMessagesService as messagesService } from './messagesService';
+export { djangoPaymentsService as paymentsService } from './paymentsService';
 
 export { default as djangoAuthService } from './authService';
 export { default as djangoServicesService } from './servicesService';
@@ -13,3 +14,4 @@ export { default as djangoBookingsService } from './bookingsService';
 export { default as djangoNotificationsService } from './notificationsService';
 export { default as djangoReviewsService } from './reviewsService';
 export { default as djangoMessagesService } from './messagesService';
+export { djangoPaymentsService } from './paymentsService';

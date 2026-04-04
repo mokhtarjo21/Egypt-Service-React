@@ -5,13 +5,21 @@ import type {
   RegisterData,
   AuthResponse,
 } from "../../types/auth";
-const API_BASE = import.meta.env?.VITE_API_BASE||"";
+const API_BASE = import.meta.env?.VITE_API_URL || "";
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await apiClient.post(
       API_BASE + "/accounts/auth/login/",
       credentials
+    );
+    return response.data;
+  },
+
+  async googleLogin(idToken: string, role: string = 'user'): Promise<AuthResponse> {
+    const response = await apiClient.post(
+      API_BASE + "/accounts/auth/google/",
+      { id_token: idToken, role }
     );
     return response.data;
   },

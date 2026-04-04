@@ -1,5 +1,6 @@
 import React from 'react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 interface SentimentBarProps {
   positive: number;
@@ -16,10 +17,12 @@ export const SentimentBar: React.FC<SentimentBarProps> = ({
   total,
   className,
 }) => {
+  const { t } = useTranslation();
+
   if (total === 0) {
     return (
       <div className={clsx('text-center text-gray-500 text-sm', className)}>
-        لا توجد تقييمات بعد
+        {t('sentimentBar.no_ratings')}
       </div>
     );
   }
@@ -31,8 +34,8 @@ export const SentimentBar: React.FC<SentimentBarProps> = ({
   return (
     <div className={clsx('space-y-3', className)}>
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-600">تحليل المشاعر (آخر 90 يوم)</span>
-        <span className="text-gray-500">{total} تقييم</span>
+        <span className="text-gray-600">{t('sentimentBar.sentiment_analysis')}</span>
+        <span className="text-gray-500">{t('sentimentBar.ratings_count', { count: total })}</span>
       </div>
       
       <div className="flex h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -53,15 +56,15 @@ export const SentimentBar: React.FC<SentimentBarProps> = ({
       <div className="flex justify-between text-xs">
         <div className="flex items-center">
           <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-          <span>إيجابي {Math.round(positivePercent)}%</span>
+          <span>{t('sentimentBar.positive')} {Math.round(positivePercent)}%</span>
         </div>
         <div className="flex items-center">
           <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
-          <span>محايد {Math.round(neutralPercent)}%</span>
+          <span>{t('sentimentBar.neutral')} {Math.round(neutralPercent)}%</span>
         </div>
         <div className="flex items-center">
           <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
-          <span>سلبي {Math.round(negativePercent)}%</span>
+          <span>{t('sentimentBar.negative')} {Math.round(negativePercent)}%</span>
         </div>
       </div>
     </div>

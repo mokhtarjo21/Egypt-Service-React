@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Calendar, Clock, MapPin, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
@@ -23,6 +24,7 @@ const BookServicePage: React.FC = () => {
     const [service, setService] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user } = useAuth();
 
     const {
         register,
@@ -44,6 +46,12 @@ const BookServicePage: React.FC = () => {
                 navigate('/services');
                 return;
             }
+            if (user && (user as any).id === data.owner?.id) {
+                toast.error('لا يمكنك حجز الخدمة الخاصة بك');
+                navigate('/services');
+                return;
+            }
+            
             setService(data);
         } catch (error) {
             console.error(error);

@@ -8,8 +8,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
- const API_BASE =
-  (import.meta.env?.VITE_API_BASE || "http://localhost:8000") ;
+import apiClient from '../../services/api/client';
 interface OTPFormData {
   code: string;
 }
@@ -54,33 +53,26 @@ const OTPVerificationPage: React.FC = () => {
   const onSubmit = async (data: OTPFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_BASE+'/api/v1/accounts/auth/otp/verify/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phone_number,
-          code: data.code,
-          purpose: 'registration',
-        }),
+      const response = await apiClient.post('/accounts/auth/otp/verify/', {
+        phone_number,
+        code: data.code,
+        purpose: 'registration',
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Store tokens
-        localStorage.setItem('access_token', result.tokens.access);
-        localStorage.setItem('refresh_token', result.tokens.refresh);
-        
-        toast.success('تم التحقق من رقم الهاتف بنجاح!');
-        navigate('/dashboard');
+      const result = response.data;
+      
+      // Store tokens
+      localStorage.setItem('access_token', result.tokens.access);
+      localStorage.setItem('refresh_token', result.tokens.refresh);
+      
+      toast.success(t('auth.verification.phoneVerified'));
+      navigate('/dashboard');
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'رمز التحقق غير صحيح');
+        toast.error(t('auth.verification.verifyError'));
       }
-    } catch (error) {
-      toast.error('حدث خطأ في التحقق من الرمز');
     } finally {
       setIsLoading(false);
     }
@@ -89,37 +81,27 @@ const OTPVerificationPage: React.FC = () => {
   const handleResendOTP = async () => {
     setIsResending(true);
     try {
-      const response = await fetch(API_BASE+'/api/v1/accounts/auth/otp/send/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phone_number,
-          purpose: 'registration',
-        }),
+      await apiClient.post('/accounts/auth/otp/send/', {
+        phone_number,
+        purpose: 'registration',
       });
 
-      if (response.ok) {
-        toast.success('تم إرسال رمز التحقق مرة أخرى');
-        setCountdown(60);
-        setCanResend(false);
-        
-        const timer = setInterval(() => {
-          setCountdown((prev) => {
-            if (prev <= 1) {
-              setCanResend(true);
-              clearInterval(timer);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      } else {
-        toast.error('فشل في إعادة إرسال الرمز');
-      }
-    } catch (error) {
-      toast.error('حدث خطأ في إعادة الإرسال');
+      toast.success(t('auth.verification.resendSuccess'));
+      setCountdown(60);
+      setCanResend(false);
+      
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error: any) {
+      toast.error(t('auth.verification.resendFailed'));
     } finally {
       setIsResending(false);
     }
@@ -134,10 +116,10 @@ const OTPVerificationPage: React.FC = () => {
             <Phone className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            تحقق من رقم هاتفك
+            {t('auth.verification.phoneTitle')}
           </h2>
           <p className="text-gray-600 mb-4">
-            أدخل رمز التحقق المرسل إلى
+            {t('auth.verification.sentToLabel')}
           </p>
           <p className="text-lg font-semibold text-primary-600">
             {phone_number}
@@ -148,17 +130,17 @@ const OTPVerificationPage: React.FC = () => {
         <Card className="mt-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input
-              label="رمز التحقق"
+              label={t('auth.verification.enterCode')}
               type="text"
               placeholder="123456"
               maxLength={6}
               className="text-center text-2xl tracking-widest"
               error={errors.code?.message}
               {...register('code', {
-                required: 'رمز التحقق مطلوب',
+                required: t('auth.validation.codeRequired'),
                 pattern: {
                   value: /^\d{6}$/,
-                  message: 'رمز التحقق يجب أن يكون 6 أرقام',
+                  message: t('auth.validation.codeInvalid'),
                 },
               })}
             />
@@ -169,10 +151,9 @@ const OTPVerificationPage: React.FC = () => {
               size="lg"
               isLoading={isLoading}
             >
-              تحقق من الرمز
+              {t('auth.verification.verifyBtn')}
             </Button>
 
-            {/* Resend OTP */}
             <div className="text-center">
               {canResend ? (
                 <Button
@@ -182,21 +163,20 @@ const OTPVerificationPage: React.FC = () => {
                   isLoading={isResending}
                   leftIcon={<RefreshCw className="w-4 h-4" />}
                 >
-                  إعادة إرسال الرمز
+                  {t('auth.verification.resend')}
                 </Button>
               ) : (
                 <p className="text-gray-500 text-sm">
-                  يمكنك إعادة الإرسال خلال {countdown} ثانية
+                  {t('auth.verification.resendIn', { countdown })}
                 </p>
               )}
             </div>
           </form>
         </Card>
 
-        {/* Help Text */}
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            لم تستلم الرمز؟ تأكد من رقم الهاتف أو تواصل مع الدعم الفني
+            {t('auth.verification.notReceivedHelp')}
           </p>
         </div>
       </div>

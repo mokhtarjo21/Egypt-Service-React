@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Crown, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { RootState } from '../../store/store';
 import { Button } from './Button';
@@ -20,6 +21,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   fallback,
   requiredPlan = 'pro',
 }) => {
+  const { t } = useTranslation();
   const { user } = useSelector((state: RootState) => state.auth);
   
   // Mock subscription check - replace with actual subscription state
@@ -34,15 +36,15 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   }
 
   const featureNames = {
-    advanced_analytics: 'التحليلات المتقدمة',
-    priority_support: 'الدعم الفني المتقدم',
-    unlimited_services: 'خدمات غير محدودة',
-    team_management: 'إدارة الفريق',
+    advanced_analytics: t('featureGate.advanced_analytics'),
+    priority_support: t('featureGate.priority_support'),
+    unlimited_services: t('featureGate.unlimited_services'),
+    team_management: t('featureGate.team_management'),
   };
 
   const planNames = {
-    pro: 'الاحترافية',
-    business: 'الأعمال',
+    pro: t('featureGate.plan_pro'),
+    business: t('featureGate.plan_business'),
   };
 
   return (
@@ -54,7 +56,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
         {featureNames[feature]}
       </h3>
       <p className="text-sm sm:text-base text-gray-600 mb-6">
-        هذه الميزة متاحة في خطة {planNames[requiredPlan]} وما فوق
+        {t('featureGate.available_in_plan', { plan: planNames[requiredPlan] })}
       </p>
       <div className="flex flex-wrap justify-center gap-4">
         <Link to="/subscription">
@@ -62,11 +64,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
             leftIcon={<Crown className="w-4 h-4 sm:w-5 sm:h-5" />}
             className="w-full sm:w-auto"
           >
-            ترقية الخطة
+            {t('featureGate.upgrade_plan')}
           </Button>
         </Link>
         <Button variant="outline" className="w-full sm:w-auto">
-          تعرف على المزيد
+          {t('featureGate.learn_more')}
         </Button>
       </div>
     </Card>
