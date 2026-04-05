@@ -48,6 +48,9 @@ export interface AuthResponse {
     access: string;
     refresh: string;
   };
+  is_new_user?: boolean;
+  needs_id_verification?: boolean;
+  google_picture?: string;
 }
 
 export interface AuthState {

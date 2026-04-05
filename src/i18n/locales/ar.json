@@ -28,7 +28,7 @@
   "hero": {
     "title": "ابحث عن أفضل الخدمات في مصر",
     "subtitle": "اكتشف آلاف الخدمات من مقدمي خدمات موثوقين في جميع أنحاء مصر",
-    "searchPlaceholder": "ابحث عن الخدمة التي تحتاجها...",
+    "searchPlaceholder": "ابحث عن",
     "searchButton": "بحث",
     "allCategories": "جميع الفئات"
   },
@@ -375,7 +375,7 @@
     "featuredServices": "الخدمات المميزة",
     "popularServices": "الخدمات الشائعة",
     "recentServices": "الخدمات الحديثة",
-    "searchPlaceholder": "ابحث عن الخدمة التي تحتاجها...",
+    "searchPlaceholder": "ابحث عن الخدمة  ...",
     "searchResults": "نتائج البحث",
     "noResults": "لم يتم العثور على خدمات",
     "noResultsDesc": "جرب تغيير كلمات البحث أو المرشحات",

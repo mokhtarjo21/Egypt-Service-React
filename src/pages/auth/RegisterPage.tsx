@@ -194,8 +194,14 @@ const RegisterPage: React.FC = () => {
                       try {
                         const result = await dispatch(googleLoginUser({ idToken: credentialResponse.credential, role: 'user' }) as any);
                         if (googleLoginUser.fulfilled.match(result)) {
-                          toast.success(t("auth.register.googleSuccess"));
-                          navigate("/dashboard");
+                          const payload = result.payload as any;
+                          if (payload.needs_id_verification) {
+                            toast.success("تم التسجيل بنجاح! يرجى رفع وثيقة الهوية لإكمال تفعيل الحساب.", { duration: 5000 });
+                            navigate("/profile?tab=verification");
+                          } else {
+                            toast.success(t("auth.register.googleSuccess"));
+                            navigate("/dashboard");
+                          }
                         } else {
                           toast.error((result.payload as string) || t("auth.register.googleError"));
                         }

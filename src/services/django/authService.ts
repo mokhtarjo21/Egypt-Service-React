@@ -305,6 +305,46 @@ export const djangoAuthService = {
       return { error: { message: errorMessage } };
     }
   },
+  async requestPhoneChange(newPhoneNumber: string) {
+    try {
+      await apiClient.post(API_BASE + "/accounts/profile/change-phone/request/", {
+        new_phone_number: newPhoneNumber,
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل إرسال رمز التحقق للرقم الجديد";
+      return { error: { message: errorMessage } };
+    }
+  },
+
+  async verifyPhoneChange(newPhoneNumber: string, code: string) {
+    try {
+      const response = await apiClient.post<{ user: User }>(
+        API_BASE + "/accounts/profile/change-phone/verify/",
+        {
+          new_phone_number: newPhoneNumber,
+          code,
+        }
+      );
+
+      // Update local storage user info
+      if (response.data.user) {
+         localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
+      return { data: response.data, error: null };
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "فشل توثيق الرقم الجديد";
+      return { data: null, error: { message: errorMessage } };
+    }
+  },
 };
 
 export default djangoAuthService;

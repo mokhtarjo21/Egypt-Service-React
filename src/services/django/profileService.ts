@@ -11,6 +11,7 @@ interface Profile {
   bio_en?: string;
   address_ar?: string;
   governorate?: any;
+  center?: any;
   role: string;
   status: string;
   is_phone_verified: boolean;

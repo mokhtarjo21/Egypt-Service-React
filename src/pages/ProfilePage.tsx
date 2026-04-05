@@ -6,7 +6,7 @@ import {
   User, Mail, Phone, MapPin, Calendar, Edit2, Upload, Shield,
   CheckCircle, AlertCircle, Wallet, CreditCard, FileText, RefreshCw,
   Star, Briefcase, TrendingUp, Lock, ChevronRight, Check, Camera,
-  BadgeCheck, Clock, Eye, BookOpen,
+  BadgeCheck, Clock, Eye, BookOpen, Navigation
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -15,6 +15,7 @@ import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Input } from '../components/ui/Input';
 import djangoProfileService from '../services/django/profileService';
+import { djangoAuthService } from '../services/django/authService';
 import { fetchUserProfile } from '../store/slices/authSlice';
 import { apiClient } from '../services/api/client';
 
@@ -124,8 +125,13 @@ const ProfilePage: React.FC = () => {
   const [showDocModal,    setShowDocModal]    = useState(false);
 
   /* edit form */
-  const [editForm, setEditForm] = useState({ full_name: '', email: '', bio_ar: '' });
+  const [editForm, setEditForm] = useState({ full_name: '', email: '', bio_ar: '', governorate: '', center: '' });
   const [editLoading, setEditLoading] = useState(false);
+
+  /* location data */
+  const [governorates, setGovernorates] = useState<any[]>([]);
+  const [centers, setCenters] = useState<any[]>([]);
+  const [fetchingGPS, setFetchingGPS] = useState(false);
 
   /* avatar */
   const [avatarFile,    setAvatarFile]    = useState<File | null>(null);
@@ -137,6 +143,13 @@ const ProfilePage: React.FC = () => {
   const [docBack,    setDocBack]    = useState<File | null>(null);
   const [docLoading, setDocLoading] = useState(false);
 
+  /* phone change */
+  const [showPhoneChangeModal, setShowPhoneChangeModal] = useState(false);
+  const [newPhoneNumber, setNewPhoneNumber] = useState('');
+  const [phoneChangeStep, setPhoneChangeStep] = useState<1 | 2>(1); // 1: request, 2: verify
+  const [phoneChangeOtp, setPhoneChangeOtp] = useState('');
+  const [phoneChangeLoading, setPhoneChangeLoading] = useState(false);
+
   /* ── load provider stats ── */
   useEffect(() => {
     const u = user as any;
@@ -147,6 +160,25 @@ const ProfilePage: React.FC = () => {
       .catch(() => {})
       .finally(() => setLoadingStats(false));
   }, [user]);
+
+  /* ── fetch location data ── */
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/health/geo/governorates/`)
+      .then(res => res.json())
+      .then(data => setGovernorates(data.results || []))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (editForm.governorate) {
+      fetch(`${API_BASE}/api/v1/health/geo/centers/?gov_id=${editForm.governorate}`)
+        .then(res => res.json())
+        .then(data => setCenters(data.results || []))
+        .catch(console.error);
+    } else {
+      setCenters([]);
+    }
+  }, [editForm.governorate]);
 
   if (!user) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -169,8 +201,60 @@ const ProfilePage: React.FC = () => {
 
   /* ── handlers ── */
   const openEdit = () => {
-    setEditForm({ full_name: u.full_name || '', email: u.email || '', bio_ar: u.bio_ar || u.bio || '' });
+    setEditForm({ 
+      full_name: u.full_name || '', 
+      email: u.email || '', 
+      bio_ar: u.bio_ar || u.bio || '',
+      governorate: u.governorate?.id || '',
+      center: u.center?.id || ''
+    });
     setShowEditModal(true);
+  };
+
+  const handleGPSLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('المتصفح لا يدعم تحديد الموقع');
+      return;
+    }
+    setFetchingGPS(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ar`);
+          const data = await res.json();
+          const stateName = data.address?.state || data.address?.city || data.address?.town || '';
+          
+          if (!stateName) {
+            toast.error('لم نتمكن من تحديد المحافظة بدقة');
+            return;
+          }
+          
+          const rawName = stateName.replace('محافظة ', '').replace(' Governorate', '').trim();
+          
+          // Match governorate
+          const govMatch = governorates.find(g => {
+            const govNameAr = g.name_ar || g.name || '';
+            return govNameAr.includes(rawName) || rawName.includes(govNameAr);
+          });
+          
+          if (govMatch) {
+            setEditForm(p => ({ ...p, governorate: govMatch.id, center: '' }));
+            toast.success(`تم تحديد المحافظة بنجاح: ${govMatch.name_ar || govMatch.name}`);
+          } else {
+            toast.error(`تم رصد الموقع ولكن لم نعثر على المحافظة بنظامنا`);
+          }
+        } catch (err) {
+          toast.error('حدث خطأ أثناء الاتصال بخدمة الخرائط');
+        } finally {
+          setFetchingGPS(false);
+        }
+      },
+      (err) => {
+        setFetchingGPS(false);
+        toast.error('يرجى السماح بصلاحية الموقع للمتصفح أولاً');
+      }
+    );
   };
 
   const handleEdit = async () => {
@@ -212,6 +296,50 @@ const ProfilePage: React.FC = () => {
         dispatch(fetchUserProfile() as any);
       }
     } finally { setDocLoading(false); }
+  };
+
+  const handlePhoneChangeRequest = async () => {
+    if (!newPhoneNumber || newPhoneNumber.length < 9) {
+      toast.error('أدخل رقم هاتف صحيح');
+      return;
+    }
+    setPhoneChangeLoading(true);
+    try {
+      const fullPhone = newPhoneNumber.startsWith('+') ? newPhoneNumber : `+20${newPhoneNumber}`;
+      const res = await djangoAuthService.requestPhoneChange(fullPhone);
+      if (res.error) {
+        toast.error(res.error.message);
+      } else {
+        toast.success('تم إرسال كود التحقق بنجاح');
+        setPhoneChangeStep(2);
+      }
+    } finally {
+      setPhoneChangeLoading(false);
+    }
+  };
+
+  const handlePhoneChangeVerify = async () => {
+    if (!phoneChangeOtp || phoneChangeOtp.length !== 6) {
+      toast.error('أدخل كود التحقق المكون من 6 أرقام');
+      return;
+    }
+    setPhoneChangeLoading(true);
+    try {
+      const fullPhone = newPhoneNumber.startsWith('+') ? newPhoneNumber : `+20${newPhoneNumber}`;
+      const res = await djangoAuthService.verifyPhoneChange(fullPhone, phoneChangeOtp);
+      if (res.error) {
+        toast.error(res.error.message);
+      } else {
+        toast.success('تم تغيير رقم الهاتف بنجاح');
+        setShowPhoneChangeModal(false);
+        setNewPhoneNumber('');
+        setPhoneChangeOtp('');
+        setPhoneChangeStep(1);
+        dispatch(fetchUserProfile() as any);
+      }
+    } finally {
+      setPhoneChangeLoading(false);
+    }
   };
 
   /* ════════════════ RENDER ════════════════ */
@@ -364,7 +492,6 @@ const ProfilePage: React.FC = () => {
             <div className="space-y-3">
               {[
                 { icon: <Mail className="w-4 h-4 text-gray-400" />,    label: 'البريد الإلكتروني', val: u.email       || '—' },
-                { icon: <Phone className="w-4 h-4 text-gray-400" />,   label: 'رقم الهاتف',        val: u.phone_number || '—' },
                 { icon: <MapPin className="w-4 h-4 text-gray-400" />,  label: 'المنطقة',           val: location       || '—' },
                 { icon: <Calendar className="w-4 h-4 text-gray-400" />,label: 'تاريخ الانضمام',   val: joinDate       || '—' },
               ].map(({ icon, label, val }) => (
@@ -376,6 +503,19 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
               ))}
+              
+              <div className="flex items-start justify-between py-2 border-b border-gray-50 last:border-0">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 shrink-0"><Phone className="w-4 h-4 text-gray-400" /></div>
+                  <div>
+                    <p className="text-xs text-gray-400">رقم الهاتف</p>
+                    <p className="text-sm font-medium text-gray-800 break-all" dir="ltr">{u.phone_number || '—'}</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPhoneChangeModal(true)} className="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors shrink-0">
+                  تغيير
+                </button>
+              </div>
             </div>
           </div>
 
@@ -538,6 +678,40 @@ const ProfilePage: React.FC = () => {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
             />
           </div>
+          
+          <div className="mt-2">
+            <div className="flex justify-between items-end mb-2">
+               <label className="block text-sm font-medium text-gray-700">المحافظة / المنطقة</label>
+               <button onClick={handleGPSLocation} disabled={fetchingGPS} type="button" className="text-xs text-blue-600 font-semibold hover:text-blue-700 flex items-center gap-1 bg-blue-50 px-2 py-1.5 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
+                 {fetchingGPS ? <LoadingSpinner size="sm" /> : <Navigation className="w-3.5 h-3.5" />}
+                 تحديد تلقائي بـ GPS
+               </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <select
+                value={editForm.governorate}
+                onChange={e => setEditForm(p => ({ ...p, governorate: e.target.value, center: '' }))}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+              >
+                <option value="">اختر المحافظة</option>
+                {governorates.map(gov => (
+                  <option key={gov.id} value={gov.id}>{gov.name_ar || gov.name}</option>
+                ))}
+              </select>
+              <select
+                value={editForm.center}
+                onChange={e => setEditForm(p => ({ ...p, center: e.target.value }))}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white disabled:bg-gray-100 disabled:opacity-75"
+                disabled={!editForm.governorate}
+              >
+                <option value="">اختر المركز / الحي</option>
+                {centers.map(center => (
+                  <option key={center.id} value={center.id}>{center.name_ar || center.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">إلغاء</button>
             <button
@@ -594,6 +768,77 @@ const ProfilePage: React.FC = () => {
               إرسال طلب المراجعة
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Phone Change Modal */}
+      <Modal isOpen={showPhoneChangeModal} onClose={() => { setShowPhoneChangeModal(false); setPhoneChangeStep(1); setNewPhoneNumber(''); setPhoneChangeOtp(''); }} title="تغيير رقم الهاتف" size="md">
+        <div className="space-y-4">
+          {phoneChangeStep === 1 ? (
+            <>
+              <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg border border-blue-100 mb-2">
+                سيتم إرسال كود تحقق مكون من 6 أرقام إلى رقم الهاتف الجديد للتأكد منه.
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الرقم الجديد</label>
+                <div className="flex items-center gap-2" dir="ltr">
+                  <span className="bg-gray-100 border border-gray-300 text-gray-600 px-3 py-2.5 rounded-xl font-medium">+20</span>
+                  <input
+                    type="tel"
+                    value={newPhoneNumber}
+                    onChange={(e) => setNewPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="10XXXXXXXX"
+                    maxLength={11}
+                    className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowPhoneChangeModal(false)} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">إلغاء</button>
+                <button
+                  onClick={handlePhoneChangeRequest}
+                  disabled={phoneChangeLoading || newPhoneNumber.length < 9}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {phoneChangeLoading ? <LoadingSpinner size="sm" /> : "إرسال كود التحقق"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-emerald-50 text-emerald-800 text-sm p-3 rounded-lg border border-emerald-100 mb-2 font-medium flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                تم إرسال الكود إلى +20{newPhoneNumber}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 leading-relaxed text-center">أدخل كود التحقق (6 أرقام)</label>
+                <input
+                  type="text"
+                  value={phoneChangeOtp}
+                  onChange={(e) => setPhoneChangeOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="------"
+                  maxLength={6}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 outline-none"
+                  dir="ltr"
+                />
+              </div>
+              <div className="flex flex-col gap-2 pt-2">
+                <button
+                  onClick={handlePhoneChangeVerify}
+                  disabled={phoneChangeLoading || phoneChangeOtp.length !== 6}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-lg shadow-sm"
+                >
+                  {phoneChangeLoading ? <LoadingSpinner size="sm" /> : "تأكيد وتغيير"}
+                </button>
+                <button
+                  onClick={() => setPhoneChangeStep(1)}
+                  className="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                >
+                  تعديل رقم الهاتف
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
 

@@ -25,14 +25,15 @@ const NavLink: React.FC<{ to: string; children: React.ReactNode; onClick?: () =>
     <Link
       to={to}
       onClick={onClick}
-      className={`relative text-sm font-medium transition-colors duration-200 pb-0.5 group ${
-        active ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+      className={`relative px-4 py-2 text-sm font-bold transition-all duration-300 rounded-full group ${
+        active ? "text-blue-700 bg-blue-50/80" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50/80"
       }`}
     >
       {children}
-      <span className={`absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-blue-600 transition-transform duration-200 origin-left ${
-        active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-      }`} />
+      {active && (
+        <span className="absolute inset-x-3 -bottom-1.5 h-[3px] rounded-t-full bg-gradient-to-r from-blue-500 to-indigo-500 opacity-90 shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
+      )}
+      <span className="absolute inset-x-3 -bottom-1.5 h-[3px] rounded-t-full bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-40 transition-opacity duration-300 transform scale-x-50 group-hover:scale-x-100" />
     </Link>
   );
 };
@@ -150,10 +151,10 @@ export const Navbar: React.FC = () => {
     <>
       {/* ════ MAIN NAVBAR ════ */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-white/90 backdrop-blur-lg shadow-md border-b border-gray-100"
-            : "bg-white border-b border-gray-100"
+            ? "bg-white/70 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.08)] border-b border-white/40"
+            : "bg-white/95 backdrop-blur-md border-b border-gray-100"
         }`}
         dir={isRTL ? "rtl" : "ltr"}
       >
@@ -185,11 +186,11 @@ export const Navbar: React.FC = () => {
             <div className="hidden lg:flex flex-1 max-w-xs mx-4">
               <button
                 onClick={() => setShowSearch(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm text-gray-500 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 bg-gray-50/80 hover:bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md rounded-2xl text-sm text-gray-500 transition-all duration-300 group"
               >
-                <Search className="w-4 h-4 shrink-0" />
-                <span className="flex-1 text-start">{t("hero.searchPlaceholder")}</span>
-                <kbd className="text-xs bg-white border border-gray-200 rounded px-1.5 py-0.5 font-mono opacity-70">⌘K</kbd>
+                <Search className="w-4 h-4 shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <span className="flex-1 text-start group-hover:text-gray-700 transition-colors">{t("hero.searchPlaceholder")}</span>
+                <kbd className="text-[10px] bg-white border border-gray-200 rounded-md px-2 py-0.5 font-mono text-gray-400 group-hover:border-blue-200 group-hover:text-blue-500 transition-colors shadow-sm">⌘K</kbd>
               </button>
             </div>
 
@@ -298,15 +299,16 @@ export const Navbar: React.FC = () => {
                 <div className="hidden lg:flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="px-5 py-2.5 text-sm font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all duration-300"
                   >
                     {t("navigation.login")}
                   </Link>
                   <Link
                     to="/register"
-                    className="px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm"
+                    className="relative px-6 py-2.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:via-indigo-500 hover:to-violet-500 shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group"
                   >
-                    {t("navigation.register")}
+                    <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black" />
+                    <span className="relative">{t("navigation.register")}</span>
                   </Link>
                 </div>
               )}
@@ -331,7 +333,7 @@ export const Navbar: React.FC = () => {
       {/* backdrop */}
       <div
         className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        style={{ background: "rgba(0,0,0,0.45)" }}
+        style={{ background: "rgba(15, 23, 42, 0.4)", backdropFilter: "blur(4px)" }}
         onClick={() => dispatch(setMobileMenuOpen(false))}
       />
 
@@ -444,8 +446,8 @@ export const Navbar: React.FC = () => {
 
       {/* ════ SEARCH SPOTLIGHT ════ */}
       <div
-        className={`fixed inset-0 z-50 transition-opacity duration-200 ${showSearch ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        style={{ background: "rgba(0,0,0,0.5)" }}
+        className={`fixed inset-0 z-50 transition-all duration-300 ${showSearch ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        style={{ background: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(8px)" }}
         onClick={() => setShowSearch(false)}
       >
         <div className="flex items-start justify-center pt-[15vh] px-4">

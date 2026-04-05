@@ -93,6 +93,8 @@ export const googleLoginUser = createAsyncThunk(
           access_token: response.tokens.access,
           refresh_token: response.tokens.refresh,
         },
+        needs_id_verification: response.needs_id_verification,
+        google_picture: response.google_picture,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || "فشل تسجيل الدخول");
