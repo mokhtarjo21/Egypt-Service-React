@@ -18,12 +18,14 @@ import { djangoPaymentsService } from '../../services/django/paymentsService';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuth } from '../../hooks/useAuth';
 import { apiClient } from '../../services/api/client';
+import { useTranslation } from 'react-i18next';
 
 const BookingDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { isRTL } = useDirection();
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const [booking, setBooking] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +56,7 @@ const BookingDetailPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء تحميل تفاصيل الحجز');
+            toast.error(t('booking.loadingDetailsError'));
         } finally {
             setIsLoading(false);
         }
@@ -96,7 +98,7 @@ const BookingDetailPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error(`حدث خطأ أثناء تنفيذ الإجراء: ${action}`);
+            toast.error(`${t('booking.actionError')} ${action}`);
         } finally {
             setIsActionLoading(false);
         }
@@ -120,7 +122,7 @@ const BookingDetailPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء إلغاء الحجز');
+            toast.error(t('booking.cancelError'));
         } finally {
             setIsActionLoading(false);
         }
@@ -128,13 +130,13 @@ const BookingDetailPage: React.FC = () => {
 
     const handlePayment = async () => {
         if (!booking || !paymentMobile) {
-            toast.error('الرجاء إدخال رقم هاتف محفظة فودافون كاش');
+            toast.error(t('booking.vodafonePhoneRequired'));
             return;
         }
 
         // Validate basic Egyptian mobile number (11 digits starting with 01)
         if (!/^01[0125][0-9]{8}$/.test(paymentMobile)) {
-            toast.error('الرجاء إدخال رقم هاتف صحيح');
+            toast.error(t('booking.vodafonePhoneInvalid'));
             return;
         }
 
@@ -153,7 +155,7 @@ const BookingDetailPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء بدء عملية الدفع');
+            toast.error(t('booking.paymentStartError'));
         } finally {
             setIsPaymentLoading(false);
         }
@@ -199,7 +201,7 @@ const BookingDetailPage: React.FC = () => {
                     <Card className="mb-6 bg-blue-600 text-white border-none shadow-lg py-4 px-6">
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-blue-100 text-sm">رصيدك الحالي</p>
+                                <p className="text-blue-100 text-sm">{t('booking.providerWalletBalance')}</p>
                                 <p className="text-2xl font-bold">{providerWallet.balance} {providerWallet.currency}</p>
                             </div>
                             <Button 
@@ -207,7 +209,7 @@ const BookingDetailPage: React.FC = () => {
                                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                                 onClick={() => navigate('/wallet')}
                             >
-                                إدارة المحفظة
+                                {t('booking.manageWallet')}
                             </Button>
                         </div>
                     </Card>
@@ -217,13 +219,13 @@ const BookingDetailPage: React.FC = () => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                            حجز #{booking.booking_number}
+                            {t('booking.bookingNumber')}{booking.booking_number}
                             <StatusBadge variant={getStatusColor(booking.status)}>
                                 {booking.status_display}
                             </StatusBadge>
                         </h1>
                         <p className="text-gray-500 mt-1">
-                            تم الإنشاء في {format(new Date(booking.created_at), 'PPP', { locale: isRTL ? ar : enUS })}
+                            {t('booking.createdAt')} {format(new Date(booking.created_at), 'PPP', { locale: isRTL ? ar : enUS })}
                         </p>
                     </div>
 
@@ -235,7 +237,7 @@ const BookingDetailPage: React.FC = () => {
                                 isLoading={isActionLoading}
                                 leftIcon={<CheckCircle className="w-4 h-4" />}
                             >
-                                تأكيد الحجز
+                                {t('booking.confirmBooking')}
                             </Button>
                         )}
 
@@ -245,7 +247,7 @@ const BookingDetailPage: React.FC = () => {
                                 isLoading={isActionLoading}
                                 leftIcon={<Clock className="w-4 h-4" />}
                             >
-                                بدء الخدمة
+                                {t('booking.startService')}
                             </Button>
                         )}
 
@@ -255,7 +257,7 @@ const BookingDetailPage: React.FC = () => {
                                 isLoading={isActionLoading}
                                 leftIcon={<CheckCircle className="w-4 h-4" />}
                             >
-                                إكمال الخدمة
+                                {t('booking.completeService')}
                             </Button>
                         )}
 
@@ -266,7 +268,7 @@ const BookingDetailPage: React.FC = () => {
                                 className="bg-red-600 hover:bg-red-700 font-bold"
                                 leftIcon={<DollarSign className="w-4 h-4" />}
                             >
-                                الدفع عبر ڤودافون كاش
+                                {t('booking.payViaVodafone')}
                             </Button>
                         )}
 
@@ -277,7 +279,7 @@ const BookingDetailPage: React.FC = () => {
                                 className="text-red-600 border-red-200 hover:bg-red-50"
                                 onClick={() => setShowCancelModal(true)}
                             >
-                                إلغاء الحجز
+                                {t('booking.cancelActionBtn')}
                             </Button>
                         )}
                     </div>
@@ -288,7 +290,7 @@ const BookingDetailPage: React.FC = () => {
 
                         {/* Service Details */}
                         <Card>
-                            <h2 className="text-lg font-semibold mb-4 border-b pb-2">تفاصيل الخدمة</h2>
+                            <h2 className="text-lg font-semibold mb-4 border-b pb-2">{t('booking.serviceDetailsTitle')}</h2>
                             <div className="flex gap-4">
                                 <img
                                     src={booking.service?.primary_image?.image || 'https://via.placeholder.com/150'}
@@ -308,12 +310,12 @@ const BookingDetailPage: React.FC = () => {
 
                         {/* Schedule & Location */}
                         <Card>
-                            <h2 className="text-lg font-semibold mb-4 border-b pb-2">الموعد والمكان</h2>
+                            <h2 className="text-lg font-semibold mb-4 border-b pb-2">{t('booking.scheduleAndLocation')}</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center">
                                     <Calendar className="w-5 h-5 text-gray-400 ml-3" />
                                     <div>
-                                        <p className="text-sm text-gray-500">تاريخ الحجز</p>
+                                        <p className="text-sm text-gray-500">{t('booking.bookingDate')}</p>
                                         <p className="font-medium">
                                             {format(new Date(booking.scheduled_date), 'EEEE d MMMM yyyy', { locale: isRTL ? ar : enUS })}
                                         </p>
@@ -323,7 +325,7 @@ const BookingDetailPage: React.FC = () => {
                                 <div className="flex items-center">
                                     <Clock className="w-5 h-5 text-gray-400 ml-3" />
                                     <div>
-                                        <p className="text-sm text-gray-500">وقت البدء</p>
+                                        <p className="text-sm text-gray-500">{t('booking.startTime')}</p>
                                         <p className="font-medium">
                                             {format(new Date(booking.scheduled_date), 'p', { locale: isRTL ? ar : enUS })}
                                         </p>
@@ -333,9 +335,9 @@ const BookingDetailPage: React.FC = () => {
                                 <div className="flex items-center">
                                     <MapPin className="w-5 h-5 text-gray-400 ml-3" />
                                     <div>
-                                        <p className="text-sm text-gray-500">العنوان</p>
+                                        <p className="text-sm text-gray-500">{t('booking.address')}</p>
                                         <p className="font-medium">
-                                            {booking.location_address || 'لم يتم تحديد عنوان'}
+                                            {booking.location_address || t('booking.noAddress')}
                                         </p>
                                         <p className="text-xs text-gray-500">
                                             {booking.location_city}, {booking.location_governorate}
@@ -348,31 +350,31 @@ const BookingDetailPage: React.FC = () => {
                         {/* Payment Status */}
                         <Card>
                             <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                <h2 className="text-lg font-semibold">تفاصيل الدفع</h2>
+                                <h2 className="text-lg font-semibold">{t('booking.paymentDetails')}</h2>
                                 <StatusBadge variant={booking.is_paid ? 'success' : 'warning'}>
-                                    {booking.is_paid ? 'مدفوع' : 'غير مدفوع'}
+                                    {booking.is_paid ? t('booking.paid') : t('booking.unpaid')}
                                 </StatusBadge>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">سعر الخدمة الأساسي</span>
+                                    <span className="text-gray-600">{t('booking.basePrice')}</span>
                                     <span>{booking.service_price} {booking.currency}</span>
                                 </div>
                                 {booking.additional_charges > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">رسوم إضافية</span>
+                                        <span className="text-gray-600">{t('booking.additionalFees')}</span>
                                         <span>{booking.additional_charges} {booking.currency}</span>
                                     </div>
                                 )}
                                 {booking.discount > 0 && (
                                     <div className="flex justify-between text-sm text-green-600">
-                                        <span>خصم</span>
+                                        <span>{t('booking.discount')}</span>
                                         <span>-{booking.discount} {booking.currency}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
-                                    <span>الإجمالي</span>
+                                    <span>{t('booking.total')}</span>
                                     <span className="text-primary-600">{booking.total_amount} {booking.currency}</span>
                                 </div>
                             </div>
@@ -383,7 +385,7 @@ const BookingDetailPage: React.FC = () => {
                         {/* Customer/Provider Info */}
                         <Card>
                             <h2 className="text-lg font-semibold mb-4 border-b pb-2">
-                                {isCustomer ? 'معلومات مقدم الخدمة' : 'معلومات العميل'}
+                                {isCustomer ? t('booking.providerInfo') : t('booking.customerInfo')}
                             </h2>
                             {(() => {
                                 const person = isCustomer ? booking.provider : booking.customer;
@@ -404,7 +406,7 @@ const BookingDetailPage: React.FC = () => {
                                         <h3 className="font-bold text-lg">{person?.full_name || '—'}</h3>
                                         <p className="text-gray-500 text-sm mb-1">{person?.phone_number || ''}</p>
                                         <p className="text-gray-400 text-xs mb-4">
-                                            {isCustomer ? 'مقدّم خدمة موثوق' : 'عميل'}
+                                            {isCustomer ? t('booking.trustedProvider') : t('booking.client')}
                                         </p>
                                         <Button
                                             variant="outline"
@@ -412,7 +414,7 @@ const BookingDetailPage: React.FC = () => {
                                             leftIcon={<User className="w-4 h-4" />}
                                             onClick={() => navigate(`/profile/${person?.id}`)}
                                         >
-                                            عرض الملف الشخصي
+                                            {t('booking.viewProfile')}
                                         </Button>
                                     </div>
                                 );
@@ -423,7 +425,7 @@ const BookingDetailPage: React.FC = () => {
                         <Card className="bg-blue-50 border-blue-100">
                             <h2 className="font-semibold text-blue-800 mb-2 flex items-center">
                                 <ShieldCheck className="w-4 h-4 ml-1" />
-                                نصائح الأمان
+                                {t('booking.safetyTips')}
                             </h2>
                             <ul className="text-sm text-blue-700 space-y-2 list-disc list-inside">
                                 <li>لا تقم بدفع أي مبالغ خارج المنصة</li>
@@ -439,30 +441,30 @@ const BookingDetailPage: React.FC = () => {
             <Modal
                 isOpen={showCancelModal}
                 onClose={() => setShowCancelModal(false)}
-                title="إلغاء الحجز"
+                title={t('booking.cancelConfirmMsgTitle')}
             >
                 <div className="space-y-4">
                     <div className="bg-red-50 p-3 rounded-lg flex items-start">
                         <AlertTriangle className="w-5 h-5 text-red-500 ml-2 mt-0.5" />
                         <p className="text-sm text-red-700">
-                            هل أنت متأكد من رغبتك في إلغاء الحجز؟ قد تطبق سياسة الإلغاء ورسوم مالية.
+                            {t('booking.cancelConfirmMsg')}
                         </p>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            سبب الإلغاء *
+                            {t('booking.cancelReason')}
                         </label>
                         <select
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
                             value={cancelReason}
                             onChange={(e) => setCancelReason(e.target.value)}
                         >
-                            <option value="">اختر سبباً...</option>
-                            <option value="schedule_conflict">تعارض في الموعد</option>
-                            <option value="found_alternative">وجدت بديلاً</option>
-                            <option value="price_issue">السعر مرتفع</option>
-                            <option value="other">أخرى</option>
+                            <option value="">{t('booking.selectReason')}</option>
+                            <option value="schedule_conflict">{t('booking.scheduleConflict')}</option>
+                            <option value="found_alternative">{t('booking.foundAlternative')}</option>
+                            <option value="price_issue">{t('booking.priceIssue')}</option>
+                            <option value="other">{t('booking.otherReason')}</option>
                         </select>
                     </div>
 
@@ -475,13 +477,13 @@ const BookingDetailPage: React.FC = () => {
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
                             value={cancelNotes}
                             onChange={(e) => setCancelNotes(e.target.value)}
-                            placeholder="اشرح السبب بالتفصيل..."
+                            placeholder={t('booking.explainReason')}
                         />
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-                            تراجع
+                            {t('booking.goBack')}
                         </Button>
                         <Button
                             className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
@@ -489,7 +491,7 @@ const BookingDetailPage: React.FC = () => {
                             isLoading={isActionLoading}
                             disabled={!cancelReason}
                         >
-                            تأكيد الإلغاء
+                            {t('booking.confirmCancel')}
                         </Button>
                     </div>
                 </div>
@@ -499,17 +501,16 @@ const BookingDetailPage: React.FC = () => {
             <Modal
                 isOpen={showPaymentModal}
                 onClose={() => setShowPaymentModal(false)}
-                title="الدفع عبر ڤودافون كاش"
+                title={t('booking.vodafonePaymentTitle')}
             >
                 <div className="space-y-4">
                     <p className="text-sm text-gray-600">
-                        لإتمام الدفع بقيمة <span className="font-bold text-gray-900">{booking.total_amount} {booking.currency}</span>،
-                        الرجاء إدخال رقم الهاتف المرتبط بمحفظة ڤودافون كاش.
+                        {t('booking.paymentInstructions1')} <span className="font-bold text-gray-900">{booking.total_amount} {booking.currency}</span>{t('booking.paymentInstructions2')}
                     </p>
                     
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            رقم الهاتف *
+                            {t('booking.phoneNumber')}
                         </label>
                         <input
                             type="tel"
@@ -520,13 +521,13 @@ const BookingDetailPage: React.FC = () => {
                             onChange={(e) => setPaymentMobile(e.target.value)}
                         />
                         <p className="text-xs text-gray-500 mt-2">
-                            ستصلك رسالة على هذا الرقم لتأكيد عملية الدفع.
+                            {t('booking.smsInfo')}
                         </p>
                     </div>
 
                     <div className="flex justify-end gap-2 mt-6">
                         <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
-                            إلغاء
+                            {t('addService.cancel')}
                         </Button>
                         <Button
                             onClick={handlePayment}
@@ -535,7 +536,7 @@ const BookingDetailPage: React.FC = () => {
                             disabled={!paymentMobile || isPaymentLoading}
                             leftIcon={<DollarSign className="w-4 h-4" />}
                         >
-                            تأكيد والدفع
+                            {t('booking.confirmAndPay')}
                         </Button>
                     </div>
                 </div>

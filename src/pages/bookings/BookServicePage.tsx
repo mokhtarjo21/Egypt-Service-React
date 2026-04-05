@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Calendar, Clock, MapPin, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
@@ -25,6 +26,7 @@ const BookServicePage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const {
         register,
@@ -42,12 +44,12 @@ const BookServicePage: React.FC = () => {
         try {
             const { data, error } = await djangoServicesService.getServiceById(serviceId);
             if (error) {
-                toast.error('فشل تحميل تفاصيل الخدمة');
+                toast.error(t('booking.loadServiceError'));
                 navigate('/services');
                 return;
             }
             if (user && (user as any).id === data.owner?.id) {
-                toast.error('لا يمكنك حجز الخدمة الخاصة بك');
+                toast.error(t('booking.cantBookOwnService'));
                 navigate('/services');
                 return;
             }
@@ -55,7 +57,7 @@ const BookServicePage: React.FC = () => {
             setService(data);
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ غير متوقع');
+            toast.error(t('booking.unexpectedError'));
         } finally {
             setIsLoading(false);
         }
@@ -86,11 +88,11 @@ const BookServicePage: React.FC = () => {
                 return;
             }
 
-            toast.success('تم إرسال طلب الحجز بنجاح!');
+            toast.success(t('booking.bookingSuccess'));
             navigate(`/bookings/${booking.id}`);
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء إنشاء الحجز');
+            toast.error(t('booking.createBookingError'));
         } finally {
             setIsSubmitting(false);
         }
@@ -107,9 +109,9 @@ const BookServicePage: React.FC = () => {
     if (!service) {
         return (
             <div className="text-center py-12">
-                <h2 className="text-2xl font-bold text-gray-900">الخدمة غير موجودة</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('booking.serviceNotFound')}</h2>
                 <Button onClick={() => navigate('/services')} className="mt-4">
-                    تصفح الخدمات
+                    {t('booking.browseServices')}
                 </Button>
             </div>
         );
@@ -119,8 +121,8 @@ const BookServicePage: React.FC = () => {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">حجز خدمة</h1>
-                    <p className="text-gray-600">قم بملء البيانات التالية لإتمام طلب الحجز</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('booking.title')}</h1>
+                    <p className="text-gray-600">{t('booking.fillDetails')}</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8">
@@ -130,43 +132,43 @@ const BookServicePage: React.FC = () => {
                             <Card>
                                 <h2 className="text-xl font-semibold mb-6 flex items-center">
                                     <Calendar className="w-5 h-5 ml-2 text-primary-600" />
-                                    موعد الحجز
+                                    {t('booking.bookingDateTitle')}
                                 </h2>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                     <Input
                                         type="date"
-                                        label="التاريخ *"
+                                        label={`${t('booking.bookingDate')} *`}
                                         error={errors.scheduled_date?.message}
                                         min={new Date().toISOString().split('T')[0]}
-                                        {...register('scheduled_date', { required: 'يرجى اختيار التاريخ' })}
+                                        {...register('scheduled_date', { required: t('booking.dateRequired') })}
                                     />
 
                                     <Input
                                         type="time"
-                                        label="الوقت *"
+                                        label={`${t('booking.time')} *`}
                                         error={errors.scheduled_time?.message}
-                                        {...register('scheduled_time', { required: 'يرجى اختيار الوقت' })}
+                                        {...register('scheduled_time', { required: t('booking.timeRequired') })}
                                     />
                                 </div>
 
                                 <div className="mb-6">
                                     <Input
-                                        label="العنوان التفصيلي"
-                                        placeholder="المنطقة، الشارع، رقم المبنى..."
+                                        label={t('booking.detailedAddress')}
+                                        placeholder={t('booking.addressPlaceholder')}
                                         error={errors.address?.message}
-                                        {...register('address', { required: 'عنوان الخدمة مطلوب' })}
+                                        {...register('address', { required: t('booking.addressRequired') })}
                                     />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        ملاحظات إضافية
+                                        {t('booking.notes')}
                                     </label>
                                     <textarea
                                         rows={4}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                        placeholder="أي تفاصيل إضافية تود إخبار مقدم الخدمة بها..."
+                                        placeholder={t('booking.notesPlaceholder')}
                                         {...register('notes')}
                                     />
                                 </div>
@@ -179,14 +181,14 @@ const BookServicePage: React.FC = () => {
                                     className="ml-4"
                                     onClick={() => navigate(`/services/${service.id}`)}
                                 >
-                                    إلغاء
+                                    {t('addService.cancel')}
                                 </Button>
                                 <Button
                                     type="submit"
                                     isLoading={isSubmitting}
                                     leftIcon={<Clock className="w-5 h-5" />}
                                 >
-                                    تأكيد الحجز
+                                    {t('booking.confirmBooking')}
                                 </Button>
                             </div>
                         </form>
@@ -210,12 +212,12 @@ const BookServicePage: React.FC = () => {
 
                             <div className="border-t pt-4 space-y-3">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">مقدم الخدمة</span>
+                                    <span className="text-gray-600">{t('booking.provider')}</span>
                                     <span className="font-semibold">{service.owner?.first_name} {service.owner?.last_name}</span>
                                 </div>
 
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">سعر الخدمة</span>
+                                    <span className="text-gray-600">{t('booking.servicePrice')}</span>
                                     <span className="font-bold text-primary-600 flex items-center">
                                         {service.price} <span className="text-xs mr-1">{service.currency}</span>
                                     </span>
@@ -224,7 +226,7 @@ const BookServicePage: React.FC = () => {
                                 <div className="bg-blue-50 p-3 rounded-lg flex items-start mt-4">
                                     <Info className="w-5 h-5 text-blue-500 ml-2" />
                                     <p className="text-xs text-blue-700 leading-relaxed">
-                                        لن يتم خصم أي مبلغ الآن. الدفع يتم بعد تأكيد مقدم الخدمة أو عند الانتهاء حسب الاتفاق.
+                                        {t('booking.paymentNote')}
                                     </p>
                                 </div>
                             </div>

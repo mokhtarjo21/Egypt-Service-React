@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { Calendar, DollarSign, User, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import { Card } from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/StatusBadge';
@@ -39,7 +40,7 @@ interface Booking {
 }
 
 const MyBookingsPage: React.FC = () => {
-    // t and i18n from useTranslation not currently used in this component
+    const { t } = useTranslation();
     const { isRTL } = useDirection();
     const [activeTab, setActiveTab] = useState<'customer' | 'provider'>('customer');
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -67,7 +68,7 @@ const MyBookingsPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء تحميل الحجوزات');
+            toast.error(t('booking.loadError'));
         } finally {
             setIsLoading(false);
         }
@@ -95,8 +96,8 @@ const MyBookingsPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">حجوزاتي</h1>
-                    <p className="text-gray-600">إدارة جميع حجوزاتك الحالية والسابقة</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('booking.myBookings')}</h1>
+                    <p className="text-gray-600">{t('booking.myBookingsSubtitle')}</p>
                 </div>
 
                 {/* Tabs */}
@@ -108,7 +109,7 @@ const MyBookingsPage: React.FC = () => {
                             }`}
                         onClick={() => setActiveTab('customer')}
                     >
-                        حجوزات قمت بها
+                        {t('booking.bookingsMade')}
                     </button>
                     <button
                         className={`px-6 py-3 font-medium text-sm focus:outline-none ${activeTab === 'provider'
@@ -117,7 +118,7 @@ const MyBookingsPage: React.FC = () => {
                             }`}
                         onClick={() => setActiveTab('provider')}
                     >
-                        حجوزات مستلمة (كمزود خدمة)
+                        {t('booking.bookingsReceived')}
                     </button>
                 </div>
 
@@ -128,35 +129,35 @@ const MyBookingsPage: React.FC = () => {
                         variant={statusFilter === '' ? 'primary' : 'outline'}
                         onClick={() => setStatusFilter('')}
                     >
-                        الكل
+                        {t('booking.all')}
                     </Button>
                     <Button
                         size="sm"
                         variant={statusFilter === 'pending' ? 'primary' : 'outline'}
                         onClick={() => setStatusFilter('pending')}
                     >
-                        قيد الانتظار
+                        {t('booking.pending')}
                     </Button>
                     <Button
                         size="sm"
                         variant={statusFilter === 'confirmed' ? 'primary' : 'outline'}
                         onClick={() => setStatusFilter('confirmed')}
                     >
-                        مؤكدة
+                        {t('booking.confirmed')}
                     </Button>
                     <Button
                         size="sm"
                         variant={statusFilter === 'completed' ? 'primary' : 'outline'}
                         onClick={() => setStatusFilter('completed')}
                     >
-                        مكتملة
+                        {t('booking.completed')}
                     </Button>
                     <Button
                         size="sm"
                         variant={statusFilter.includes('cancelled') ? 'primary' : 'outline'}
                         onClick={() => setStatusFilter('cancelled')}
                     >
-                        ملغاة
+                        {t('booking.cancelled')}
                     </Button>
                 </div>
 
@@ -202,8 +203,8 @@ const MyBookingsPage: React.FC = () => {
                                         <User className="w-4 h-4 ml-2" />
                                         <span>
                                             {activeTab === 'customer'
-                                                ? `مقدم الخدمة: ${booking.provider?.first_name || ''} ${booking.provider?.last_name || ''}`
-                                                : `العميل: ${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`
+                                                ? `${t('booking.serviceProvider')} ${booking.provider?.first_name || ''} ${booking.provider?.last_name || ''}`
+                                                : `${t('booking.customer')} ${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`
                                             }
                                         </span>
                                     </div>
@@ -219,7 +220,7 @@ const MyBookingsPage: React.FC = () => {
                                 <div className="border-t pt-4 mt-auto">
                                     <Link to={`/bookings/${booking.id}`} className="block">
                                         <Button variant="outline" className="w-full">
-                                            عرض التفاصيل
+                                            {t('booking.viewDetails')}
                                         </Button>
                                     </Link>
                                 </div>
@@ -229,15 +230,15 @@ const MyBookingsPage: React.FC = () => {
                 ) : (
                     <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                         <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">لا توجد حجوزات</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">{t('booking.noBookings')}</h3>
                         <p className="text-gray-500 mb-6">
                             {activeTab === 'customer'
-                                ? 'لم تقم بحجز أي خدمة حتى الآن'
-                                : 'لم تتلق أي طلبات حجز بعد'}
+                                ? t('booking.noBookingsMade')
+                                : t('booking.noBookingsReceived')}
                         </p>
                         {activeTab === 'customer' && (
                             <Link to="/services">
-                                <Button>تصفح الخدمات</Button>
+                                <Button>{t('booking.browseServices')}</Button>
                             </Link>
                         )}
                     </div>
